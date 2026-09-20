@@ -104,7 +104,7 @@ class _TentangScreenState extends State<TentangScreen> {
                 XyTheme.of(context).dark
                     ? 'assets/brand/xyverse_wordmark_putih.png'
                     : 'assets/brand/xyverse_wordmark.png',
-                height: 34,
+                height: 48,
               ),
               const SizedBox(height: 14),
                Text(

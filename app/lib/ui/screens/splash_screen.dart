@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     const SizedBox(height: 7),
                     Image.asset(
                       'assets/brand/xyverse_wordmark_putih.png',
-                      height: 24,
+                      height: 36,
                       filterQuality: FilterQuality.high,
                     ),
                   ],

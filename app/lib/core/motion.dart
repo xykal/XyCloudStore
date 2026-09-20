@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 ///  Kebijakan gerak 2026-09-20: PERPINDAHAN HALAMAN TIDAK MEMAKAI FADE.
 ///  Geser pendek, parallax tipis — dulu 360ms + mundur 24% terasa "aneh"
 ///  (halaman lama ikut lari terlalu jauh, ada celah kosong).
-///    - xyRoute      : geser dari kanan, halaman bawah mundur 8%.
+///    - xyRoute      : geser dari kanan, halaman lama diam (tanpa parallax).
 ///    - xyRouteBawah : geser vertikal untuk formulir/modal.
 ///    - xyRouteBesar : geser naik kecil, TANPA skala (skala 1.04 terasa melayang).
 ///  Konten masuk (stagger) memakai FadeInUp tanpa opacity:
@@ -15,7 +15,7 @@ import 'package:flutter/material.dart';
 
 const Duration _durasi = Duration(milliseconds: 240);
 const Duration _durasiBalik = Duration(milliseconds: 200);
-const Offset _parallax = Offset(-.08, 0);
+const Offset _parallax = Offset.zero;
 
 Route<T> xyRoute<T>(Widget page, {bool fullscreen = false}) {
   return PageRouteBuilder<T>(
@@ -44,7 +44,7 @@ Route<T> xyRouteBawah<T>(Widget page) {
       keluar: keluar,
       child: child,
       dari: const Offset(0, 1),
-      parallax: const Offset(0, -.04),
+      parallax: Offset.zero,
     ),
   );
 }

@@ -175,16 +175,16 @@ class _ProfileLayoutEditorScreenState extends State<ProfileLayoutEditorScreen> {
     final t = XyTheme.of(context);
     if (_memuat) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: t.bg,
         appBar: AppBar(title: const Text('Atur Layout Profil')),
         body: const Center(child: SkeletonList(count: 6)),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: t.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: t.bg,
         title: const Text('Atur Layout Profil', style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           TextButton(onPressed: _simpanLayout, child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w800))),
@@ -196,11 +196,11 @@ class _ProfileLayoutEditorScreenState extends State<ProfileLayoutEditorScreen> {
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(color: t.surfaceHigh, borderRadius: BorderRadius.circular(20), border: Border.all(color: t.line)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Pratinjau Profil Publik (TikTok Style)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF8A8B8F))),
+                Text('Pratinjau Profil Publik', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: t.muted)),
                 const SizedBox(height: 14),
                 ..._elements.map((e) => Padding(
                       padding: const EdgeInsets.only(bottom: 10),
@@ -209,13 +209,13 @@ class _ProfileLayoutEditorScreenState extends State<ProfileLayoutEditorScreen> {
               ],
             ),
           ),
-          const Divider(height: 1, color: Color(0xFF1E1E1E)),
+          Divider(height: 1, color: t.line),
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
             child: Row(children: [
-              const Icon(Icons.drag_indicator_rounded, size: 18, color: Color(0xFF8A8B8F)),
+              Icon(Icons.drag_indicator_rounded, size: 18, color: t.muted),
               const SizedBox(width: 8),
-              const Text('Drag & Drop untuk atur posisi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF8A8B8F))),
+              Text('Drag & Drop untuk atur posisi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: t.muted)),
               const Spacer(),
               TextButton.icon(
                 onPressed: () async {
@@ -243,7 +243,7 @@ class _ProfileLayoutEditorScreenState extends State<ProfileLayoutEditorScreen> {
                 return Container(
                   key: ValueKey(e.id),
                   margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(14)),
+                  decoration: BoxDecoration(color: t.surfaceHigh, borderRadius: BorderRadius.circular(14), border: Border.all(color: t.line)),
                   child: ListTile(
                     leading: Container(
                       width: 36,
@@ -253,7 +253,7 @@ class _ProfileLayoutEditorScreenState extends State<ProfileLayoutEditorScreen> {
                     ),
                     title: Text(e.label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                     subtitle: Text('Drag untuk pindah posisi', style: TextStyle(fontSize: 11, color: t.muted)),
-                    trailing: const Icon(Icons.drag_handle_rounded, color: Color(0xFF8A8B8F)),
+                    trailing: Icon(Icons.drag_handle_rounded, color: t.muted),
                   ),
                 );
               },

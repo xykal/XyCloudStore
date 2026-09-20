@@ -16,6 +16,16 @@ class PerluVerifikasi implements Exception {
   String toString() => pesan;
 }
 
+/// Login baru dari HP/IP yang belum dipercaya — konfirmasi lewat tautan email.
+class PerluLoginBaru implements Exception {
+  PerluLoginBaru(this.email, this.nama, this.pesan);
+  final String email;
+  final String nama;
+  final String pesan;
+  @override
+  String toString() => pesan;
+}
+
 /// Satu pintu untuk semua data. Mode mock & mode server (Cloudflare Worker)
 /// punya kontrak yang sama, jadi UI tidak perlu tahu bedanya.
 abstract class XyRepository {
@@ -248,6 +258,9 @@ class RemoteRepository implements XyRepository {
     final d = await api.post('/auth/login', {'email': email, 'password': password});
     if (d['perluVerifikasi'] == true) {
       throw PerluVerifikasi('${d['email']}', '${d['nama'] ?? ''}', '${d['pesan'] ?? ''}');
+    }
+    if (d['perluLoginBaru'] == true) {
+      throw PerluLoginBaru('${d['email']}', '${d['nama'] ?? ''}', '${d['pesan'] ?? ''}');
     }
     api.setToken(d['token']);
     return UserProfile.fromJson(d['user']);

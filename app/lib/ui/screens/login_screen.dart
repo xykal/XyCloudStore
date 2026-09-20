@@ -11,6 +11,7 @@ import '../widgets/common.dart';
 import '../widgets/elemen_melayang.dart';
 import 'lupa_password_screen.dart';
 import 'otp_screen.dart';
+import 'login_baru_screen.dart';
 import 'legal_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -112,6 +113,17 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.push(
         context,
         xyRoute(OtpScreen(email: tujuan, pesanAwal: s.error)),
+      );
+      return;
+    }
+
+    if (s.emailMenungguLoginBaru != null) {
+      final tujuan = s.emailMenungguLoginBaru!;
+      final pesan = s.error;
+      s.emailMenungguLoginBaru = null;
+      Navigator.push(
+        context,
+        xyRoute(LoginBaruScreen(email: tujuan, pesan: pesan)),
       );
       return;
     }

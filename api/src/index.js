@@ -998,6 +998,106 @@ async function issueUserToken(env,u,deviceId=null){
 
 const uid = (p = '') => p + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
 
+const LOGIN_BARU_HARI = 14;
+const LOGIN_HP_SAMA_JAM = 72;
+
+function umurMs(iso) {
+  const mentah = String(iso || '').trim();
+  if (!mentah) return Infinity;
+  const zona = /(?:z|[+-]\d\d:?\d\d)$/i.test(mentah) ? mentah : `${mentah.replace(' ', 'T')}Z`;
+  const t = Date.parse(zona);
+  return Number.isFinite(t) ? Date.now() - t : Infinity;
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
+function htmlKonfirmasiLogin(env, ok, judul, pesan) {
+  const body = `<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escHtml(judul)}</title>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;background:#f4f0ff;color:#1b1233;padding:24px}
+.kartu{max-width:420px;background:#fff;border-radius:24px;padding:28px;box-shadow:0 18px 50px rgba(80,40,160,.12)}
+h1{font-size:22px;margin:0 0 10px}p{line-height:1.65;color:#5b5270;margin:0}</style></head>
+<body><div class="kartu"><h1>${escHtml(judul)}</h1><p>${escHtml(pesan)}</p></div></body></html>`;
+  return new Response(body, {
+    status: ok ? 200 : 400,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'no-referrer',
+      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      ...(env?.__CORS_ORIGIN ? { 'Access-Control-Allow-Origin': env.__CORS_ORIGIN, Vary: 'Origin' } : {}),
+    },
+  });
+}
+
+async function evaluasiLoginDipercaya(env, { userId, deviceId, ip, model, registrationDevice }) {
+  if (!deviceId) return { trusted: false, alasan: 'no-device' };
+  if (registrationDevice && deviceId === registrationDevice) return { trusted: true, alasan: 'daftar' };
+  const known = await env.DB.prepare(
+    'SELECT last_seen FROM security_device_users WHERE device_id=? AND user_id=?'
+  ).bind(deviceId, userId).first();
+  if (known) {
+    if (umurMs(known.last_seen) < LOGIN_BARU_HARI * 86400000) return { trusted: true, alasan: 'dikenal' };
+    return { trusted: false, alasan: 'kedaluwarsa' };
+  }
+  const n = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM security_device_users WHERE user_id=?'
+  ).bind(userId).first();
+  if (!Number(n?.n || 0)) return { trusted: true, alasan: 'perangkat-pertama' };
+  const modelNorm = String(model || '').trim().toLowerCase();
+  if (modelNorm && ip && ip !== 'tanpa-ip') {
+    const twin = await env.DB.prepare(
+      `SELECT u.last_seen FROM security_device_users u
+         JOIN security_devices d ON d.id=u.device_id
+        WHERE u.user_id=? AND lower(trim(d.model))=? AND d.last_ip=? AND length(trim(d.model))>0
+        ORDER BY u.last_seen DESC LIMIT 1`
+    ).bind(userId, modelNorm, ip).first();
+    if (twin && umurMs(twin.last_seen) < LOGIN_HP_SAMA_JAM * 3600000) {
+      return { trusted: true, alasan: 'hp-sama' };
+    }
+  }
+  return { trusted: false, alasan: 'baru' };
+}
+
+async function buatTantanganLogin(env, req, { user, deviceId, ip, model }) {
+  const token = [...crypto.getRandomValues(new Uint8Array(32))].map((x) => x.toString(16).padStart(2, '0')).join('');
+  const hash = await securityHash(env, 'login-challenge', token);
+  const id = uid('lc_');
+  const exp = new Date(Date.now() + 30 * 60000).toISOString();
+  await env.DB.prepare(
+    `INSERT INTO login_challenges(id,user_id,device_id,token_hash,ip,model,expires_at) VALUES(?,?,?,?,?,?,?)`
+  ).bind(id, user.id, deviceId || null, hash, ip && ip !== 'tanpa-ip' ? ip : null, String(model || '').slice(0, 80), exp).run();
+  let basis = String(env.PUBLIC_URL || '').replace(/\/$/, '');
+  if (!basis) {
+    try { basis = new URL(req.url).origin; } catch { basis = ''; }
+  }
+  const tautan = `${basis}/api/auth/login-confirm?token=${token}`;
+  const perangkat = [model, ip && ip !== 'tanpa-ip' ? `IP ${ip}` : ''].filter(Boolean).join(' · ') || 'perangkat baru';
+  const sent = await kirimEmail(env, {
+    to: user.email,
+    template: 'loginBaru',
+    data: { nama: user.nama, perangkat, tautan },
+    tombolTeks: 'Ya, ini saya',
+    tombolUrl: tautan,
+  });
+  const out = {
+    perluLoginBaru: true,
+    email: user.email,
+    nama: user.nama,
+    emailTerkirim: sent.ok,
+    pesan: sent.ok
+      ? `Login baru terdeteksi. Kami kirim tautan konfirmasi ke ${user.email}. Setelah tautan diklik, masuk lagi dengan password.`
+      : 'Login baru terdeteksi. Tautan email gagal dikirim; coba masuk lagi beberapa saat.',
+  };
+  if (String(env.XY_CACHE_MATI || '') === '1') out.tautanUji = tautan;
+  return out;
+}
+
 // ============================================================
 //  REFERRAL: tiket klik -> unduh -> dibuka di aplikasi -> klaim
 // ============================================================
@@ -3086,8 +3186,8 @@ ${halaman.map(([u, p2, f]) => `  <url>
           providers: providerSiap(env),
           whatsapp: env.WA_ADMIN || '',
           rekening: {
-            bank: env.BANK_NAMA || 'BCA',
-            nomor: env.BANK_NOMOR || '1234567890',
+            bank: env.BANK_NAMA || 'DANA',
+            nomor: env.BANK_NOMOR || '083116632566',
             atasNama: env.BANK_ATASNAMA || 'XyCloudStore',
             qris: env.QRIS_URL || '',
           },
@@ -3341,6 +3441,31 @@ async function statistikPublik(env) {
       }
 
       // ---------------- AUTH ----------------
+      if (p === 'auth/login-confirm' && req.method === 'GET') {
+        const token = String(new URL(req.url).searchParams.get('token') || '').trim().toLowerCase();
+        if (!/^[a-f0-9]{64}$/.test(token)) {
+          return htmlKonfirmasiLogin(env, false, 'Tautan tidak valid', 'Tautan konfirmasi tidak lengkap. Minta tautan baru dari aplikasi.');
+        }
+        try { await requireRate(env, 'login-confirm-ip', ip, 30, 900); } catch (e) {
+          return htmlKonfirmasiLogin(env, false, 'Terlalu banyak percobaan', 'Tunggu sebentar lalu buka tautan lagi.');
+        }
+        const hash = await securityHash(env, 'login-challenge', token);
+        const row = await env.DB.prepare('SELECT * FROM login_challenges WHERE token_hash=?').bind(hash).first();
+        if (!row) {
+          return htmlKonfirmasiLogin(env, false, 'Tautan tidak dikenal', 'Tautan ini tidak ada atau sudah tidak berlaku. Masuk lagi di aplikasi untuk meminta tautan baru.');
+        }
+        if (row.used_at) {
+          return htmlKonfirmasiLogin(env, true, 'Sudah dikonfirmasi', 'Perangkat ini sudah dikonfirmasi. Kembali ke aplikasi lalu masuk dengan password.');
+        }
+        if (umurMs(row.expires_at) > 0 && Date.parse(String(row.expires_at).includes('T') ? row.expires_at : `${String(row.expires_at).replace(' ', 'T')}Z`) < Date.now()) {
+          return htmlKonfirmasiLogin(env, false, 'Tautan kedaluwarsa', 'Tautan berlaku 30 menit. Masuk lagi di aplikasi untuk meminta tautan baru.');
+        }
+        await env.DB.prepare('UPDATE login_challenges SET used_at=? WHERE id=? AND used_at IS NULL')
+          .bind(new Date().toISOString(), row.id).run();
+        if (row.device_id && row.user_id) await linkDevice(env, row.device_id, row.user_id);
+        return htmlKonfirmasiLogin(env, true, 'Perangkat dikonfirmasi', 'Silakan kembali ke aplikasi XyCloudStore lalu masuk dengan password. Kami tidak menautkan sesi dari browser.');
+      }
+
       if (p === 'auth/login' && req.method === 'POST') {
         const deviceId=await deviceFromRequest(env,req);
         const body = await req.json().catch(() => ({}));
@@ -3372,7 +3497,7 @@ async function statistikPublik(env) {
         }
 
         // OTP hanya untuk aktivasi akun baru (email belum diverifikasi) atau
-        // alur reset password. Login di perangkat baru / reinstall cukup password.
+        // alur reset password.
         if (!u.email_verified && !u.diblokir) {
           ctx.waitUntil(kirimOtp(env, { email: u.email, nama: u.nama, tipe: 'verifikasi' }));
           return json({
@@ -3381,6 +3506,21 @@ async function statistikPublik(env) {
             nama: u.nama,
             pesan: 'Email belum diverifikasi. Masukkan kode dari email, atau kirim ulang setelah jeda.'
           }, 200, env);
+        }
+
+        // Login baru ala Discord: HP/perangkat dikenal (atau reinstall cepat
+        // model+IP sama) cukup password. Jeda lama / IP baru / HP lain → tautan email.
+        if (!u.diblokir) {
+          let model = String(req.headers.get('x-xy-device-model') || '');
+          try { model = decodeURIComponent(model); } catch {}
+          model = model.replace(/\r/g, '').replace(/\n/g, '').slice(0, 80);
+          const keputusan = await evaluasiLoginDipercaya(env, {
+            userId: u.id, deviceId, ip, model, registrationDevice: u.registration_device,
+          });
+          if (!keputusan.trusted) {
+            const out = await buatTantanganLogin(env, req, { user: u, deviceId, ip, model });
+            return json(out, 200, env);
+          }
         }
 
         // Upgrade transparan plaintext, SHA-256 lama, atau iterasi PBKDF2 lama.
@@ -5800,8 +5940,25 @@ async function statistikPublik(env) {
             ORDER BY u.last_seen DESC`
         ).bind(me.sub).all();
 
-        const daftar = (results || []).map((r) => {
-          let namaModel = r.model || '';
+        const groups = new Map();
+        for (const r of results || []) {
+          const modelKey = String(r.model || '').trim().toLowerCase();
+          const kunci = modelKey ? `${r.kind || 'unknown'}|${modelKey}` : `id:${r.device_id}`;
+          const isCur = !!(curDev && r.device_id === curDev);
+          const g = groups.get(kunci);
+          if (!g) {
+            groups.set(kunci, { ...r, aliases: [r.device_id], is_current: isCur });
+          } else {
+            g.aliases.push(r.device_id);
+            if (isCur) { g.is_current = true; g.device_id = r.device_id; }
+            if (String(r.last_seen || '') > String(g.last_seen || '')) {
+              g.last_seen = r.last_seen;
+              if (!g.is_current) g.device_id = r.device_id;
+            }
+          }
+        }
+        const daftar = [...groups.values()].map((r) => {
+          let namaModel = String(r.model || '').trim();
           if (!namaModel) {
             namaModel = r.kind === 'android' ? 'Perangkat Android' : r.kind === 'windows' ? 'Komputer Windows' : 'Perangkat';
           }
@@ -5811,7 +5968,7 @@ async function statistikPublik(env) {
             model: namaModel,
             first_login: r.created_at,
             last_seen: r.last_seen,
-            is_current: curDev ? (r.device_id === curDev) : false,
+            is_current: !!r.is_current,
           };
         });
 
@@ -5822,8 +5979,22 @@ async function statistikPublik(env) {
         const b = await req.json().catch(() => ({}));
         const targetId = b.device_id;
         if (targetId) {
-          await env.DB.prepare('DELETE FROM security_device_users WHERE user_id = ? AND device_id = ?')
-            .bind(me.sub, targetId).run();
+          const row = await env.DB.prepare(
+            `SELECT d.kind, d.model FROM security_device_users u
+               JOIN security_devices d ON d.id=u.device_id
+              WHERE u.user_id=? AND u.device_id=?`
+          ).bind(me.sub, targetId).first();
+          const modelKey = String(row?.model || '').trim().toLowerCase();
+          if (row && modelKey) {
+            await env.DB.prepare(
+              `DELETE FROM security_device_users WHERE user_id=? AND device_id IN (
+                 SELECT id FROM security_devices WHERE kind=? AND lower(trim(model))=?
+               )`
+            ).bind(me.sub, row.kind || 'unknown', modelKey).run();
+          } else {
+            await env.DB.prepare('DELETE FROM security_device_users WHERE user_id = ? AND device_id = ?')
+              .bind(me.sub, targetId).run();
+          }
         } else {
           const curDev = await deviceFromRequest(env, req);
           if (curDev) {
@@ -7227,7 +7398,7 @@ async function statistikPublik(env) {
           if (!g.ok) { hasil = g; }
           else {
             // Coba konversi GIF → Animated WebP (lebih kecil 64%)
-            const conv = await unggahVideoKeAnimasi(env, { dataUri, folder: 'xycloudstore/banner-profil', lebar: 480, fps: 20, durasi: 5.0, format: 'webp', hasilGanda: false });
+            const conv = await unggahVideoKeAnimasi(env, { dataUri, folder: 'xycloudstore/banner-profil', format: 'webp', hasilGanda: true });
             if (conv.ok) {
               hasil = { ok: true, url: conv.url, webp: conv.url, gif: g.url, id: g.id };
             } else {
@@ -8371,7 +8542,7 @@ async function statistikPublik(env) {
           status: 'menunggu', dibuat: new Date().toISOString(), otomatis: false, provider: 'manual',
           rekening: {
             bank: env.BANK_NAMA || 'DANA',
-            nomor: env.BANK_NOMOR || '-',
+            nomor: env.BANK_NOMOR || '083116632566',
             atasNama: env.BANK_ATASNAMA || 'XyCloudStore',
             qris: env.QRIS_URL ? samarkanGambar(env, env.QRIS_URL, 'l') : '',
           },

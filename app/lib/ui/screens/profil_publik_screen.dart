@@ -98,11 +98,11 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
           builder: (ctx, setSheet) => Container(
             margin: const EdgeInsets.all(14),
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(24)),
+            decoration: BoxDecoration(color: XyTheme.of(ctx).surfaceHigh, borderRadius: BorderRadius.circular(24)),
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Laporkan pengguna', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: Colors.white)),
+              Text('Laporkan pengguna', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5, color: XyTheme.of(ctx).ink)),
               const SizedBox(height: 4),
-              Text('Laporan terhadap ${p.nama} akan ditinjau tim moderasi.', style: const TextStyle(fontSize: 12, height: 1.5, color: Color(0xFF8A8B8F))),
+              Text('Laporan terhadap ${p.nama} akan ditinjau tim moderasi.', style: TextStyle(fontSize: 12, height: 1.5, color: XyTheme.of(ctx).muted)),
               const SizedBox(height: 14),
               Wrap(spacing: 8, runSpacing: 8, children: [for (final o in opsi) ChoiceChip(label: Text(o, style: const TextStyle(fontSize: 11.5)), selected: jenis == o, onSelected: (_) => setSheet(() => jenis = o))]),
               const SizedBox(height: 14),
@@ -147,22 +147,28 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
     final t = XyTheme.of(context);
     switch (id) {
       case 'avatar':
-        return Center(
-          child: AvatarBingkai(
-            bingkai: p.bingkai,
-            size: 100,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: const BoxDecoration(shape: BoxShape.circle),
-              child: ClipOval(
-                child: (p.foto ?? '').isNotEmpty
-                    ? AppImage(p.foto!)
-                    : Container(
-                        color: const Color(0xFF262626),
-                        alignment: Alignment.center,
-                        child: Text(_inisial(p.nama), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white)),
-                      ),
+        return Transform.translate(
+          offset: const Offset(0, -44),
+          child: Center(
+            child: AvatarBingkai(
+              bingkai: p.bingkai,
+              size: 100,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: t.bg, width: 3),
+                ),
+                child: ClipOval(
+                  child: (p.foto ?? '').isNotEmpty
+                      ? AppImage(p.foto!)
+                      : Container(
+                          color: t.surfaceHigh,
+                          alignment: Alignment.center,
+                          child: Text(_inisial(p.nama), style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: t.ink)),
+                        ),
+                ),
               ),
             ),
           ),
@@ -174,7 +180,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
             crossAxisAlignment: WrapCrossAlignment.center,
             alignment: WrapAlignment.center,
             children: [
-              GayaNama(p.nama, gaya: p.gayaNama, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white)),
+              GayaNama(p.nama, gaya: p.gayaNama, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: t.ink)),
               LencanaTier(p.tier ?? 'basic'),
               if (p.badge != null) LencanaKhusus(p.badge!),
             ],
@@ -186,7 +192,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
       case 'badges':
         return Center(
           child: Wrap(spacing: 6, alignment: WrapAlignment.center, children: [
-            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(20)), child: Text(p.tier?.toUpperCase() ?? 'BASIC', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white))),
+            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: t.surfaceHigh, borderRadius: BorderRadius.circular(20), border: Border.all(color: t.line)), child: Text(p.tier?.toUpperCase() ?? 'BASIC', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: t.ink))),
             if (p.badge != null) Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: XyTheme.primary, borderRadius: BorderRadius.circular(20)), child: Text(p.badge!.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white))),
           ]),
         );
@@ -195,7 +201,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
         return Center(child: Text('“${p.slogan}”', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic, fontWeight: FontWeight.w600, color: t.muted)));
       case 'bio':
         if ((p.bio ?? '').isEmpty) return const SizedBox.shrink();
-        return Text(p.bio!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13.5, height: 1.5, fontWeight: FontWeight.w600, color: Color(0xFFE4E4E7)));
+        return Text(p.bio!, textAlign: TextAlign.center, style: TextStyle(fontSize: 13.5, height: 1.5, fontWeight: FontWeight.w600, color: t.inkSoft));
       case 'bio_link':
         if ((p.bioLink ?? '').isEmpty) return const SizedBox.shrink();
         return Center(
@@ -203,11 +209,11 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
             onTap: () => launchUrl(Uri.parse(p.bioLink!), mode: LaunchMode.externalApplication),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(20)),
+              decoration: BoxDecoration(color: t.surfaceHigh, borderRadius: BorderRadius.circular(20), border: Border.all(color: t.line)),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.link_rounded, size: 14, color: Colors.white),
+                Icon(Icons.link_rounded, size: 14, color: t.ink),
                 const SizedBox(width: 6),
-                ConstrainedBox(constraints: const BoxConstraints(maxWidth: 220), child: Text(p.bioLink!.replaceFirst(RegExp(r'^https?://'), '').replaceFirst(RegExp(r'/$'), ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white))),
+                ConstrainedBox(constraints: const BoxConstraints(maxWidth: 220), child: Text(p.bioLink!.replaceFirst(RegExp(r'^https?://'), '').replaceFirst(RegExp(r'/$'), ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: t.ink))),
               ]),
             ),
           ),
@@ -215,7 +221,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
       case 'stats':
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(16)),
+          decoration: BoxDecoration(color: t.surfaceHigh, borderRadius: BorderRadius.circular(16), border: Border.all(color: t.line)),
           child: Row(children: [
             _stat('Posting', '${p.posting}'),
             _divider(),
@@ -231,7 +237,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
           return Row(children: [
             Expanded(flex: 3, child: GradientButton(label: p.sayaIkuti ? 'Mengikuti' : 'Ikuti', icon: p.sayaIkuti ? Icons.person_remove_alt_1_rounded : Icons.person_add_alt_1_rounded, loading: _sibuk, onPressed: _toggleIkuti)),
             const SizedBox(width: 10),
-            Expanded(flex: 3, child: Pressable(onTap: () => Navigator.push(context, xyRoute(DmChatScreen(userId: p.id, nama: p.nama, foto: p.foto))), child: Container(height: 48, decoration: BoxDecoration(color: const Color(0xFF262626), borderRadius: BorderRadius.circular(99)), child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.chat_bubble_rounded, size: 18, color: Colors.white), SizedBox(width: 6), Text('Pesan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700))])))),
+            Expanded(flex: 3, child: Pressable(onTap: () => Navigator.push(context, xyRoute(DmChatScreen(userId: p.id, nama: p.nama, foto: p.foto))), child: Container(height: 48, decoration: BoxDecoration(color: t.surfaceHigh, borderRadius: BorderRadius.circular(99), border: Border.all(color: t.line)), child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.chat_bubble_rounded, size: 18, color: t.ink), SizedBox(width: 6), Text('Pesan', style: TextStyle(color: t.ink, fontWeight: FontWeight.w700))])))),
           ]);
         }
       default:
@@ -250,7 +256,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
     final t = XyTheme.of(context);
     final p = _profil;
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: t.bg,
       body: _memuat
           ? const Padding(padding: EdgeInsets.only(top: 80), child: SkeletonList(count: 4))
           : _galat != null
@@ -258,9 +264,9 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
               : CustomScrollView(
                   slivers: [
                     SliverAppBar(
-                      expandedHeight: 200,
+                      expandedHeight: 140,
                       pinned: true,
-                      backgroundColor: const Color(0xFF0A0A0A),
+                      backgroundColor: t.bg,
                       flexibleSpace: FlexibleSpaceBar(
                         background: BannerProfil(tema: p!.banner, media: p.bannerMedia, bingkai: p.bingkai, child: const SizedBox.expand()),
                       ),
@@ -284,7 +290,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
                     ),
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -294,9 +300,9 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
                               const SizedBox(height: 8),
                               Center(
                                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                  const Icon(Icons.calendar_today_rounded, size: 12, color: Color(0xFF8A8B8F)),
+                                  Icon(Icons.calendar_today_rounded, size: 12, color: t.muted),
                                   const SizedBox(width: 5),
-                                  Text('Bergabung ${_bulanTahun(p.createdAt!)}', style: const TextStyle(fontSize: 11.5, color: Color(0xFF8A8B8F))),
+                                  Text('Bergabung ${_bulanTahun(p.createdAt!)}', style: TextStyle(fontSize: 11.5, color: t.muted)),
                                 ]),
                               ),
                             ],
@@ -305,7 +311,7 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
                               Center(
                                 child: Pressable(
                                   onTap: () => _laporkan(p),
-                                  child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(20)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.flag_outlined, size: 14, color: Color(0xFF8A8B8F)), SizedBox(width: 6), Text('Laporkan pengguna', style: TextStyle(fontSize: 12, color: Color(0xFF8A8B8F), fontWeight: FontWeight.w600))])),
+                                  child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: t.surfaceHigh, borderRadius: BorderRadius.circular(20), border: Border.all(color: t.line)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.flag_outlined, size: 14, color: t.muted), SizedBox(width: 6), Text('Laporkan pengguna', style: TextStyle(fontSize: 12, color: t.muted, fontWeight: FontWeight.w600))])),
                                 ),
                               ),
                             ],
@@ -321,11 +327,11 @@ class _ProfilPublikScreenState extends State<ProfilPublikScreen> {
 
   Widget _stat(String label, String nilai) => Expanded(
         child: Column(children: [
-          Text(nilai, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white)),
+          Text(nilai, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: XyTheme.of(context).ink)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF8A8B8F))),
+          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: XyTheme.of(context).muted)),
         ]),
       );
 
-  Widget _divider() => Container(width: 1, height: 28, color: const Color(0xFF2A2A2A));
+  Widget _divider() => Container(width: 1, height: 28, color: XyTheme.of(context).line);
 }

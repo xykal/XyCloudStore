@@ -48,12 +48,14 @@ export async function deviceFromRequest(env,req,{required=false,raw=null}={}){
   }
   const id=await securityHash(env,'device',value.toLowerCase()),time=new Date().toISOString();
   const type=req.headers.get('x-xy-device-kind')||'unknown';
+  const ip=String(req.headers.get('cf-connecting-ip')||req.headers.get('CF-Connecting-IP')||'').slice(0,64);
   let model=String(req.headers.get('x-xy-device-model')||'');try{model=decodeURIComponent(model);}catch{}model=model.replace(/[\r\n]/g,'').slice(0,80);
-  await env.DB.prepare(`INSERT INTO security_devices(id,kind,model,created_at,last_seen) VALUES(?,?,?,?,?)
+  await env.DB.prepare(`INSERT INTO security_devices(id,kind,model,created_at,last_seen,last_ip) VALUES(?,?,?,?,?,?)
     ON CONFLICT(id) DO UPDATE SET last_seen=excluded.last_seen,
+      last_ip=COALESCE(NULLIF(excluded.last_ip,''),security_devices.last_ip),
       kind=CASE WHEN security_devices.kind='unknown' AND excluded.kind!='unknown' THEN excluded.kind ELSE security_devices.kind END,
       model=COALESCE(NULLIF(excluded.model,''),security_devices.model)`)
-    .bind(id,['android','install','browser'].includes(type)?type:'unknown',model,time,time).run();
+    .bind(id,['android','install','browser'].includes(type)?type:'unknown',model,time,time,ip).run();
   const device=await env.DB.prepare('SELECT * FROM security_devices WHERE id=?').bind(id).first();
   if(device.blocked)throw new SecurityError('Perangkat ini dibatasi. Hubungi pengelola layanan.',403,'DEVICE_BLOCKED');
   return id;

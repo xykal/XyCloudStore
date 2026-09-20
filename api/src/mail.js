@@ -90,6 +90,15 @@ export const TEMPLATE = {
       <p>Kode berlaku 15 menit. Penghapusan tidak dapat dibatalkan. Jika bukan kamu yang meminta, abaikan email ini dan amankan akunmu.</p>`,
   }),
 
+  loginBaru: ({ nama, perangkat, tautan }) => ({
+    subject: 'Konfirmasi login baru XyCloudStore',
+    isi: `<div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Halo ${nama},</div>
+      <p style="margin:12px 0 0">Kami mendeteksi login dari perangkat yang belum dikenali
+      (${perangkat || 'perangkat baru'}). Kalau ini kamu, klik tombol di bawah. Tautan berlaku 30 menit
+      dan tidak memasukkan kamu otomatis — setelah dikonfirmasi, masuk lagi di aplikasi dengan password.</p>
+      <p style="margin:16px 0 0;color:${MUTED};font-size:13px">Jika bukan kamu, abaikan email ini dan segera ganti password.</p>`,
+  }),
+
   resetPassword: ({ nama, kode }) => ({
     subject: `${kode} adalah kode reset password XyCloudStore`,
     isi: `<div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Reset password</div>

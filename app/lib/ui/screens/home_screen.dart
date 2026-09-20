@@ -392,10 +392,9 @@ class _KartuSaldoState extends State<_KartuSaldo> {
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 220),
                       child: tampil
-                          ? AnimatedRupiah(
-                              u.saldo,
+                          ? Text(
+                              rupiah(u.saldo),
                               key: const ValueKey('tampil'),
-                              format: rupiah,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 27,

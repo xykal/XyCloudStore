@@ -454,7 +454,7 @@ class _LencanaTierState extends State<LencanaTier>
   @override
   Widget build(BuildContext context) {
     final t = widget.tier.toLowerCase();
-    if (t.isEmpty) return const SizedBox.shrink();
+    if (t.isEmpty || t == 'basic') return const SizedBox.shrink();
 
     final (warna, label, ikon) = switch (t) {
       'admin' => (XyTheme.primary, 'ADMIN', Icons.verified_rounded),
@@ -1072,7 +1072,6 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
         pal = XyTheme.of(context),
         depth = row.kedalaman.clamp(0, 3);
     final nama = s.namaPengguna(b.userId, b.nama);
-    final parent = _balasan.where((x) => x.id == b.balasKe).firstOrNull;
     return CustomPaint(
         painter: _GarisThread(depth, row.lanjutan, row.punyaAnak, pal.line),
         child: Padding(
@@ -1137,56 +1136,6 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
                                   WaktuRelatif(b.dibuat),
                                 ],
                               ),
-                              if (parent != null) ...[
-                                const SizedBox(height: 8),
-                                // Kutipan "membalas siapa" bergaya chip dengan
-                                // aksen garis kiri — beda dari teks isi & nama.
-                                Container(
-                                    padding: const EdgeInsets.fromLTRB(
-                                        9, 6, 10, 6),
-                                    decoration: BoxDecoration(
-                                        color: XyTheme.primary.withOpacity(.08),
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                        border: Border(
-                                            left: BorderSide(
-                                                color: XyTheme.primary,
-                                                width: 3))),
-                                    child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.reply_rounded,
-                                              size: 12,
-                                              color: XyTheme.primary),
-                                          const SizedBox(width: 5),
-                                          Flexible(
-                                              child: Text.rich(TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                        text: 'Membalas ',
-                                                        style: TextStyle(
-                                                            fontSize: 11,
-                                                            color: pal.muted,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w600)),
-                                                    TextSpan(
-                                                        text: s.namaPengguna(
-                                                            parent.userId,
-                                                            parent.nama),
-                                                        style: TextStyle(
-                                                            fontSize: 11,
-                                                            color: XyTheme
-                                                                .primary,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w800)),
-                                                  ]),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis)),
-                                        ]))
-                              ],
                               if (b.isi.isNotEmpty) ...[
                                 const SizedBox(height: 8),
                                 teksForum(
@@ -1806,6 +1755,7 @@ class _StoriesBar extends StatelessWidget {
         .where((st) => !st.punyaSaya && (user == null || st.userId != user.id))
         .toList();
 
+    final pal = XyTheme.of(context);
     return Container(
       height: 104,
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1844,7 +1794,7 @@ class _StoriesBar extends StatelessWidget {
                                   )
                                 : null,
                             border: !punyaStorySaya
-                                ? Border.all(color: Colors.white24, width: 1.5)
+                                ? Border.all(color: pal.line, width: 1.5)
                                 : null,
                           ),
                           child: AvatarBingkai(

@@ -42,7 +42,6 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
   bool _teksBg = true;
   String _teksBgWarna = '#00000073';
   String _filter = 'normal';
-  List<Map<String, dynamic>> _labels = [];
   double _trimStart = 0;
   double _trimEnd = 0;
   double _durasiVideo = 0;
@@ -50,7 +49,6 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
   VideoPlayerController? _videoCtrl;
   bool _showTextEditor = true;
   bool _showBgEditor = false;
-  bool _showLabelEditor = false;
 
   final _opsiBg = const [
     ('ungu', Color(0xFF6B21A8), 'Ungu'),
@@ -221,20 +219,6 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
     }
   }
 
-  void _addLabel(String type) async {
-    final ctrl = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Tambah ${type[0].toUpperCase()}${type.substring(1)}'),
-        content: TextField(controller: ctrl, decoration: InputDecoration(hintText: 'Masukkan $type', border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))), autofocus: true),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')), FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text.trim()), child: const Text('Tambah'))],
-      ),
-    );
-    if (result != null && result.isNotEmpty) {
-      setState(() => _labels.add({'type': type, 'text': result}));
-    }
-  }
 
   Future<void> _kirim() async {
     final t = _teksCtrl.text.trim();
@@ -258,7 +242,7 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
       bgImageUrl: _bgImageDataUri,
       teksBg: _teksBg,
       teksBgWarna: _teksBgWarna,
-      label: _labels.isEmpty ? '' : jsonEncode(_labels),
+      label: '',
       trimStart: _trimStart,
       trimEnd: _trimEnd,
       filter: _filter,
@@ -338,14 +322,6 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(_teksCtrl.text, style: _currentTextStyle(), textAlign: _alignTeks == 'left' ? TextAlign.left : _alignTeks == 'right' ? TextAlign.right : TextAlign.center),
-                              if (_labels.isNotEmpty) ...[
-                                const SizedBox(height: 12),
-                                Wrap(spacing: 6, runSpacing: 6, children: _labels.map((e) => Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white24)),
-                                  child: Text(e['text'], style: const TextStyle(color: Colors.white, fontSize: 11)),
-                                )).toList()),
-                              ],
                             ],
                           ),
                         ),
@@ -399,9 +375,8 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
                     decoration: BoxDecoration(border: Border(bottom: BorderSide(color: pal.line))),
                     child: Row(
                       children: [
-                        _TabBtn(icon: Icons.text_fields_rounded, label: 'Teks', aktif: _showTextEditor, onTap: () => setState(() { _showTextEditor = true; _showBgEditor = false; _showLabelEditor = false; })),
-                        _TabBtn(icon: Icons.palette_rounded, label: 'Background', aktif: _showBgEditor, onTap: () => setState(() { _showTextEditor = false; _showBgEditor = true; _showLabelEditor = false; })),
-                        _TabBtn(icon: Icons.label_rounded, label: 'Label', aktif: _showLabelEditor, onTap: () => setState(() { _showTextEditor = false; _showBgEditor = false; _showLabelEditor = true; })),
+                        _TabBtn(icon: Icons.text_fields_rounded, label: 'Teks', aktif: _showTextEditor, onTap: () => setState(() { _showTextEditor = true; _showBgEditor = false; })),
+                        _TabBtn(icon: Icons.palette_rounded, label: 'Background', aktif: _showBgEditor, onTap: () => setState(() { _showTextEditor = false; _showBgEditor = true; })),
                         const Spacer(),
                         IconButton(onPressed: _pickImage, icon: const Icon(Icons.image_rounded), tooltip: 'Gambar'),
                         IconButton(onPressed: _pickVideo, icon: const Icon(Icons.videocam_rounded), tooltip: 'Video'),
@@ -542,37 +517,6 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
                       ),
                     ),
 
-                  if (_showLabelEditor)
-                    Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            const Text('Label / Stiker (No Label jika kosong)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
-                            const Spacer(),
-                            if (_labels.isNotEmpty) TextButton(onPressed: () => setState(() => _labels.clear()), child: const Text('Hapus Semua', style: TextStyle(fontSize: 11))),
-                          ]),
-                          const SizedBox(height: 8),
-                          Wrap(spacing: 8, runSpacing: 8, children: [
-                            _LabelAddBtn(icon: Icons.location_on_rounded, label: 'Lokasi', onTap: () => _addLabel('location')),
-                            _LabelAddBtn(icon: Icons.alternate_email_rounded, label: 'Mention', onTap: () => _addLabel('mention')),
-                            _LabelAddBtn(icon: Icons.tag_rounded, label: 'Hashtag', onTap: () => _addLabel('hashtag')),
-                            _LabelAddBtn(icon: Icons.timer_rounded, label: 'Countdown', onTap: () => _addLabel('countdown')),
-                            _LabelAddBtn(icon: Icons.mood_rounded, label: 'Mood', onTap: () => _addLabel('mood')),
-                          ]),
-                          const SizedBox(height: 12),
-                          if (_labels.isEmpty)
-                            Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(12)), child: const Center(child: Text('No Label - story tanpa label tambahan', style: TextStyle(color: Colors.white54, fontSize: 12)))),
-                          if (_labels.isNotEmpty)
-                            Wrap(spacing: 8, runSpacing: 8, children: _labels.asMap().entries.map((e) => Chip(
-                              label: Text(e.value['text'], style: const TextStyle(fontSize: 11)),
-                              deleteIcon: const Icon(Icons.close_rounded, size: 14),
-                              onDeleted: () => setState(() => _labels.removeAt(e.key)),
-                            )).toList()),
-                        ],
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -627,31 +571,6 @@ class _BgTypeBtn extends StatelessWidget {
           decoration: BoxDecoration(color: aktif ? XyTheme.primary : Colors.white10, borderRadius: BorderRadius.circular(10), border: Border.all(color: aktif ? XyTheme.primary : Colors.white24)),
           child: Text(label, style: TextStyle(color: aktif ? Colors.white : Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
         ),
-      ),
-    );
-  }
-}
-
-class _LabelAddBtn extends StatelessWidget {
-  const _LabelAddBtn({required this.icon, required this.label, required this.onTap});
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Pressable(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white24)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 16, color: Colors.white70),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-          const SizedBox(width: 4),
-          const Icon(Icons.add_rounded, size: 14, color: Colors.white54),
-        ]),
       ),
     );
   }

@@ -439,8 +439,8 @@ class _DmChatScreenState extends State<DmChatScreen> {
         Container(
           padding: EdgeInsets.fromLTRB(
               12, 8, 12, 10 + MediaQuery.of(context).viewInsets.bottom),
-          decoration: const BoxDecoration(
-            color: Color(0xFF0A0A0A),
+          decoration: BoxDecoration(
+            color: t.bg,
           ),
           child: SafeArea(
             top: false,
@@ -463,7 +463,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
                   decoration: InputDecoration(
                     hintText: 'Tulis pesan…',
                     filled: true,
-                    fillColor: const Color(0xFF1E1E1E),
+                    fillColor: t.surfaceHigh,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(99), borderSide: BorderSide.none),
                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(99), borderSide: BorderSide.none),

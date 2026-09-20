@@ -584,13 +584,20 @@ ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0;
 CREATE TABLE IF NOT EXISTS security_devices (
  id TEXT PRIMARY KEY, kind TEXT NOT NULL DEFAULT 'unknown', model TEXT NOT NULL DEFAULT '',
  registrations INTEGER NOT NULL DEFAULT 0, max_accounts INTEGER, blocked INTEGER NOT NULL DEFAULT 0,
- reason TEXT, created_at TEXT NOT NULL, last_seen TEXT NOT NULL, reset_at TEXT
+ reason TEXT, created_at TEXT NOT NULL, last_seen TEXT NOT NULL, reset_at TEXT, last_ip TEXT
 );
 CREATE TABLE IF NOT EXISTS security_device_users (
  device_id TEXT NOT NULL, user_id TEXT NOT NULL, signup INTEGER NOT NULL DEFAULT 0,
  created_at TEXT NOT NULL DEFAULT (datetime('now')), last_seen TEXT NOT NULL DEFAULT (datetime('now')),
  PRIMARY KEY(device_id,user_id)
 );
+CREATE TABLE IF NOT EXISTS login_challenges (
+  id TEXT PRIMARY KEY, user_id TEXT NOT NULL, device_id TEXT,
+  token_hash TEXT NOT NULL UNIQUE, ip TEXT, model TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  expires_at TEXT NOT NULL, used_at TEXT);
+CREATE INDEX IF NOT EXISTS idx_login_challenges_user ON login_challenges(user_id);
+CREATE INDEX IF NOT EXISTS idx_login_challenges_exp ON login_challenges(expires_at);
 CREATE TABLE IF NOT EXISTS security_events (
  id TEXT PRIMARY KEY, kind TEXT NOT NULL, subject TEXT, route TEXT, note TEXT, count INTEGER NOT NULL DEFAULT 1,
  created_at TEXT NOT NULL, last_seen TEXT NOT NULL

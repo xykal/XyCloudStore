@@ -311,13 +311,63 @@ export async function hapusCloudinary(env, publicId, resourceType = 'image') {
  * Bangun transformasi Cloudinary untuk video → animated image.
  * @param {Object} o - { w, fps, durasi, format: 'webp'|'gif'|'avif'|'png', kualitas }
  */
-function buildAnimatedTransform({ w = 480, fps = 20, durasi = 5.0, format = 'webp', kualitas = 'auto:good' } = {}) {
-  const base = `du_${durasi},so_0,w_${w},c_limit,fps_${fps},q_${kualitas},e_loop`;
+function buildAnimatedTransform({ w = 720, fps = 30, durasi = 0, format = 'webp', kualitas = 'auto:good' } = {}) {
+  const parts = [`w_${w}`, 'c_limit', `fps_${fps}`, `q_${kualitas}`, 'e_loop'];
+  const d = Number(durasi);
+  if (Number.isFinite(d) && d > 0) parts.unshift('so_0', `du_${d}`);
+  const base = parts.join(',');
   if (format === 'webp') return `f_webp,fl_awebp,fl_animated,${base}`;
   if (format === 'gif') return `f_gif,${base},fl_lossy,fl_animated`;
   if (format === 'avif') return `f_avif,fl_animated,${base}`;
   if (format === 'png') return `f_png,fl_apng,fl_animated,${base}`;
   return base;
+}
+
+function bytesKeDataUri(bytes, mime) {
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return `data:${mime};base64,${btoa(bin)}`;
+}
+
+/** Ambil hasil eager (webp/gif) lalu unggah ulang sebagai image mandiri agar MP4 sumber bisa dihapus. */
+async function unggahUlangUrlGambar(env, url, folder, mime) {
+  if (!url) return null;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    if (!bytes.byteLength || bytes.byteLength > 15 * 1024 * 1024) return null;
+    const timestamp = Math.floor(Date.now() / 1000);
+    const isGif = mime === 'image/gif';
+    const signParams = { folder };
+    if (!isGif) signParams.format = 'webp';
+    const up = await kirimUnggah(env, `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD}/image/upload`, {
+      folder, timestamp, signParams, file: bytesKeDataUri(bytes, mime),
+    });
+    const j = await up.json().catch(() => ({}));
+    if (!up.ok || j.error || !j.secure_url) return null;
+    await catatMedia(env, {
+      id: j.public_id, url: j.secure_url, folder, format: j.format || (isGif ? 'gif' : 'webp'),
+      width: j.width, height: j.height, bytes: j.bytes, animated: 1, hash: null,
+    });
+    return { url: j.secure_url, id: j.public_id };
+  } catch (_) { return null; }
+}
+
+async function hapusSumberVideoSetelahAnimasi(env, publicId, webpUrl, gifUrl, folder) {
+  const webpBaru = await unggahUlangUrlGambar(env, webpUrl, folder, 'image/webp');
+  if (!webpBaru) return { webpUrl, gifUrl, id: publicId, mp4Terhapus: false };
+  const gifBaru = gifUrl ? await unggahUlangUrlGambar(env, gifUrl, folder, 'image/gif') : null;
+  const hapus = await hapusCloudinary(env, publicId, 'video');
+  return {
+    webpUrl: webpBaru.url,
+    gifUrl: gifBaru?.url || gifUrl,
+    id: webpBaru.id || publicId,
+    mp4Terhapus: hapus === true,
+  };
 }
 
 /**
@@ -363,8 +413,8 @@ export async function unggahVideoBanner(env, { dataUri, folder = 'xycloudstore/b
   try {
     // Discord-style: Animated WebP primary (tajam, alpha halus, 60-80% lebih kecil dari GIF)
     // + GIF fallback untuk kompatibilitas.
-    const tWebP = buildAnimatedTransform({ w: 480, fps: 20, durasi: 5.0, format: 'webp', kualitas: 'auto:good' });
-    const tGif  = buildAnimatedTransform({ w: 480, fps: 15, durasi: 5.0, format: 'gif',  kualitas: 'auto' });
+    const tWebP = buildAnimatedTransform({ w: 720, fps: 30, format: 'webp', kualitas: 'auto:good' });
+    const tGif  = buildAnimatedTransform({ w: 480, fps: 15, durasi: 12, format: 'gif',  kualitas: 'auto' });
     const eager = `${tWebP}|${tGif}`;
 
     const r = await kirimUnggah(env, `https://api.cloudinary.com/v1_1/${env.CLOUDINARY_CLOUD}/video/upload`, {
@@ -418,16 +468,21 @@ export async function unggahVideoBanner(env, { dataUri, folder = 'xycloudstore/b
       hash: `${hash}_gif`,
     });
 
+    const promosi = await hapusSumberVideoSetelahAnimasi(env, j.public_id, webpUrl, gifUrl, folder);
+    webpUrl = promosi.webpUrl;
+    gifUrl = promosi.gifUrl;
+
     return {
       ok: true,
       url: webpUrl,        // primary (Discord-style)
       webp: webpUrl,       // Animated WebP 24-bit + 8-bit alpha, seamless loop
       gif: gifUrl,         // fallback GIF lossy
-      id: j.public_id,
+      id: promosi.id || j.public_id,
       format: 'webp',
       bytes: j.bytes,
       hash,
       animated: 1,
+      mp4Terhapus: promosi.mp4Terhapus,
       // Info tambahan untuk klien: hemat berapa vs GIF (estimasi)
       meta: { transform_webp: tWebP, transform_gif: tGif },
     };
@@ -444,9 +499,9 @@ export async function unggahVideoBanner(env, { dataUri, folder = 'xycloudstore/b
 export async function unggahVideoKeAnimasi(env, {
   dataUri,
   folder = 'xycloudstore/animasi',
-  lebar = 480,
-  fps = 20,
-  durasi = 5.0,
+  lebar = 720,
+  fps = 30,
+  durasi = 0,
   format = 'webp', // 'webp' | 'gif' | 'avif'
   hasilGanda = true, // jika true, hasilkan webp + gif sekaligus
 } = {}) {
@@ -471,7 +526,11 @@ export async function unggahVideoKeAnimasi(env, {
   const timestamp = Math.floor(Date.now() / 1000);
   try {
     const tPrimary = buildAnimatedTransform({ w: lebar, fps, durasi, format, kualitas: 'auto:good' });
-    const tFallback = buildAnimatedTransform({ w: lebar, fps: Math.min(fps, 15), durasi, format: 'gif', kualitas: 'auto' });
+    const tFallback = buildAnimatedTransform({
+      w: Math.min(lebar, 480), fps: Math.min(fps, 15),
+      durasi: Number(durasi) > 0 ? durasi : 12,
+      format: 'gif', kualitas: 'auto',
+    });
     const eager = hasilGanda ? `${tPrimary}|${tFallback}` : tPrimary;
 
     const isImage = mime === 'image/gif';
@@ -502,6 +561,15 @@ export async function unggahVideoKeAnimasi(env, {
       format, width: j.width, height: j.height, bytes: j.bytes, animated: 1, hash,
     });
 
+    let mp4Terhapus = false;
+    if (!isImage && j.public_id) {
+      const promosi = await hapusSumberVideoSetelahAnimasi(env, j.public_id, primaryUrl, fallbackUrl, folder);
+      primaryUrl = promosi.webpUrl;
+      fallbackUrl = promosi.gifUrl;
+      mp4Terhapus = promosi.mp4Terhapus;
+      if (promosi.id) j.public_id = promosi.id;
+    }
+
     return {
       ok: true,
       url: primaryUrl,
@@ -512,6 +580,7 @@ export async function unggahVideoKeAnimasi(env, {
       bytes: j.bytes,
       hash,
       animated: 1,
+      mp4Terhapus,
     };
   } catch (e) {
     return { ok: false, alasan: String(e) };

@@ -378,6 +378,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       emailMenungguVerifikasi = e.email;
       error = e.pesan;
       return false;
+    } on PerluLoginBaru catch (e) {
+      emailMenungguLoginBaru = e.email;
+      error = e.pesan;
+      return false;
     } catch (e) {
       error = _pesan(e);
       return false;
@@ -389,6 +393,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   /// Hasil pendaftaran: minta pengguna memasukkan kode dari email.
   String? emailMenungguVerifikasi;
+
+  /// Login baru: tautan konfirmasi dikirim ke email ini.
+  String? emailMenungguLoginBaru;
 
   Future<Map<String, dynamic>?> daftar({
     required String nama,

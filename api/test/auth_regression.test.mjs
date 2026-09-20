@@ -67,11 +67,13 @@ test('Hash tersimpan dengan iterasi di atas batas runtime ditolak 401, bukan 500
  }finally{await h.mf.dispose();}
 });
 
-test('Login password akun terverifikasi tidak minta OTP di perangkat baru', {timeout:120000}, async()=>{
+test('Login perangkat baru minta tautan email; HP sama model+IP lolos tanpa merge model kosong', {timeout:120000}, async()=>{
  const h=await harness();
  try{
-  const d1={'X-XY-Device':'a'.repeat(64),'X-XY-Device-Kind':'android'};
+  const d1={'X-XY-Device':'a'.repeat(64),'X-XY-Device-Kind':'android','X-XY-Device-Model':'Pixel 8'};
   const d2={'X-XY-Device':'b'.repeat(64),'X-XY-Device-Kind':'android'};
+  const d3={'X-XY-Device':'c'.repeat(64),'X-XY-Device-Kind':'android','X-XY-Device-Model':'Pixel 8'};
+  const d4={'X-XY-Device':'d'.repeat(64),'X-XY-Device-Kind':'android','X-XY-Device-Model':'iPhone 15'};
   let r=await h.call('/auth/register','POST',{nama:'Pengguna Uji',email:'otpfree@example.invalid',password:'Aman-Sekali-2026',phone:'08123456789'},d1);
   assert.equal(r.status,201,JSON.stringify(r.json));
   assert.equal(r.json.data.perluVerifikasi,true);
@@ -80,11 +82,42 @@ test('Login password akun terverifikasi tidak minta OTP di perangkat baru', {tim
   assert.equal(r.json.data.perluVerifikasi,true);
   assert.equal(r.json.data.token,undefined);
   await h.db.prepare("UPDATE users SET email_verified=1 WHERE email='otpfree@example.invalid'").run();
+  r=await h.call('/auth/login','POST',{email:'otpfree@example.invalid',password:'Aman-Sekali-2026'},d1);
+  assert.equal(r.status,200,JSON.stringify(r.json));
+  assert.ok(r.json.data.token,'perangkat daftar harus token');
+  const tokenD1=r.json.data.token;
   r=await h.call('/auth/login','POST',{email:'otpfree@example.invalid',password:'Aman-Sekali-2026'},d2);
   assert.equal(r.status,200,JSON.stringify(r.json));
-  assert.ok(r.json.data.token,'login perangkat baru harus token, bukan OTP');
+  assert.equal(r.json.data.perluLoginBaru,true);
+  assert.equal(r.json.data.token,undefined);
   assert.equal(r.json.data.perluVerifikasi,undefined);
+  assert.match(String(r.json.data.tautanUji||''),/\/api\/auth\/login-confirm\?token=[a-f0-9]{64}$/);
+  const tautan=r.json.data.tautanUji;
+  r=await h.call('/auth/login','POST',{email:'otpfree@example.invalid',password:'Aman-Sekali-2026'},d3);
+  assert.equal(r.status,200,JSON.stringify(r.json));
+  assert.ok(r.json.data.token,'twin Pixel 8 + IP sama <72 jam harus token');
+  const html=await h.mf.dispatchFetch(tautan);
+  const body=await html.text();
+  assert.equal(html.status,200,body.slice(0,200));
+  assert.match(String(html.headers.get('content-type')||''),/text\/html/);
+  assert.doesNotMatch(body,/eyJ[A-Za-z0-9_-]+\./);
+  assert.match(body,/dikonfirmasi/i);
+  r=await h.call('/auth/login','POST',{email:'otpfree@example.invalid',password:'Aman-Sekali-2026'},d2);
+  assert.equal(r.status,200,JSON.stringify(r.json));
+  assert.ok(r.json.data.token,'setelah tautan, perangkat itu token');
+  r=await h.call('/auth/login','POST',{email:'otpfree@example.invalid',password:'Aman-Sekali-2026'},d4);
+  assert.equal(r.status,200,JSON.stringify(r.json));
+  assert.equal(r.json.data.perluLoginBaru,true);
+  assert.equal(r.json.data.token,undefined);
+  const dev=await h.call('/user/devices','GET',null,{Authorization:'Bearer '+tokenD1,...d1});
+  assert.equal(dev.status,200,JSON.stringify(dev.json));
+  const daftar=dev.json.data.devices||[];
+  const pixel=daftar.filter((x)=>String(x.model).includes('Pixel'));
+  assert.equal(pixel.length,1,'HP sama jangan dobel di daftar');
   r=await h.call('/auth/resend','POST',{email:'otpfree@example.invalid',tipe:'verifikasi'});
   assert.equal(r.status,409);
+  const cfg=await h.call('/config','GET');
+  assert.equal(cfg.json.data.rekening.bank,'DANA');
+  assert.equal(cfg.json.data.rekening.nomor,'083116632566');
  }finally{await h.mf.dispose();}
 });
