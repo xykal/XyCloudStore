@@ -1,18 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
-import {execFileSync} from 'node:child_process';
 import {build} from 'esbuild';
 import {Miniflare,convertV4MiniflareOptions} from 'miniflare';
+import {terapkanSkema} from './harness.mjs';
 
 test('Sewa nyata: saldo/host atomik, idempotensi, ACL agen, akhir sesi dan CS 7 hari',{timeout:120000},async()=>{
  const js=await build({entryPoints:['src/index.js'],bundle:true,format:'esm',loader:{'.html':'text','.png':'binary'},write:false});
  const secret='test-signature-only';
- const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:js.outputFiles[0].text,compatibilityDate:'2025-01-01',d1Databases:['DB'],durableObjects:{HUB:'RealtimeHub'},bindings:{JWT_SECRET:secret,ADMIN_KEY:'test-admin'}}));
+ const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:js.outputFiles[0].text,compatibilityDate:'2025-01-01',d1Databases:['DB'],durableObjects:{HUB:'RealtimeHub'},bindings:{JWT_SECRET:secret,ADMIN_KEY:'test-admin',XY_CACHE_MATI:'1'}}));
  try{
   const db=await mf.getD1Database('DB');
-  const statements=JSON.parse(execFileSync('python3',['-c',"import json,sqlite3\na=[];b=''\nfor c in open('schema.sql').read():\n b+=c\n if c==';' and sqlite3.complete_statement(b):a.append(b);b=''\nprint(json.dumps(a))"],{encoding:'utf8'}));
-  for(const q of statements)await db.prepare(q).run();
+  // Pakai pemuat skema harness (schema.sql + seluruh migrations/*.sql) supaya
+  // kolom hasil migrasi (sesi.host_lan/tunnel/relay, agen.host_lan) ikut
+  // teruji — dulu hanya schema.sql, jadi regression kolom migrasi lolos diam.
+  await terapkanSkema(db);
   await db.prepare("INSERT INTO users(id,nama,email,password,saldo) VALUES('u','U','u@example.invalid','test',50000),('v','V','v@example.invalid','test',50000)").run();
   await db.prepare("INSERT INTO pc_plans(id,nama,gpu,cpu,ram_gb,storage_gb,harga_per_jam,harga_per_hari,region,total_unit,unit_tersedia) VALUES('p','PC test','Test GPU','Test CPU',16,100,10000,100000,'test',1,1)").run();
   await db.prepare("INSERT INTO agen(id,nama,kode,plan_id,host,versi,spec,terakhir) VALUES('a','Unit test','test-agent','p','192.0.2.1','1.1.0',?,?)").bind(JSON.stringify({sunshine:{siap:true}}),new Date().toISOString()).run();
