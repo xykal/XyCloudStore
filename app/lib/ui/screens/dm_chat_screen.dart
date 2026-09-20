@@ -42,7 +42,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
   final _rec = AudioRecorder();
 
   List<DmPesan> _pesan = [];
-  bool _memuat = false; // WA style: no spinner, cache dulu
+  bool _memuat = true; // cache dulu; tanpa cache tampil teks, bukan spinner
   bool _kirim = false;
   String? _galat;
   Timer? _poll;
@@ -170,6 +170,8 @@ class _DmChatScreenState extends State<DmChatScreen> {
       _pesan = [..._pesan, temp];
       _kirim = true;
     });
+    unawaited(Cache.simpan(
+        'dm_${widget.userId}', _pesan.map((m) => m.toJson()).toList()));
     _ctrl.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scroll.hasClients) _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
@@ -365,7 +367,7 @@ class _DmChatScreenState extends State<DmChatScreen> {
                 )
               : _pesan.isEmpty
                   ? _memuat
-                      ? const _SkeletonChat() // WA style skeleton, bukan spinner
+                      ? const TeksMemuat(teks: 'Menyegarkan percakapan…')
                       : const Kosong(
                           icon: Icons.forum_outlined,
                           judul: 'Mulai percakapan',
@@ -862,29 +864,4 @@ class _SuaraDmState extends State<_SuaraDm> {
   }
 }
 
-/// Skeleton Chat ala WA — tanpa spinner, shimmer bubble
-class _SkeletonChat extends StatelessWidget {
-  const _SkeletonChat();
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
-      itemCount: 8,
-      itemBuilder: (_, i) {
-        final saya = i % 2 == 0;
-        return Padding(
-          padding: EdgeInsets.only(bottom: 9, left: saya ? 50 : 0, right: saya ? 0 : 50),
-          child: Align(
-            alignment: saya ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              width: 180 + (i % 3) * 30,
-              height: 44,
-              decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(18)),
-              child: const Shimmer(width: double.infinity, height: double.infinity, radius: 18),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
+

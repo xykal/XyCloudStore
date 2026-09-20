@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'motion.dart';
 
 /// ============================================================
 ///  XyCloud Design System — Violet-Indigo Glossy v3.2
@@ -292,8 +293,8 @@ class XyTheme {
             borderRadius: BorderRadius.circular(XyRadius.xl)),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(builders: {
-        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.android: GeserPageTransitionsBuilder(),
+        TargetPlatform.iOS: GeserPageTransitionsBuilder(),
       }),
     );
   }
@@ -419,8 +420,8 @@ class XyTheme {
             borderRadius: BorderRadius.circular(XyRadius.xl)),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(builders: {
-        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.android: GeserPageTransitionsBuilder(),
+        TargetPlatform.iOS: GeserPageTransitionsBuilder(),
       }),
     );
   }

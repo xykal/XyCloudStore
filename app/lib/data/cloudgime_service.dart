@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../core/cache.dart';
 import 'api_client.dart';
 
 /// Status satu PC mitra CloudGime (sudah dipetakan Worker).
@@ -39,8 +40,9 @@ class CloudGimePc {
 }
 
 class CloudGimeSlot {
-  CloudGimeSlot({this.mulai, this.selesai});
+  CloudGimeSlot({this.mulai, this.selesai, this.nama});
   final DateTime? mulai, selesai;
+  final String? nama;
 
   static DateTime? _iso(dynamic v) {
     final s = v?.toString() ?? '';
@@ -53,8 +55,30 @@ class CloudGimeSlot {
     final a = _iso(j['mulai']);
     final b = _iso(j['selesai']);
     if (a == null && b == null) return null;
-    return CloudGimeSlot(mulai: a, selesai: b);
+    final n = '${j['nama'] ?? ''}'.trim();
+    return CloudGimeSlot(mulai: a, selesai: b, nama: n.isEmpty ? null : n);
   }
+}
+
+class CloudGimeJadwal {
+  CloudGimeJadwal({
+    required this.pc,
+    required this.nama,
+    this.mulai,
+    this.selesai,
+    this.status = 'approved',
+  });
+
+  final String pc, nama, status;
+  final DateTime? mulai, selesai;
+
+  factory CloudGimeJadwal.fromJson(Map j) => CloudGimeJadwal(
+        pc: '${j['pc'] ?? ''}',
+        nama: '${j['nama'] ?? ''}'.trim(),
+        mulai: DateTime.tryParse('${j['mulai'] ?? ''}'),
+        selesai: DateTime.tryParse('${j['selesai'] ?? ''}'),
+        status: '${j['status'] ?? 'approved'}',
+      );
 }
 
 class CloudGimeStatus {
@@ -63,12 +87,14 @@ class CloudGimeStatus {
     required this.timezone,
     required this.maintenance,
     required this.pcs,
+    this.jadwal = const [],
   });
 
   final DateTime? serverTime;
   final String timezone;
   final bool maintenance;
   final List<CloudGimePc> pcs;
+  final List<CloudGimeJadwal> jadwal;
 
   factory CloudGimeStatus.fromJson(dynamic raw) {
     final j = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
@@ -79,6 +105,10 @@ class CloudGimeStatus {
       pcs: (j['pcs'] as List? ?? [])
           .whereType<Map>()
           .map((e) => CloudGimePc.fromJson(e))
+          .toList(),
+      jadwal: (j['jadwal'] as List? ?? [])
+          .whereType<Map>()
+          .map((e) => CloudGimeJadwal.fromJson(e))
           .toList(),
     );
   }
@@ -95,9 +125,11 @@ class CloudGimeBooking {
     this.bayar = 0,
     this.paymentStatus = '',
     this.bisaReschedule = false,
+    this.token = '',
+    this.rescheduleToken = '',
   });
 
-  final String id, status, pcNama, paymentStatus;
+  final String id, status, pcNama, paymentStatus, token, rescheduleToken;
   final DateTime? mulai, selesai;
   final int durasiMenit, bayar;
   final bool bisaReschedule;
@@ -117,6 +149,8 @@ class CloudGimeBooking {
       bayar: (j['bayar'] as num?)?.round() ?? 0,
       paymentStatus: '${j['paymentStatus'] ?? ''}',
       bisaReschedule: j['bisaReschedule'] == true,
+      token: '${j['token'] ?? ''}',
+      rescheduleToken: '${j['rescheduleToken'] ?? ''}',
     );
   }
 }
@@ -137,6 +171,18 @@ class CloudGimeService {
 
   CloudGimeStatus? get terakhir => _cache;
 
+  Future<CloudGimeStatus?> bacaCacheLokal() async {
+    try {
+      final c = await Cache.baca('cloudgime_status');
+      final d = c?['data'];
+      if (d is Map) {
+        _cache = CloudGimeStatus.fromJson(d);
+        return _cache;
+      }
+    } catch (_) {}
+    return _cache;
+  }
+
   Future<CloudGimeStatus> status({bool paksa = false}) async {
     final now = DateTime.now();
     if (!paksa &&
@@ -148,11 +194,42 @@ class CloudGimeService {
     final j = await _api.get('/cloudgime/status');
     _cache = CloudGimeStatus.fromJson(j);
     _cacheAt = DateTime.now();
+    if (j is Map) {
+      unawaited(Cache.simpan('cloudgime_status', Map<String, dynamic>.from(j)));
+    }
     return _cache!;
   }
 
   Future<CloudGimeBooking> booking(String id, String token) async {
     final j = await _api.get('/cloudgime/booking/$id', {'token': token});
+    return CloudGimeBooking.fromJson(j);
+  }
+
+  Future<CloudGimeBooking> pesan({
+    required String nama,
+    required String telepon,
+    required String pcNama,
+    required String tanggal,
+    required String jamMulai,
+    required int durasiMenit,
+    String catatan = '',
+    String? bukti,
+    int? bayar,
+  }) async {
+    final j = await _api.post('/cloudgime/bookings', {
+      'customer_name': nama,
+      'customer_phone': telepon,
+      'pc_name': pcNama,
+      'booking_date': tanggal,
+      'start_time': jamMulai,
+      'duration_minutes': durasiMenit,
+      'billing_mode': 'manual',
+      'note': catatan,
+      if ((bukti ?? '').isNotEmpty) 'payment_proof': bukti,
+      if (bayar != null) 'expected_payment_amount': bayar,
+    });
+    _cache = null;
+    _cacheAt = null;
     return CloudGimeBooking.fromJson(j);
   }
 

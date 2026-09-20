@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/format.dart';
+import '../../core/kompres.dart';
 import '../../core/motion.dart';
 import '../../core/theme.dart';
 import '../../data/api_client.dart';
 import '../../data/cloudgime_service.dart';
 import '../../providers/app_state.dart';
 import '../widgets/common.dart';
+import '../widgets/galeri_picker.dart';
 
 const _webMitra = 'https://cloudgime.my.id';
+const _webBooking = 'https://cloudgime.my.id/booking/';
 
 /// Layar status PC fisik mitra CloudGime + lacak booking milik pengguna.
 class CloudGimeScreen extends StatefulWidget {
@@ -42,6 +45,13 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
   }
 
   Future<void> _siapkan() async {
+    final lokal = await _svc!.bacaCacheLokal();
+    if (lokal != null && mounted) {
+      setState(() {
+        _status = lokal;
+        _pernahCoba = true;
+      });
+    }
     final simpan = await _svc!.bacaBookingTersimpan();
     if (simpan != null && mounted) {
       _idC.text = simpan.$1;
@@ -122,8 +132,35 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
   }
 
   Future<void> _bukaWeb() async {
-    final uri = Uri.parse(_webMitra);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    await launchUrl(Uri.parse(_webMitra), mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _bukaPesan() async {
+    final pcs = _status?.pcs ?? [];
+    if (pcs.isEmpty) {
+      await launchUrl(Uri.parse(_webBooking), mode: LaunchMode.externalApplication);
+      return;
+    }
+    final hasil = await showModalBottomSheet<CloudGimeBooking>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _SheetPesanCloudGime(
+        pcs: pcs,
+        svc: _svc!,
+        namaAwal: context.read<AppState>().user?.nama ?? '',
+      ),
+    );
+    if (!mounted || hasil == null) return;
+    setState(() => _booking = hasil);
+    if (hasil.id.isNotEmpty && hasil.token.length >= 4) {
+      _idC.text = hasil.id;
+      _tokenC.text = hasil.token;
+      await _svc!.simpanBooking(hasil.id, hasil.token);
+    } else if (hasil.id.isNotEmpty) {
+      _idC.text = hasil.id;
+    }
+    await _muat();
   }
 
   @override
@@ -138,6 +175,7 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
   Widget build(BuildContext context) {
     final t = XyTheme.of(context);
     final pcs = _status?.pcs ?? [];
+    final jadwal = _status?.jadwal ?? [];
     return Scaffold(
       appBar: AppBar(
         title: const Text('CloudGime', style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: -.4)),
@@ -157,7 +195,7 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
           children: [
             Text(
-              'PC fisik mitra — status dihitung server CloudGime, bukan tebakan aplikasi.',
+              'PC fisik mitra — nama pemesan dan jam main dari jadwal CloudGime.',
               style: TextStyle(color: t.muted, fontSize: 12.5, height: 1.45),
             ),
             if (_status?.maintenance == true) ...[
@@ -170,7 +208,7 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
             ],
             const SectionHeader('Status PC', sub: 'Diperbarui sekitar 20 detik', top: 18),
             if (pcs.isEmpty && !_pernahCoba)
-              TeksMemuat(teks: 'Menyegarkan status PC…')
+              const TeksMemuat(teks: 'Menyegarkan status PC…')
             else if (pcs.isEmpty)
               Kosong(
                 icon: Icons.desktop_windows_outlined,
@@ -190,11 +228,24 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
                     child: _KartuPc(pc: pc),
                   )),
             ],
+            if (jadwal.isNotEmpty) ...[
+              const SectionHeader('Yang booking', sub: 'Nama dan jam main (WIB)', top: 18),
+              ...jadwal.map((j) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _KartuJadwal(item: j),
+                  )),
+            ],
             const SizedBox(height: 8),
             GradientButton(
-              label: 'Pesan di CloudGime',
+              label: 'Pesan dari aplikasi',
               icon: Icons.event_available_rounded,
-              onPressed: _bukaWeb,
+              onPressed: _bukaPesan,
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => launchUrl(Uri.parse(_webBooking), mode: LaunchMode.externalApplication),
+              icon: const Icon(Icons.open_in_new_rounded, size: 18),
+              label: const Text('Atau buka web CloudGime'),
             ),
             const SectionHeader('Booking saya', sub: 'ID + token tersimpan aman di perangkat', top: 22),
             XyCard(
@@ -285,14 +336,63 @@ class _KartuPc extends StatelessWidget {
             Text('Sisa ~${pc.sisaMenit} mnt',
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5, color: XyTheme.warning)),
         ]),
-        if (pc.sedang?.selesai != null) ...[
+        if (pc.sedang != null) ...[
           const SizedBox(height: 6),
-          Text('Sampai ${tanggal(pc.sedang!.selesai!)}', style: TextStyle(color: t.muted, fontSize: 11.5)),
+          Text(_barisSlot('Sedang', pc.sedang!), style: TextStyle(color: t.inkSoft, fontSize: 12)),
         ],
-        if (pc.berikutnya?.mulai != null) ...[
+        if (pc.berikutnya != null) ...[
           const SizedBox(height: 4),
-          Text('Berikutnya ${tanggal(pc.berikutnya!.mulai!)}', style: TextStyle(color: t.inkSoft, fontSize: 11.5)),
+          Text(_barisSlot('Berikutnya', pc.berikutnya!), style: TextStyle(color: t.muted, fontSize: 11.5)),
         ],
+      ]),
+    );
+  }
+}
+
+String _barisSlot(String label, CloudGimeSlot s) {
+  final nama = (s.nama ?? '').trim();
+  final jaman = [
+    if (s.mulai != null) jam(s.mulai!),
+    if (s.selesai != null) jam(s.selesai!),
+  ].join('–');
+  final siapa = nama.isEmpty ? '' : ' · $nama';
+  return '$label $jaman$siapa';
+}
+
+class _KartuJadwal extends StatelessWidget {
+  const _KartuJadwal({required this.item});
+  final CloudGimeJadwal item;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = XyTheme.of(context);
+    final pending = item.status == 'pending' || item.status == 'waiting';
+    final jaman = [
+      if (item.mulai != null) tanggal(item.mulai!),
+      if (item.selesai != null) jam(item.selesai!),
+    ].join(' → ');
+    return XyCard(
+      child: Row(children: [
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: t.primarySoft,
+          child: Text(
+            item.nama.isEmpty ? '?' : item.nama[0].toUpperCase(),
+            style: const TextStyle(fontWeight: FontWeight.w800, color: XyTheme.primary),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(item.nama.isEmpty ? 'Pemesan' : item.nama,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
+            const SizedBox(height: 2),
+            Text('${item.pc} · $jaman',
+                style: TextStyle(color: t.muted, fontSize: 12, height: 1.35)),
+          ]),
+        ),
+        Pill(pending ? 'Menunggu' : 'Disetujui',
+            warna: pending ? XyTheme.warning : XyTheme.success, solid: true),
       ]),
     );
   }
@@ -341,7 +441,7 @@ class _KartuBooking extends StatelessWidget {
         if (booking.pending)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text('Menunggu konfirmasi — dicek otomatis tiap 20 detik.',
+            child: Text('Menunggu konfirmasi admin CloudGime. Booking ini tampil di web mereka.',
                 style: TextStyle(color: t.muted, fontSize: 11.5)),
           ),
         Align(
@@ -349,6 +449,221 @@ class _KartuBooking extends StatelessWidget {
           child: TextButton(onPressed: onHapus, child: const Text('Hapus dari perangkat')),
         ),
       ]),
+    );
+  }
+}
+
+/// Formulir pesan PC — POST ke CloudGime lewat Worker, jadi muncul di web mitra.
+class _SheetPesanCloudGime extends StatefulWidget {
+  const _SheetPesanCloudGime({
+    required this.pcs,
+    required this.svc,
+    required this.namaAwal,
+  });
+  final List<CloudGimePc> pcs;
+  final CloudGimeService svc;
+  final String namaAwal;
+
+  @override
+  State<_SheetPesanCloudGime> createState() => _SheetPesanCloudGimeState();
+}
+
+class _SheetPesanCloudGimeState extends State<_SheetPesanCloudGime> {
+  late final TextEditingController _nama;
+  late final TextEditingController _telp;
+  late final TextEditingController _catatan;
+  late String _pc;
+  late DateTime _tanggal;
+  String _jam = '15:00';
+  int _durasi = 60;
+  String? _bukti;
+  String? _galat;
+  bool _kirim = false;
+
+  static const _durasiPilihan = [60, 120, 180, 360];
+
+  @override
+  void initState() {
+    super.initState();
+    _nama = TextEditingController(text: widget.namaAwal);
+    _telp = TextEditingController();
+    _catatan = TextEditingController();
+    _pc = widget.pcs.first.nama;
+    final now = DateTime.now();
+    _tanggal = DateTime(now.year, now.month, now.day);
+    final n = now.hour + 1;
+    _jam = '${n.clamp(7, 22).toString().padLeft(2, '0')}:00';
+  }
+
+  @override
+  void dispose() {
+    _nama.dispose();
+    _telp.dispose();
+    _catatan.dispose();
+    super.dispose();
+  }
+
+  CloudGimePc get _pcObj =>
+      widget.pcs.firstWhere((p) => p.nama == _pc, orElse: () => widget.pcs.first);
+
+  int get _perkiraan => ((_durasi / 60) * _pcObj.hargaPerJam).round();
+
+  String get _tglIso {
+    final y = _tanggal.year.toString().padLeft(4, '0');
+    final m = _tanggal.month.toString().padLeft(2, '0');
+    final d = _tanggal.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
+  Future<void> _pilihBukti() async {
+    final f = await GaleriPicker.pilihGambar(context, judul: 'Bukti transfer QRIS');
+    if (f == null) return;
+    final bytes = await f.readAsBytes();
+    final nama = f.uri.pathSegments.isNotEmpty ? f.uri.pathSegments.last : 'bukti.jpg';
+    final uri = await Kompres.dataUri(bytes, nama, maxSisi: 1280, kualitas: 78);
+    if (mounted) setState(() => _bukti = uri);
+  }
+
+  Future<void> _kirimPesanan() async {
+    final nama = _nama.text.trim();
+    final telp = _telp.text.replaceAll(RegExp(r'[^\d+]'), '');
+    if (nama.length < 2 || telp.length < 8) {
+      setState(() => _galat = 'Isi nama dan nomor WhatsApp.');
+      return;
+    }
+    setState(() { _kirim = true; _galat = null; });
+    try {
+      final b = await widget.svc.pesan(
+        nama: nama,
+        telepon: telp,
+        pcNama: _pc,
+        tanggal: _tglIso,
+        jamMulai: _jam,
+        durasiMenit: _durasi,
+        catatan: _catatan.text.trim(),
+        bukti: _bukti,
+        bayar: _perkiraan,
+      );
+      if (!mounted) return;
+      Navigator.pop(context, b);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _kirim = false;
+        _galat = e.pesan;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _kirim = false;
+        _galat = 'Gagal mengirim booking.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = XyTheme.of(context);
+    final padBawah = MediaQuery.of(context).viewInsets.bottom;
+    final jamPilihan = [for (var h = 7; h <= 22; h++) '${h.toString().padLeft(2, '0')}:00'];
+    final hari = [
+      DateTime.now(),
+      DateTime.now().add(const Duration(days: 1)),
+      DateTime.now().add(const Duration(days: 2)),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF16151E)
+            : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 14, 20, 16 + padBawah),
+      child: SingleChildScrollView(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(color: t.line, borderRadius: BorderRadius.circular(2)),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text('Pesan CloudGime', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text('Pengajuan masuk ke web CloudGime. Admin mitra yang menyetujui.',
+              style: TextStyle(color: t.muted, fontSize: 12.5, height: 1.4)),
+          const SizedBox(height: 14),
+          const XyLabel('PC'),
+          DropdownButtonFormField<String>(
+            value: _pc,
+            items: widget.pcs
+                .map((p) => DropdownMenuItem(value: p.nama, child: Text(p.nama)))
+                .toList(),
+            onChanged: _kirim ? null : (v) { if (v != null) setState(() => _pc = v); },
+          ),
+          const SizedBox(height: 12),
+          const XyLabel('Tanggal'),
+          Wrap(spacing: 8, children: [
+            for (final d in hari)
+              ChoiceChip(
+                label: Text('${d.day}/${d.month}'),
+                selected: _tanggal.day == d.day && _tanggal.month == d.month,
+                onSelected: _kirim ? null : (_) => setState(() => _tanggal = DateTime(d.year, d.month, d.day)),
+              ),
+          ]),
+          const SizedBox(height: 12),
+          const XyLabel('Jam mulai (WIB)'),
+          DropdownButtonFormField<String>(
+            value: jamPilihan.contains(_jam) ? _jam : jamPilihan.first,
+            items: jamPilihan.map((j) => DropdownMenuItem(value: j, child: Text(j))).toList(),
+            onChanged: _kirim ? null : (v) { if (v != null) setState(() => _jam = v); },
+          ),
+          const SizedBox(height: 12),
+          const XyLabel('Durasi'),
+          Wrap(spacing: 8, children: [
+            for (final m in _durasiPilihan)
+              ChoiceChip(
+                label: Text(m >= 60 ? '${m ~/ 60} jam' : '$m mnt'),
+                selected: _durasi == m,
+                onSelected: _kirim ? null : (_) => setState(() => _durasi = m),
+              ),
+          ]),
+          const SizedBox(height: 12),
+          const XyLabel('Nama'),
+          TextField(controller: _nama, enabled: !_kirim, textCapitalization: TextCapitalization.words),
+          const SizedBox(height: 12),
+          const XyLabel('WhatsApp'),
+          TextField(
+            controller: _telp,
+            enabled: !_kirim,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(hintText: '08xxxxxxxxxx'),
+          ),
+          const SizedBox(height: 12),
+          const XyLabel('Catatan (opsional)'),
+          TextField(controller: _catatan, enabled: !_kirim, maxLines: 2),
+          const SizedBox(height: 12),
+          Text('Perkiraan ${rupiah(_perkiraan)} · unggah bukti QRIS bila diminta mitra.',
+              style: TextStyle(color: t.muted, fontSize: 12)),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _kirim ? null : _pilihBukti,
+            icon: Icon(_bukti == null ? Icons.image_outlined : Icons.check_rounded, size: 18),
+            label: Text(_bukti == null ? 'Unggah bukti transfer' : 'Bukti sudah dipilih'),
+          ),
+          if (_galat != null) ...[
+            const SizedBox(height: 10),
+            Text(_galat!, style: const TextStyle(color: XyTheme.danger, fontSize: 12.5)),
+          ],
+          const SizedBox(height: 16),
+          GradientButton(
+            label: _kirim ? 'Mengirim…' : 'Kirim pengajuan',
+            height: 48,
+            onPressed: _kirim ? null : _kirimPesanan,
+          ),
+        ]),
+      ),
     );
   }
 }
@@ -374,7 +689,7 @@ class KartuCloudGimeHome extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('CloudGime', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
             const SizedBox(height: 2),
-            Text('Sewa PC fisik mitra · cek kosong/dipakai live',
+            Text('Sewa PC fisik mitra · nama & jam booking live',
                 style: TextStyle(color: t.muted, fontSize: 12)),
           ]),
         ),

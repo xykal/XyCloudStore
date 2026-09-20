@@ -972,6 +972,24 @@ class ForumBalasan {
         suka: j['suka'] ?? 0,
         dibuat: tanggalServer(j['dibuat']),
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'post_id': postId,
+        'user_id': userId,
+        'balas_ke': balasKe,
+        'nama': nama,
+        'foto': foto,
+        'isi': isi,
+        'stiker': stiker?.toJson(),
+        'admin': admin ? 1 : 0,
+        'tier': tier,
+        'badge': badge,
+        'bingkai': bingkai,
+        'gaya_nama': gayaNama,
+        'suka': suka,
+        'dibuat': dibuat.toIso8601String(),
+      };
 }
 
 /// Sesi bermain di PC sewaan.

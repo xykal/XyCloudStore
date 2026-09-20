@@ -136,19 +136,18 @@ class _ProfilScreenState extends State<ProfilScreen> {
             padding: EdgeInsets.fromLTRB(22, MediaQuery.of(context).padding.top + 22, 22, 26),
             child: Stack(children: [
               Column(children: [
-              Row(children: [
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Stack(children: [
-                  // Foto polos tanpa latar bulat — hanya inisial yang
-                  // memakai wadah gradien ketika belum ada foto.
+                  // Foto, nama tampil, dan email satu kluster di kepala profil.
                   AvatarBingkai(
                     bingkai: u.bingkai,
-                    size: 72,
+                    size: 86,
                     child: ClipOval(
                       child: (u.foto ?? '').isNotEmpty
                           ? Image.network(
                               u.foto!,
-                              width: 72,
-                              height: 72,
+                              width: 86,
+                              height: 86,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => _WadahInisial(u.nama),
                             )
@@ -176,54 +175,58 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    // Urutan rapi: nama → display name (@username) → slogan
-                    // → email → bio. Dulu display name nyelip di bawah email.
                     GayaNama(u.nama,
                         gaya: u.gayaNama,
                         style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w700, fontSize: 19, letterSpacing: -.5)),
+                            color: Colors.white, fontWeight: FontWeight.w700, fontSize: 20, letterSpacing: -.5)),
                     if ((u.username ?? '').isNotEmpty)
-                      Text('@${u.username}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Color(0xFFC4B5FD),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: .2)),
-                    // Batch L: slogan tampil persis di bawah nama.
-                    if ((u.slogan ?? '').isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),
-                        child: Text('“${u.slogan}”',
+                        child: Text('@${u.username}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: Color(0xFFC4B5FD),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: .2)),
+                      ),
+                    const SizedBox(height: 6),
+                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 1),
+                        child: Icon(Icons.mail_outline_rounded,
+                            size: 14, color: Colors.white.withOpacity(.7)),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(u.email,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: Colors.white.withOpacity(.85),
-                                fontSize: 11.5,
-                                fontStyle: FontStyle.italic,
+                                color: Colors.white.withOpacity(.82),
+                                fontSize: 12.5,
+                                height: 1.35,
                                 fontWeight: FontWeight.w600)),
                       ),
+                    ]),
                   ]),
                 ),
               ]),
-              const SizedBox(height: 14),
-              // Audit tata letak 2026-09-18: email & bio sepenuh lebar, tidak
-              // lagi dipaksa ellipsis di kolom sempit samping avatar.
-              Row(children: [
-                Icon(Icons.mail_outline_rounded,
-                    size: 14, color: Colors.white.withOpacity(.62)),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(u.email,
-                      maxLines: 1,
+              if ((u.slogan ?? '').isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text('“${u.slogan}”',
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: Colors.white.withOpacity(.72), fontSize: 12.5)),
+                          color: Colors.white.withOpacity(.85),
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w600)),
                 ),
-              ]),
               if ((u.bio ?? '').isNotEmpty) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(u.bio!,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -570,8 +573,8 @@ class _WadahInisial extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 72,
-        height: 72,
+        width: 86,
+        height: 86,
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           gradient: XyTheme.gradPrimary,

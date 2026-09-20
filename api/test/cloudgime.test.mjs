@@ -37,7 +37,7 @@ function mockFetch(peta, { delayMs = 0 } = {}) {
     const path = String(url).replace(/^https?:\/\/[^/]+/, '');
     for (const [kunci, nilai] of Object.entries(peta)) {
       if (path.includes(kunci) || String(url).includes(kunci)) {
-        if (typeof nilai === 'function') return nilai(url);
+        if (typeof nilai === 'function') return nilai(url, init);
         return jsonRes(nilai.status ?? 200, nilai.body ?? nilai);
       }
     }
@@ -93,6 +93,44 @@ test('CloudGime: in_use→dipakai, available→tersedia, sisa menit dari mitra',
   assert.equal(d.pcs[1].sisaMenit, 0);
   assert.equal(d.serverTime, '2026-09-20T20:25:00+07:00');
   assert.equal(d.maintenance, false);
+  assert.ok(Array.isArray(d.jadwal));
+});
+
+test('CloudGime: nama pemesan dari /availability menempel ke slot + jadwal', async () => {
+  const fetchImpl = mockFetch({
+    '/status': STATUS_OK,
+    '/availability': {
+      bookings: [
+        {
+          pc_name: 'PC 1',
+          booking_date: '2026-09-20',
+          start_time: '19:01',
+          end_date: '2026-09-21',
+          end_time: '01:01',
+          status: 'approved',
+          booker_name: 'Oji',
+        },
+        {
+          pc_name: 'PC 2',
+          booking_date: '2026-09-21',
+          start_time: '15:20',
+          end_date: '2026-09-21',
+          end_time: '16:20',
+          status: 'approved',
+          booker_name: 'Jerrzzz',
+        },
+      ],
+    },
+  });
+  const d = await buatCloudGime({
+    fetchImpl,
+    now: () => Date.parse('2026-09-20T22:23:00+07:00'),
+  }).status({});
+  assert.equal(d.pcs[0].sedang.nama, 'Oji');
+  assert.equal(d.jadwal.length, 2);
+  assert.equal(d.jadwal[0].nama, 'Oji');
+  assert.equal(d.jadwal[0].pc, 'PC 1');
+  assert.match(d.jadwal[0].mulai, /\+07:00$/);
 });
 
 test('CloudGime: disabled→nonaktif', async () => {
@@ -249,4 +287,54 @@ test('Rute Worker: /cloudgime/status dan booking publik; lolos pemeliharaan', as
   } finally {
     await mf.dispose();
   }
+});
+
+
+test('CloudGime: POST booking divalidasi lalu diteruskan ke mitra', async () => {
+  const panggil = [];
+  const fetchImpl = async (url, init) => {
+    panggil.push({ url: String(url), init });
+    const path = String(url).replace(/^https?:\/\/[^/]+/, '');
+    if (path.endsWith('/bookings') && init?.method === 'POST') {
+      const b = JSON.parse(init.body);
+      assert.equal(b.customer_name, 'Budi');
+      assert.equal(b.customer_phone, '081234567890');
+      assert.equal(b.pc_name, 'PC 1');
+      assert.equal(b.billing_mode, 'manual');
+      assert.ok(b.request_id);
+      return jsonRes(200, {
+        booking: {
+          id: 'b_baru',
+          status: 'pending',
+          pc_name: 'PC 1',
+          booking_date: '2026-09-21',
+          start_time: '15:00',
+          end_time: '16:00',
+          duration_minutes: 60,
+        },
+        pay_amount: 6000,
+        reschedule_token: 'r_abc',
+      });
+    }
+    return jsonRes(404, { error: 'tidak ada' });
+  };
+  const cg = buatCloudGime({ fetchImpl });
+  await assert.rejects(
+    () => cg.buat({}, { customer_name: 'B', customer_phone: '12', pc_name: 'PC 1' }),
+    (e) => e.status === 400 && e.code === 'BAD_BOOKING',
+  );
+  const d = await cg.buat({}, {
+    customer_name: 'Budi',
+    customer_phone: '081234567890',
+    pc_name: 'PC 1',
+    booking_date: '2026-09-21',
+    start_time: '15:00',
+    duration_minutes: 60,
+  });
+  assert.equal(d.id, 'b_baru');
+  assert.equal(d.status, 'pending');
+  assert.equal(d.pcNama, 'PC 1');
+  assert.equal(d.bayar, 6000);
+  assert.equal(d.rescheduleToken, 'r_abc');
+  assert.equal(panggil.length, 1);
 });

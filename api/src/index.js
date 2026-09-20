@@ -13,7 +13,7 @@ import {
   responsHalamanLivestream,
 } from './livestream.js';
 import { kataTerlarangDalam, KATA_TERLARANG } from './kata.js';
-import { statusCloudGime, bookingCloudGime, CloudGimeError } from './cloudgime.js';
+import { statusCloudGime, bookingCloudGime, buatBookingCloudGime, CloudGimeError } from './cloudgime.js';
 /**
  * ============================================================
  *  XyCloud API — Cloudflare Worker
@@ -3043,6 +3043,21 @@ ${halaman.map(([u, p2, f]) => `  <url>
         const token = url.searchParams.get('token') || '';
         try {
           return json(await bookingCloudGime(env, id, token), 200, env);
+        } catch (e) {
+          if (e instanceof CloudGimeError) return err(e.message, e.status, env, e.code);
+          return err('Server CloudGime tidak dapat dihubungi.', 502, env, 'UPSTREAM_DOWN');
+        }
+      }
+      if (p === 'cloudgime/bookings' && req.method === 'POST') {
+        const me = await auth(req, env);
+        if (!me) return err('Masuk dulu untuk memesan di CloudGime.', 401, env);
+        try {
+          const ok = await securitySlot(env, 'cloudgime-book', String(me.sub), 8, 3600);
+          if (!ok) return err('Terlalu banyak pengajuan booking. Coba lagi nanti.', 429, env, 'RATE_LIMIT');
+        } catch (_) { /* fail-open bila slot rusak */ }
+        const b = await req.json().catch(() => ({}));
+        try {
+          return json(await buatBookingCloudGime(env, b), 201, env);
         } catch (e) {
           if (e instanceof CloudGimeError) return err(e.message, e.status, env, e.code);
           return err('Server CloudGime tidak dapat dihubungi.', 502, env, 'UPSTREAM_DOWN');

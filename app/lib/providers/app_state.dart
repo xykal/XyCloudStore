@@ -2280,6 +2280,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     );
     chat.add(msg);
     notifyListeners();
+    _simpanChatLokal();
     try {
       final result = await _repo.kirimChat(
         teks,
@@ -2319,6 +2320,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
         chat[i] = baru;
         csMengetik = false;
         notifyListeners();
+        _simpanChatLokal();
         return;
       }
     }
@@ -2327,6 +2329,12 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     csMengetik = false;
     if (!baru.milikSaya) notifBelumDibaca++;
     notifyListeners();
+    _simpanChatLokal();
+  }
+
+  void _simpanChatLokal() {
+    unawaited(Cache.simpan(
+        'chat_${user?.id}', chat.map((e) => e.toJson()).toList()));
   }
 
   DateTime _ketikTerakhir=DateTime(2000);

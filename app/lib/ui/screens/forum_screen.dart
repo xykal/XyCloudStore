@@ -13,6 +13,7 @@ import '../widgets/stiker_picker.dart';
 import 'package:flutter/material.dart';
 import '../widgets/galeri_picker.dart';
 import 'package:provider/provider.dart';
+import '../../core/cache.dart';
 import '../../core/format.dart';
 import '../../core/kompres.dart';
 import '../../core/motion.dart';
@@ -839,7 +840,26 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _muat();
+    _bukaCacheLaluMuat();
+  }
+
+  Future<void> _bukaCacheLaluMuat() async {
+    try {
+      final lama = await Cache.daftar('forum_komen_${widget.post.id}');
+      if (lama.isNotEmpty && mounted) {
+        final parsed = lama
+            .whereType<Map>()
+            .map((e) => ForumBalasan.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        if (parsed.isNotEmpty && mounted) {
+          setState(() {
+            _balasan = parsed;
+            _memuat = false;
+          });
+        }
+      }
+    } catch (_) {}
+    if (mounted) await _muat(diam: _balasan.isNotEmpty);
   }
 
   @override
@@ -873,11 +893,14 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
       final s = context.read<AppState>();
       unawaited(s.muatSukaBalasan());
       final d = await s.detailForum(widget.post.id);
-      if (mounted && no == _req)
+      if (mounted && no == _req) {
         setState(() {
           _balasan = d;
           _galat = null;
         });
+        unawaited(Cache.simpan(
+            'forum_komen_${widget.post.id}', d.map((e) => e.toJson()).toList()));
+      }
     } catch (e) {
       if (mounted && no == _req)
         setState(() =>
@@ -1328,11 +1351,14 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
                                       Text('Menampilkan 200 komentar terbaru',
                                           style: TextStyle(
                                               color: pal.muted, fontSize: 11)),
-                                    if (_memuat) ...[
-                                      const SizedBox(height: 12),
-                                      const LinearProgressIndicator(
-                                          minHeight: 2)
-                                    ],
+                                    if (_memuat && _balasan.isEmpty)
+                                      Padding(
+                                          padding: const EdgeInsets.only(top: 12),
+                                          child: Text(
+                                              'Menyegarkan percakapan…',
+                                              style: TextStyle(
+                                                  color: pal.muted,
+                                                  fontSize: 12.5))),
                                     if (_galat != null)
                                       TextButton(
                                           onPressed: () => _muat(),
@@ -1494,14 +1520,9 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
                                   style: IconButton.styleFrom(
                                       backgroundColor: XyTheme.primary,
                                       foregroundColor: Colors.white),
-                                  icon: _mengirim
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white))
-                                      : const Icon(Icons.arrow_upward_rounded)),
+                                  icon: Icon(Icons.arrow_upward_rounded,
+                                      color: Colors.white
+                                          .withOpacity(_mengirim ? .4 : 1))),
                             ]),
                       ])))),
         ]));
@@ -2102,7 +2123,7 @@ class _StoryFullScreenViewerState extends State<StoryFullScreenViewer>
                         imageUrl: s.mediaUrl!,
                         fit: BoxFit.contain,
                         placeholder: (_, __) =>
-                            const Center(child: CircularProgressIndicator(color: Colors.white70)),
+                            const ColoredBox(color: Color(0x33000000)),
                         errorWidget: (_, __, ___) => const Center(
                             child: Icon(Icons.broken_image_rounded, size: 54, color: Colors.white54)),
                       ),
@@ -2291,17 +2312,10 @@ class _StoryFullScreenViewerState extends State<StoryFullScreenViewer>
                             ),
                           ),
                           IconButton(
-                            icon: _sedangKirim
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.send_rounded,
-                                    color: Colors.white, size: 18),
+                            icon: Icon(Icons.send_rounded,
+                                color: Colors.white
+                                    .withOpacity(_sedangKirim ? .4 : 1),
+                                size: 18),
                             onPressed: _sedangKirim ? null : () => _kirimBalasan(s),
                           ),
                         ],
@@ -2583,13 +2597,7 @@ class _SheetBuatStoryState extends State<_SheetBuatStory> {
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _memuat ? null : _kirim,
-            icon: _memuat
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.send_rounded, size: 18),
+            icon: const Icon(Icons.send_rounded, size: 18),
             label: Text(_memuat ? 'Membagikan…' : 'Bagikan ke Story'),
           ),
         ],

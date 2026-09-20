@@ -4,19 +4,18 @@ import 'package:flutter/material.dart';
 /// ============================================================
 ///  Gerak dan transisi halaman XyCloudStore
 /// ============================================================
-///  Kebijakan gerak 2026-09-18: PERPINDAHAN HALAMAN TIDAK MEMAKAI FADE.
-///  Semua route memakai geser (slide) murni supaya arah navigasi terbaca
-///  dan halaman tidak "berkedip" lewat transparansi:
-///    - xyRoute      : geser horizontal ala material-ios hybrid; halaman
-///                     yang tertutup ikut mundur seperempat layar (parallax).
-///    - xyRouteBawah : geser vertikal penuh untuk halaman formulir/modal.
-///    - xyRouteBesar : geser vertikal + settle untuk alur besar
-///                     (splash → onboarding → shell).
-///  Konten masuk (stagger) memakai FadeInUp yang juga sudah tanpa opacity:
+///  Kebijakan gerak 2026-09-20: PERPINDAHAN HALAMAN TIDAK MEMAKAI FADE.
+///  Geser pendek, parallax tipis — dulu 360ms + mundur 24% terasa "aneh"
+///  (halaman lama ikut lari terlalu jauh, ada celah kosong).
+///    - xyRoute      : geser dari kanan, halaman bawah mundur 8%.
+///    - xyRouteBawah : geser vertikal untuk formulir/modal.
+///    - xyRouteBesar : geser naik kecil, TANPA skala (skala 1.04 terasa melayang).
+///  Konten masuk (stagger) memakai FadeInUp tanpa opacity:
 ///  hanya translate, lihat widgets/common.dart.
 
-const Duration _durasi = Duration(milliseconds: 360);
-const Duration _durasiBalik = Duration(milliseconds: 300);
+const Duration _durasi = Duration(milliseconds: 240);
+const Duration _durasiBalik = Duration(milliseconds: 200);
+const Offset _parallax = Offset(-.08, 0);
 
 Route<T> xyRoute<T>(Widget page, {bool fullscreen = false}) {
   return PageRouteBuilder<T>(
@@ -24,27 +23,13 @@ Route<T> xyRoute<T>(Widget page, {bool fullscreen = false}) {
     transitionDuration: PengaturanLokal.animasi ? _durasi : Duration.zero,
     reverseTransitionDuration: PengaturanLokal.animasi ? _durasiBalik : Duration.zero,
     pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, masuk, keluar, child) {
-      final a = CurvedAnimation(
-        parent: masuk,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      );
-      // `keluar` adalah secondaryAnimation: berjalan saat route ini DITUTUPI
-      // route lain — dipakai untuk parallax halaman yang ditinggalkan.
-      final t = CurvedAnimation(
-        parent: keluar,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      );
-      return SlideTransition(
-        position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(a),
-        child: SlideTransition(
-          position: Tween<Offset>(begin: Offset.zero, end: const Offset(-.24, 0)).animate(t),
-          child: child,
-        ),
-      );
-    },
+    transitionsBuilder: (_, masuk, keluar, child) => _geser(
+      masuk: masuk,
+      keluar: keluar,
+      child: child,
+      dari: const Offset(1, 0),
+      parallax: _parallax,
+    ),
   );
 }
 
@@ -54,38 +39,72 @@ Route<T> xyRouteBawah<T>(Widget page) {
     transitionDuration: PengaturanLokal.animasi ? _durasi : Duration.zero,
     reverseTransitionDuration: PengaturanLokal.animasi ? _durasiBalik : Duration.zero,
     pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, a, keluar, child) {
-      final k = CurvedAnimation(parent: a, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-      final t = CurvedAnimation(parent: keluar, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
-      return SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(k),
-        child: SlideTransition(
-          position: Tween<Offset>(begin: Offset.zero, end: const Offset(0, -.06)).animate(t),
-          child: child,
-        ),
-      );
-    },
+    transitionsBuilder: (_, a, keluar, child) => _geser(
+      masuk: a,
+      keluar: keluar,
+      child: child,
+      dari: const Offset(0, 1),
+      parallax: const Offset(0, -.04),
+    ),
   );
 }
 
-/// Transisi alur besar (splash, onboarding, shell): geser naik + settle
-/// skala tipis. Tanpa opacity supaya tidak terasa seperti fade-in.
+/// Transisi alur besar (splash, onboarding, shell): geser naik tipis.
+/// Tanpa scale supaya tidak terasa seperti zoom aneh.
 Route<T> xyRouteBesar<T>(Widget page) {
   return PageRouteBuilder<T>(
-    transitionDuration: PengaturanLokal.animasi ? const Duration(milliseconds: 460) : Duration.zero,
+    transitionDuration: PengaturanLokal.animasi ? const Duration(milliseconds: 280) : Duration.zero,
     reverseTransitionDuration: PengaturanLokal.animasi ? _durasiBalik : Duration.zero,
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (_, a, __, child) {
       final k = CurvedAnimation(parent: a, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
       return SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, .10), end: Offset.zero).animate(k),
-        child: ScaleTransition(
-          scale: Tween<double>(begin: 1.04, end: 1).animate(k),
-          child: child,
-        ),
+        position: Tween<Offset>(begin: const Offset(0, .06), end: Offset.zero).animate(k),
+        child: child,
       );
     },
   );
+}
+
+Widget _geser({
+  required Animation<double> masuk,
+  required Animation<double> keluar,
+  required Widget child,
+  required Offset dari,
+  required Offset parallax,
+}) {
+  final a = CurvedAnimation(parent: masuk, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+  final t = CurvedAnimation(parent: keluar, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+  return SlideTransition(
+    position: Tween<Offset>(begin: dari, end: Offset.zero).animate(a),
+    child: SlideTransition(
+      position: Tween<Offset>(begin: Offset.zero, end: parallax).animate(t),
+      child: child,
+    ),
+  );
+}
+
+/// Dipakai ThemeData.pageTransitionsTheme supaya MaterialPageRoute
+/// tidak memakai Cupertino (di Android terasa "aneh"/melayang).
+class GeserPageTransitionsBuilder extends PageTransitionsBuilder {
+  const GeserPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return _geser(
+      masuk: animation,
+      keluar: secondaryAnimation,
+      child: child,
+      dari: const Offset(1, 0),
+      parallax: _parallax,
+    );
+  }
 }
 
 /// Pergantian isi tab bawah: geser mikro vertikal, tanpa fade, supaya
@@ -97,11 +116,11 @@ class TukarHalus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedSwitcher(
-        duration: PengaturanLokal.animasi ? const Duration(milliseconds: 220) : Duration.zero,
+        duration: PengaturanLokal.animasi ? const Duration(milliseconds: 160) : Duration.zero,
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         transitionBuilder: (anak, a) => SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, .015), end: Offset.zero).animate(a),
+          position: Tween<Offset>(begin: const Offset(0, .01), end: Offset.zero).animate(a),
           child: anak,
         ),
         child: KeyedSubtree(key: kunci, child: child),

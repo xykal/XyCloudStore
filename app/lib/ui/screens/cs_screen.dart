@@ -747,13 +747,8 @@ class _TombolKirim extends StatelessWidget {
         onTap: sending ? null : onKirim,
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: sending
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2.2, color: Colors.white))
-              : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+          child: Icon(Icons.send_rounded,
+              color: Colors.white.withOpacity(sending ? .4 : 1), size: 20),
         ),
       ),
     );
@@ -1299,13 +1294,6 @@ Widget _MediaGambar(BuildContext context, ChatMessage msg) {
               width: 210,
               height: 150,
               color: XyTheme.of(context).lineSoft,
-              child: const Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2.2),
-                ),
-              ),
             ),
     );
   }
