@@ -82,3 +82,22 @@ GOOGLE_CLIENT_ID_ANDROID = "495336144977-1b3k66ngo4nhjf6kuetcl5j1vosfgbg4.apps.g
 [triggers]
 # Watchdog livestream tiap menit; pemeliharaan umum tetap hanya tiap jam.
 crons = ["* * * * *", "0 * * * *"]
+
+# --- Smart Placement --------------------------------------------------------
+# D1 produksi terverifikasi berjalan di region WNAM (Amerika Utara Barat,
+# via API Cloudflare 2026-09-20) sementara mayoritas pengguna di Indonesia.
+# Tanpa Smart Placement SETIAP query D1 menempuh ~1 round-trip transpacific
+# (ukur: ~30 ms dari colo AS Barat). Mode "smart" menjalankan Worker dekat
+# D1: 4-5 hop panjang per request menjadi 1 hop panjang + hop lokal.
+[placement]
+mode = "smart"
+
+# --- Rate limit global per IP di tepi (tanpa menulis D1 per request) --------
+# Penghitung 180 req/60 dtk per IP pindah dari D1 (1 INSERT..ON CONFLICT per
+# request /api/*) ke binding Rate Limiting Cloudflare: dihitung di lokasi
+# edge, hampir tanpa latensi, tidak menyentuh D1. Kode: gerbang global-ip di
+# src/index.js (fallback otomatis ke jalur D1 bila binding tidak ada).
+[[ratelimits]]
+name = "RL_GLOBAL_IP"
+namespace_id = "1001"
+simple = { limit = 180, period = 60 }

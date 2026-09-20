@@ -24,7 +24,7 @@ test('Integrasi D1: rename, thread, stiker+teks, promo, GIPHY belum aktif, hapus
   const out=await build({entryPoints:['src/index.js'],bundle:true,format:'esm',target:'es2022',platform:'browser',loader:{'.html':'text','.png':'binary'},write:false});
   const secret='test-only-signing-key-never-production';
   const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:out.outputFiles[0].text,compatibilityDate:'2025-01-01',
-    d1Databases:['DB'],durableObjects:{HUB:'RealtimeHub'},bindings:{...cloud,JWT_SECRET:secret,ADMIN_KEY:'test-only-admin',PUBLIC_URL:'https://api.example.test'}}));
+    d1Databases:['DB'],durableObjects:{HUB:'RealtimeHub'},bindings:{...cloud,JWT_SECRET:secret,ADMIN_KEY:'test-only-admin',PUBLIC_URL:'https://api.example.test',XY_CACHE_MATI:'1'}}));
   try{
     const db=await mf.getD1Database('DB');
     const sql=JSON.parse(execFileSync('python3',['-c',`import sqlite3,json\ns=open('schema.sql').read();a=[];b=''\nfor c in s:\n b+=c\n if c==';' and sqlite3.complete_statement(b):a.append(b);b=''\nprint(json.dumps(a))`],{encoding:'utf8'}));

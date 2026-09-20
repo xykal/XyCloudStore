@@ -59,7 +59,7 @@ import { kirimEmail } from './mail.js';
 import { kirimPush, kirimPushBanyak, siarkanPush } from './push.js';
 import { unggahGambar, unggahAudio, unggahVideoBanner, unggahVideoKeAnimasi, imporFotoSosial, samarkanGambar, samarkanKMedia, samarkanBannerMedia, layaniGambar, layaniMedia } from './upload.js';
 import { penyediaBayar, metodeTersedia, infoKonfigurasiPembayaran, buatTagihan, bacaPemberitahuan, cekStatusPenyedia, batalkanTagihan } from './bayar.js';
-import { setelan, simpanSetelan, jalankanPemeliharaan, statistikLengkap, catatLog, pantauKesehatan } from './sistem.js';
+import { setelan, setelanCepat, simpanSetelan, jalankanPemeliharaan, statistikLengkap, catatLog, pantauKesehatan } from './sistem.js';
 import { TIER, diskonTier, segarkanTier, cekVoucher, pakaiVoucher, pakaiVoucherStrict, buatCadangan } from './loyal.js';
 import { halamanLegal, isiLegal } from './legal.js';
 import { SKEMA_APLIKASI, providerSiap, urlMulai, ambilProfil, halamanKembali, verifikasiIdTokenGoogle, diagnostikFacebook, verifikasiSignedRequestFacebook } from './oauth.js';
@@ -142,6 +142,29 @@ const err = (message, status = 400, env, code = null) =>
       'Content-Type': 'application/json',
     },
   });
+
+// Cache baca-saja di Cache API per lokasi Cloudflare untuk katalog publik
+// yang jarang berubah (plans/banners/produk/promosi). Hanya body JSON yang
+// disimpan; header respons (CORS dsb) tetap dibangun ulang oleh json() pada
+// setiap permintaan. TTL singkat: perubahan katalog admin paling lambat
+// terlihat setelah TTL. Di uji (harness) cache dimatikan lewat binding
+// XY_CACHE_MATI supaya penulisan langsung ke DB uji tetap terbaca.
+async function dataTepi(ctx, env, kunci, ttlDetik, buat) {
+  try {
+    if ((env && env.XY_CACHE_MATI) || !ctx || typeof caches === 'undefined'
+        || typeof caches.default?.match !== 'function') return buat();
+    const kunciCache = new Request(`https://cache.xyinternal/__katalog/${kunci}`);
+    const kena = await caches.default.match(kunciCache);
+    if (kena) return await kena.json();
+    const data = await buat();
+    ctx.waitUntil(caches.default.put(kunciCache, new Response(JSON.stringify(data), {
+      headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${ttlDetik}` },
+    })));
+    return data;
+  } catch (_) {
+    return buat();
+  }
+}
 
 /** Validasi payload editor HUD sebelum boleh masuk galeri komunitas. */
 function validasiDataHud(mentah) {
@@ -282,9 +305,10 @@ async function bebasPemeliharaan(env, req) {
 }
 
 async function tertutupPemeliharaan(env, req) {
-  const mode = await setelan(env, 'mode_pemeliharaan', '0');
+  // Jalur panas: dibaca tiap request, pakai cache memori singkat (15 dtk).
+  const mode = await setelanCepat(env, 'mode_pemeliharaan', '0');
   if (mode !== '1') return false;
-  const cakupan = (await setelan(env, 'pemeliharaan_cakupan', 'semua')) || 'semua';
+  const cakupan = (await setelanCepat(env, 'pemeliharaan_cakupan', 'semua')) || 'semua';
   const plat = deteksiPlatform(req);
   let kena = false;
   if (cakupan === 'semua') kena = true;
@@ -944,9 +968,20 @@ async function auth(req, env) {
   const h=req.headers.get('Authorization')||'';
   const session=await verify(h.replace('Bearer ',''),env.JWT_SECRET);
   if(!session)return null;
+  // Dua pemeriksaan sesi (users + security_devices) jadi SATU round-trip D1
+  // lewat batch — fungsi ini jalan di setiap request terautentikasi.
+  if(session.dv){
+    const [u,d]=await env.DB.batch([
+      env.DB.prepare('SELECT session_version,deleted_at FROM users WHERE id=?').bind(session.sub),
+      env.DB.prepare('SELECT blocked FROM security_devices WHERE id=?').bind(session.dv),
+    ]);
+    const user=u?.results?.[0];
+    if(!user||user.deleted_at||Number(user.session_version)!==Number(session.sv||0))return null;
+    if(d?.results?.[0]?.blocked)return null;
+    return session;
+  }
   const u=await env.DB.prepare('SELECT session_version,deleted_at FROM users WHERE id=?').bind(session.sub).first();
   if(!u||u.deleted_at||Number(u.session_version)!==Number(session.sv||0))return null;
-  if(session.dv){const d=await env.DB.prepare('SELECT blocked FROM security_devices WHERE id=?').bind(session.dv).first();if(d?.blocked)return null;}
   return session;
 }
 async function issueUserToken(env,u,deviceId=null){
@@ -2020,8 +2055,8 @@ export default {
       // Mode pemeliharaan khusus situs: tampilkan halaman perawatan yang jelas,
       // bukan web.html yang gagal memuat data. Berkas /brand/ tetap boleh dimuat
       // sehingga ilustrasi (WebP ringan) tampil cepat.
-      const maintWeb = (await setelan(env, 'mode_pemeliharaan', '0')) === '1';
-      const cakupanM = maintWeb ? ((await setelan(env, 'pemeliharaan_cakupan', 'semua')) || 'semua') : 'semua';
+      const maintWeb = (await setelanCepat(env, 'mode_pemeliharaan', '0')) === '1';
+      const cakupanM = maintWeb ? ((await setelanCepat(env, 'pemeliharaan_cakupan', 'semua')) || 'semua') : 'semua';
       let kenaHalaman = false;
       if (maintWeb && cakupanM === 'halaman') {
         let daftar = [];
@@ -2548,13 +2583,23 @@ ${halaman.map(([u, p2, f]) => `  <url>
     if (!path.startsWith('/api/')) return err('Not found', 404, env);
     const p = path.slice(5);
     const ip = req.headers.get('CF-Connecting-IP') || 'tanpa-ip';
-    // v3.3 global IP rate-limit: 180 req / 60s (D1 atomic)
+    // v3.3 global IP rate-limit: 180 req / 60s. Penghitung pindah ke binding
+    // Rate Limiting Cloudflare: dihitung di lokasi edge tempat Worker jalan,
+    // tanpa MENULIS D1 untuk setiap request (dulu 1 INSERT..ON CONFLICT ke D1
+    // per request /api/*). Bila binding belum terpasang (uji/deploy lama),
+    // pakai jalur D1 atomik yang lama. Sifat per-colo: penyerang terdistribusi
+    // tetap ditangani lapisan WAF/Cloudflare di depan.
     if (!p.startsWith('admin/') && !p.startsWith('agen/') && !p.startsWith('bayar/webhook/')) {
       try {
-        const ok = await securitySlot(env, 'global-ip', `ip:${ip}`, 180, 60);
+        let ok;
+        if (env.RL_GLOBAL_IP && typeof env.RL_GLOBAL_IP.limit === 'function') {
+          ok = (await env.RL_GLOBAL_IP.limit({ key: `global-ip:${ip}` })).success;
+        } else {
+          ok = await securitySlot(env, 'global-ip', `ip:${ip}`, 180, 60);
+        }
         if (!ok) return err('Terlalu banyak permintaan, tunggu sebentar.', 429, env);
       } catch (_) {
-        // fail-open kalau D1 batas bermasalah, tapi log
+        // fail-open kalau pembatas bermasalah, tapi log
       }
     }
 
@@ -2866,7 +2911,7 @@ ${halaman.map(([u, p2, f]) => `  <url>
         return err('Endpoint agen tidak dikenal', 404, env);
       }
 
-      if (p === 'promosi' && req.method === 'GET') return json(await daftarPromosi(env), 200, env);
+      if (p === 'promosi' && req.method === 'GET') return json(await dataTepi(ctx, env, 'promosi' + url.search, 30, () => daftarPromosi(env)), 200, env);
 
       // ---------------- FORUM KOMUNITAS (baca boleh tanpa login) ----------------
       if (p === 'forum' && req.method === 'GET') {
@@ -3482,8 +3527,11 @@ async function statistikPublik(env) {
       }
 
       if (p === 'pc/plans' && req.method === 'GET') {
-        const { results } = await env.DB.prepare('SELECT * FROM pc_plans').all();
-        return json(results.map(r=>({...r,gambar:samarkanGambar(env,r.gambar,'m')})),200,env);
+        const daftarPlan = await dataTepi(ctx, env, 'pc-plans' + url.search, 30, async () => {
+          const { results } = await env.DB.prepare('SELECT * FROM pc_plans').all();
+          return results.map(r=>({...r,gambar:samarkanGambar(env,r.gambar,'m')}));
+        });
+        return json(daftarPlan,200,env);
       }
 
       // Batch J: agen live per plan — spek PC host terdeteksi otomatis oleh
@@ -3506,9 +3554,12 @@ async function statistikPublik(env) {
       }
 
       if (p === 'banners' && req.method === 'GET') {
-        const { results } = await env.DB
-          .prepare('SELECT * FROM banners WHERE aktif = 1 ORDER BY urutan ASC').all();
-        return json(results.map(r=>({...r,gambar:samarkanGambar(env,r.gambar,'m')})),200,env);
+        const daftarBanner = await dataTepi(ctx, env, 'banners' + url.search, 30, async () => {
+          const { results } = await env.DB
+            .prepare('SELECT * FROM banners WHERE aktif = 1 ORDER BY urutan ASC').all();
+          return results.map(r=>({...r,gambar:samarkanGambar(env,r.gambar,'m')}));
+        });
+        return json(daftarBanner,200,env);
       }
 
       // ================= ADMIN =================
@@ -5674,13 +5725,16 @@ async function statistikPublik(env) {
       }
 
       if (p === 'akun/produk' && req.method === 'GET') {
-        const { results } = await env.DB.prepare('SELECT * FROM akun_produk').all();
-        return json(
-          results.map((r) => ({
+        const daftarProduk = await dataTepi(ctx, env, 'akun-produk' + url.search, 30, async () => {
+          const { results } = await env.DB.prepare('SELECT * FROM akun_produk').all();
+          return results.map((r) => ({
             ...r,
             fitur: JSON.parse(r.fitur || '[]'),
             gambar: samarkanGambar(env, r.gambar, 'm'),
-          })),
+          }));
+        });
+        return json(
+          daftarProduk,
           200,
           env,
         );

@@ -19,12 +19,36 @@ export async function setelan(env, kunci, bawaan = null) {
   }
 }
 
+// Cache setelan di memori isolate untuk kunci jalur panas (mis. mode
+// pemeliharaan dibaca pada SETIAP request /api/*): menghemat satu round-trip
+// D1 per request. simpanSetelan() menghapus cache di isolate ini; isolate lain
+// paling lambat segar kembali setelah TTL. Di uji (harness) cache dimatikan
+// lewat binding XY_CACHE_MATI supaya penulisan langsung ke DB uji tetap terbaca.
+const _cacheSetelan = new Map();
+const SETELAN_TTL_MS = 15000;
+
+/** setelan() dengan cache memori singkat — hanya untuk kunci jalur panas. */
+export async function setelanCepat(env, kunci, bawaan = null) {
+  if (env && env.XY_CACHE_MATI) return setelan(env, kunci, bawaan);
+  const hit = _cacheSetelan.get(kunci);
+  if (hit && hit.sampai > Date.now()) return hit.nilai;
+  const nilai = await setelan(env, kunci, bawaan);
+  _cacheSetelan.set(kunci, { nilai, sampai: Date.now() + SETELAN_TTL_MS });
+  return nilai;
+}
+
+/** Hapus cache setelan untuk kunci tertentu (dipanggil simpanSetelan). */
+export function lupakanSetelan(kunci) {
+  _cacheSetelan.delete(kunci);
+}
+
 /** Simpan satu setelan sistem. */
 export async function simpanSetelan(env, kunci, nilai) {
   await env.DB.prepare(
     `INSERT INTO setelan (kunci,nilai,diperbarui) VALUES (?,?,?)
      ON CONFLICT(kunci) DO UPDATE SET nilai=excluded.nilai, diperbarui=excluded.diperbarui`
   ).bind(kunci, String(nilai), new Date().toISOString()).run();
+  lupakanSetelan(kunci);
 }
 
 export async function catatLog(env, jenis, pesan) {

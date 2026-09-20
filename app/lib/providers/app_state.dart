@@ -241,8 +241,11 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       if (t == null || t.isEmpty) return;
       _repo.pasangToken(t);
       user = await _repo.profilSaya();
-      await sinkronAtribusiReferral();
-      await muatSemua();
+      // Sinkron referral bukan prasyarat layar utama: jalankan bareng
+      // muatSemua supaya boot hemat ~1 round-trip server (dulu berurutan).
+      final muatan = muatSemua();
+      unawaited(sinkronAtribusiReferral());
+      await muatan;
       _mulaiRealtime();
       _daftarkanPush();
       unawaited(muatNotifikasi());
@@ -1884,12 +1887,21 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _muatDariCache() async {
     try {
-      final p = await Cache.daftar('plans');
-      final pr = await Cache.daftar('produk');
-      final bn = await Cache.daftar('banners');
-      final od = await Cache.daftar('orders_${user?.id}');
-      final tr = await Cache.daftar('transaksi_${user?.id}');
-      final ch = await Cache.daftar('chat_${user?.id}');
+      // Enam singgahan dibaca sekaligus (dulu berurutan satu per satu).
+      final en = await Future.wait<List<dynamic>>([
+        Cache.daftar('plans'),
+        Cache.daftar('produk'),
+        Cache.daftar('banners'),
+        Cache.daftar('orders_${user?.id}'),
+        Cache.daftar('transaksi_${user?.id}'),
+        Cache.daftar('chat_${user?.id}'),
+      ]);
+      final p = en[0];
+      final pr = en[1];
+      final bn = en[2];
+      final od = en[3];
+      final tr = en[4];
+      final ch = en[5];
       if (p.isEmpty && pr.isEmpty && ch.isEmpty) return;
 
       if (p.isNotEmpty) plans = p.map((e) => PcPlan.fromJson(Map<String, dynamic>.from(e))).toList();
