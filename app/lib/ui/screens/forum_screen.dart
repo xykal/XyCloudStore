@@ -840,26 +840,24 @@ class _ForumDetailScreenState extends State<ForumDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _bukaCacheLaluMuat();
+    unawaited(_bukaCache());
+    unawaited(_muat(diam: true));
   }
 
-  Future<void> _bukaCacheLaluMuat() async {
+  Future<void> _bukaCache() async {
     try {
       final lama = await Cache.daftar('forum_komen_${widget.post.id}');
-      if (lama.isNotEmpty && mounted) {
-        final parsed = lama
-            .whereType<Map>()
-            .map((e) => ForumBalasan.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
-        if (parsed.isNotEmpty && mounted) {
-          setState(() {
-            _balasan = parsed;
-            _memuat = false;
-          });
-        }
-      }
+      if (!mounted || lama.isEmpty || _balasan.isNotEmpty) return;
+      final parsed = lama
+          .whereType<Map>()
+          .map((e) => ForumBalasan.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      if (parsed.isEmpty || !mounted || _balasan.isNotEmpty) return;
+      setState(() {
+        _balasan = parsed;
+        _memuat = false;
+      });
     } catch (_) {}
-    if (mounted) await _muat(diam: _balasan.isNotEmpty);
   }
 
   @override
