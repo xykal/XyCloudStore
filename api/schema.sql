@@ -183,7 +183,7 @@ CREATE TABLE admin_kunci (id TEXT PRIMARY KEY, nama TEXT NOT NULL, kunci TEXT NO
 --  agen
 -- ------------------------------------------------------------
 DROP TABLE IF EXISTS agen;
-CREATE TABLE agen (id TEXT PRIMARY KEY, nama TEXT NOT NULL, kode TEXT NOT NULL UNIQUE, plan_id TEXT, host TEXT, spec TEXT, status TEXT NOT NULL DEFAULT 'offline', sesi_aktif TEXT, versi TEXT, terakhir TEXT, dibuat TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE TABLE agen (id TEXT PRIMARY KEY, nama TEXT NOT NULL, kode TEXT NOT NULL UNIQUE, plan_id TEXT, host TEXT, spec TEXT, status TEXT NOT NULL DEFAULT 'offline', sesi_aktif TEXT, versi TEXT, terakhir TEXT, host_lan TEXT, dibuat TEXT NOT NULL DEFAULT (datetime('now')));
 
 -- ------------------------------------------------------------
 --  batas

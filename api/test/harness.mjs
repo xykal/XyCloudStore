@@ -60,7 +60,7 @@ export async function harness(bindings={}){
  const secret=RAHASIA_UJI;
  // Miniflare 5 memakai skema worker baru. Konverter resmi mempertahankan
  // harness V4 yang sederhana sambil tetap menggunakan runtime terbaru/aman.
- const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:code.outputFiles[0].text,compatibilityDate:'2025-01-01',d1Databases:['DB'],durableObjects:{HUB:'RealtimeHub'},bindings:{JWT_SECRET:secret,ADMIN_KEY:'test-admin',EMAIL_ADMIN:'owner@example.invalid',...bindings}}));
+ const mf=new Miniflare(convertV4MiniflareOptions({modules:true,script:code.outputFiles[0].text,compatibilityDate:'2025-01-01',d1Databases:['DB'],durableObjects:{HUB:'RealtimeHub'},bindings:{JWT_SECRET:secret,ADMIN_KEY:'test-admin',EMAIL_ADMIN:'owner@example.invalid',XY_CACHE_MATI:'1',...bindings}}));
  const db=await mf.getD1Database('DB');
  await terapkanSkema(db);
  const token=(id,extra={})=>tokenUji(id,extra,secret);
