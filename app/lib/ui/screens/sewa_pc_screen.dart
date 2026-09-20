@@ -7,6 +7,7 @@ import '../../models/models.dart';
 import '../../providers/app_state.dart';
 import '../widgets/common.dart';
 import 'checkout_sewa_screen.dart';
+import 'cloudgime_screen.dart';
 
 class SewaPcScreen extends StatefulWidget {
   const SewaPcScreen({super.key, this.fokusId});

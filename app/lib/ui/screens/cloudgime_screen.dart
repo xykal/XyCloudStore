@@ -24,7 +24,6 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
   CloudGimeService? _svc;
   CloudGimeStatus? _status;
   String? _galat;
-  bool _menyegarkan = false;
   bool _pernahCoba = false;
 
   final _idC = TextEditingController();
