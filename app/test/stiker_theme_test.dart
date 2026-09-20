@@ -64,9 +64,11 @@ void main() {
     expect(b.stiker!.dariGiphy, true);
   });
   test('Tema terang sungguhan, bukan gelap disamarkan', () {
-    expect(XyTheme.light().brightness, Brightness.light);
-    expect(XyTheme.light().scaffoldBackgroundColor, Colors.transparent);
-    expect(XyTheme.gelap().brightness, Brightness.dark);
+    // Jangan panggil XyTheme.light()/gelap() di unit test: GoogleFonts
+    // mencoba unduh Inter dan CI tidak punya jaringan font.
+    expect(XyTheme.bg, isNot(XyTheme.bgGelap));
+    expect(XyTheme.surface, Colors.white);
+    expect(XyTheme.ink, isNot(XyTheme.inkGelap));
     expect(const XyPalette(false).bg, XyTheme.bg);
     expect(const XyPalette(true).bg, const Color(0xFF0A0A0A));
     expect(const XyPalette(false).ink, XyTheme.ink);
