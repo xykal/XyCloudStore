@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/motion.dart';
 import '../../core/pengaturan.dart';
 import '../../core/theme.dart';
 import '../../data/native_stream.dart';
@@ -109,6 +110,30 @@ class _OpsiStreamingScreenState extends State<OpsiStreamingScreen> {
               subtitle: const Text(
                   'Pakai IP LAN lebih dulu bila HP dan PC berada di Wi-Fi/router yang sama; host publik tetap menjadi cadangan.'),
               onChanged: (v) => _set('preferLan', v)),
+          SwitchListTile(
+              value: p['keepScreenOn'] != false,
+              secondary: const Icon(Icons.stay_current_landscape_rounded,
+                  color: XyTheme.primary),
+              title: const Text('Layar tetap nyala'),
+              subtitle: const Text(
+                  'Cegah HP tidur saat sesi streaming PC. Host tetap mengirim video.'),
+              onChanged: (v) => _set('keepScreenOn', v)),
+          SwitchListTile(
+              value: p['lockLandscape'] != false,
+              secondary: const Icon(Icons.screen_lock_landscape_rounded,
+                  color: XyTheme.primary),
+              title: const Text('Kunci landscape'),
+              subtitle: const Text(
+                  'Kunci orientasi horizontal selama sesi PC agar HUD dan sentuhan tidak terbalik.'),
+              onChanged: (v) => _set('lockLandscape', v)),
+          SwitchListTile(
+              value: p['hematSeluler'] == true,
+              secondary: const Icon(Icons.network_cell_rounded,
+                  color: XyTheme.primary),
+              title: const Text('Hemat data seluler'),
+              subtitle: const Text(
+                  'Turunkan resolusi, FPS, dan bitrate saat opsi ini aktif — cocok di kuota HP.'),
+              onChanged: (v) => _set('hematSeluler', v)),
           const Divider(height: 20),
           SwitchListTile(
               value: p['kontrolBawaan'] == true,
@@ -130,8 +155,7 @@ class _OpsiStreamingScreenState extends State<OpsiStreamingScreen> {
                   'Buka editor landscape, tambah/geser/ubah ukuran tombol, simpan lokal, atau bagikan ke komunitas.'),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const HudPresetScreen()))),
+                  context, xyRoute(const HudPresetScreen()))),
           const Divider(height: 18),
           _pilih('Resolusi', 'resolution', {
             '854x480': '480p · ringan',

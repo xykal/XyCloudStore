@@ -512,6 +512,16 @@ class _SesiScreenState extends State<SesiScreen> {
       if (otomatis && options['adaptiveStreaming'] != false) {
         options['adaptiveRecovery'] = _reconnectAttempt;
       }
+      if (options['hematSeluler'] == true) {
+        final br = (options['bitrate'] as num?)?.toInt() ?? 10000;
+        options['bitrate'] = br > 6000 ? 6000 : br;
+        final fps = (options['fps'] as num?)?.toInt() ?? 60;
+        options['fps'] = fps > 30 ? 30 : fps;
+        final res = '${options['resolution'] ?? ''}';
+        if (res.contains('2160') || res.contains('1440') || res.contains('1920')) {
+          options['resolution'] = '1280x720';
+        }
+      }
       await NativeStream.mulai(_appId!, options);
     } catch (e) {
       if (!mounted) return;
@@ -593,10 +603,8 @@ class _SesiScreenState extends State<SesiScreen> {
         appBar: AppBar(title: const Text('Sesi PC'), actions: [
           IconButton(
               tooltip: 'Pengaturan streaming',
-              onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const OpsiStreamingScreen())),
+              onPressed: () =>
+                  Navigator.push(context, xyRoute(const OpsiStreamingScreen())),
               icon: const Icon(Icons.tune_rounded))
         ]),
         body: ListView(padding: const EdgeInsets.all(20), children: [

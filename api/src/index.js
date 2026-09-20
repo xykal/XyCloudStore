@@ -3371,33 +3371,15 @@ async function statistikPublik(env) {
           }
         }
 
-        // Deteksi login di perangkat baru / IP atau IMEI berbeda untuk akun yang sama
-        let deviceBaru = false;
-        if (deviceId && u.email_verified) {
-          const perangkatDikenal = await env.DB.prepare(
-            'SELECT 1 FROM security_device_users WHERE device_id = ? AND user_id = ?'
-          ).bind(deviceId, u.id).first();
-
-          if (!perangkatDikenal) {
-            const punyaPerangkatLain = await env.DB.prepare(
-              'SELECT 1 FROM security_device_users WHERE user_id = ? LIMIT 1'
-            ).bind(u.id).first();
-            if (punyaPerangkatLain || (u.registration_device && u.registration_device !== deviceId)) {
-              deviceBaru = true;
-            }
-          }
-        }
-
-        if ((!u.email_verified || deviceBaru) && !u.diblokir) {
+        // OTP hanya untuk aktivasi akun baru (email belum diverifikasi) atau
+        // alur reset password. Login di perangkat baru / reinstall cukup password.
+        if (!u.email_verified && !u.diblokir) {
           ctx.waitUntil(kirimOtp(env, { email: u.email, nama: u.nama, tipe: 'verifikasi' }));
           return json({
             perluVerifikasi: true,
-            deviceBaru: !!deviceBaru,
             email: u.email,
             nama: u.nama,
-            pesan: deviceBaru
-              ? 'Login di perangkat baru terdeteksi. Demi keamanan akun, masukkan kode verifikasi OTP yang dikirim ke email kamu.'
-              : 'Email belum diverifikasi. Periksa kode terakhir atau gunakan Kirim Ulang setelah jeda.'
+            pesan: 'Email belum diverifikasi. Masukkan kode dari email, atau kirim ulang setelah jeda.'
           }, 200, env);
         }
 
@@ -3517,6 +3499,9 @@ async function statistikPublik(env) {
         const u = await env.DB.prepare('SELECT nama, email_verified FROM users WHERE lower(email) = ?')
           .bind(email).first();
         if (!u) return err('Email belum terdaftar', 404, env);
+        if (tipe === 'verifikasi' && u.email_verified) {
+          return err('Email sudah terverifikasi. Masuk dengan password.', 409, env);
+        }
         const hasil = await kirimOtp(env, { email, nama: u.nama, tipe });
         if (!hasil.ok) return err('Gagal mengirim email: ' + hasil.alasan, 502, env);
         return json({ ok: true, pesan: `Kode baru dikirim ke ${email}` }, 200, env);

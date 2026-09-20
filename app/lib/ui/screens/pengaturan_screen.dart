@@ -76,7 +76,7 @@ class PengaturanScreen extends StatelessWidget {
             tujuan: const TemaScreen(),
           ),
           XyBarisMenu(ikon:Icons.text_fields_rounded,judul:'Teks & Gerakan',sub:'Ukuran teks dan animasi halaman',tujuan:const OpsiTampilanScreen()),
-          XyBarisMenu(ikon:Icons.sports_esports_rounded,judul:'Streaming & Kontrol',sub:'Resolusi, FPS, bitrate, gamepad, dan keyboard',tujuan:const OpsiStreamingScreen()),
+          XyBarisMenu(ikon:Icons.sports_esports_rounded,judul:'Streaming & Kontrol',sub:'Resolusi, FPS, hemat seluler, landscape, HUD',tujuan:const OpsiStreamingScreen()),
           const _Judul('Aplikasi'),
           XyBarisMenu(
             ikon: Icons.chat_bubble_outline_rounded,

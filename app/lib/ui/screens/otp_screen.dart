@@ -160,47 +160,71 @@ class _OtpScreenState extends State<OtpScreen> {
               const SizedBox(height: 8),
               Text.rich(
                 TextSpan(children: [
-                  const TextSpan(text: 'Kami mengirim kode 6 digit ke '),
+                  TextSpan(
+                      text: _reset
+                          ? 'Kode reset 6 digit dikirim ke '
+                          : 'Kode aktivasi 6 digit dikirim ke '),
                   TextSpan(
                     text: widget.email,
                     style: const TextStyle(fontWeight: FontWeight.w700, color: XyTheme.primary),
                   ),
-                  const TextSpan(text: '. Kode berlaku 15 menit.'),
+                  const TextSpan(
+                      text:
+                          '. Berlaku 15 menit. Login biasa cukup password — uninstall aplikasi tidak meminta kode lagi.'),
                 ]),
-                style:  TextStyle(color: XyTheme.of(context).muted, fontSize: 13.8, height: 1.6),
+                style: TextStyle(color: XyTheme.of(context).muted, fontSize: 13.8, height: 1.6),
               ),
 
               const SizedBox(height: 26),
 
-              // ---- kotak kode ----
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (i) {
-                  return SizedBox(
-                    width: 48,
-                    child: TextField(
-                      controller: _kotak[i],
-                      focusNode: _fokus[i],
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      maxLength: 1,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: 0),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        counterText: '',
-                        contentPadding: EdgeInsets.symmetric(vertical: 16),
+              LayoutBuilder(builder: (context, c) {
+                final t = XyTheme.of(context);
+                final gap = 6.0;
+                final size = ((c.maxWidth - gap * 5) / 6).clamp(40.0, 52.0);
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(6, (i) {
+                    final fokus = _fokus[i].hasFocus;
+                    return Padding(
+                      padding: EdgeInsets.only(left: i == 0 ? 0 : gap),
+                      child: SizedBox(
+                        width: size,
+                        height: size,
+                        child: TextField(
+                          controller: _kotak[i],
+                          focusNode: _fokus[i],
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          maxLength: 1,
+                          style: TextStyle(
+                            fontSize: size * .42,
+                            fontWeight: FontWeight.w800,
+                            color: t.ink,
+                            height: 1,
+                          ),
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          decoration: InputDecoration(
+                            counterText: '',
+                            filled: true,
+                            fillColor: t.surface,
+                            contentPadding: EdgeInsets.zero,
+                            border: XyRadius.input(fokus ? XyTheme.primary : t.line),
+                            enabledBorder: XyRadius.input(t.line),
+                            focusedBorder: XyRadius.input(XyTheme.primary, lebar: 1.6),
+                          ),
+                          onChanged: (v) {
+                            if (v.length > 1) return _isiDariTempel(v);
+                            if (v.isNotEmpty && i < 5) _fokus[i + 1].requestFocus();
+                            if (v.isEmpty && i > 0) _fokus[i - 1].requestFocus();
+                            setState(() {});
+                            if (_kode.length == 6 && !_reset) _kirim();
+                          },
+                        ),
                       ),
-                      onChanged: (v) {
-                        if (v.length > 1) return _isiDariTempel(v);
-                        if (v.isNotEmpty && i < 5) _fokus[i + 1].requestFocus();
-                        if (v.isEmpty && i > 0) _fokus[i - 1].requestFocus();
-                        setState(() {});
-                        if (_kode.length == 6 && !_reset) _kirim();
-                      },
-                    ),
-                  );
-                }),
-              ),
+                    );
+                  }),
+                );
+              }),
 
               if (_reset) ...[
                 const SizedBox(height: 22),

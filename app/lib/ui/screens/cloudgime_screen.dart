@@ -35,6 +35,9 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
   String? _galatBooking;
   bool _cekBooking = false;
   Timer? _poll;
+  Timer? _pollStatus;
+  Timer? _detik;
+  DateTime? _diterima;
 
   @override
   void didChangeDependencies() {
@@ -59,6 +62,8 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
     }
     await _muat();
     if (simpan != null) await _cek(dariPoll: false);
+    _mulaiDetik();
+    _mulaiPollStatus();
   }
 
   Future<void> _muat() async {
@@ -71,6 +76,7 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
         _status = s;
         _galat = null;
         _pernahCoba = true;
+        _diterima = DateTime.now();
       });
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -92,6 +98,26 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
     _poll = null;
     if (!nyala) return;
     _poll = Timer.periodic(const Duration(seconds: 20), (_) => _cek(dariPoll: true));
+  }
+
+  void _mulaiDetik() {
+    _detik?.cancel();
+    _detik = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _mulaiPollStatus() {
+    _pollStatus?.cancel();
+    _pollStatus = Timer.periodic(const Duration(seconds: 15), (_) => _muat());
+  }
+
+  DateTime _sekarangMitra() {
+    final s = _status?.serverTime;
+    if (s != null && _diterima != null) {
+      return s.add(DateTime.now().difference(_diterima!));
+    }
+    return DateTime.now();
   }
 
   Future<void> _cek({bool dariPoll = false}) async {
@@ -166,6 +192,8 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
   @override
   void dispose() {
     _poll?.cancel();
+    _pollStatus?.cancel();
+    _detik?.cancel();
     _idC.dispose();
     _tokenC.dispose();
     super.dispose();
@@ -176,10 +204,23 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
     final t = XyTheme.of(context);
     final pcs = _status?.pcs ?? [];
     final jadwal = _status?.jadwal ?? [];
+    final now = _sekarangMitra();
     return Scaffold(
       appBar: AppBar(
         title: const Text('CloudGime', style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: -.4)),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(jamWib(now, detik: true),
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, letterSpacing: -.2)),
+                Text('WIB mitra', style: TextStyle(color: t.muted, fontSize: 10, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
           IconButton(
             tooltip: 'Buka situs CloudGime',
             onPressed: _bukaWeb,
@@ -195,7 +236,7 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
           children: [
             Text(
-              'PC fisik mitra — nama pemesan dan jam main dari jadwal CloudGime.',
+              'PC fisik mitra. Jam di bawah selalu WIB. Booking dari aplikasi ini langsung masuk antrian web CloudGime — admin mitra yang menyetujui, lalu status di sini dan di web ikut berubah.',
               style: TextStyle(color: t.muted, fontSize: 12.5, height: 1.45),
             ),
             if (_status?.maintenance == true) ...[
@@ -206,7 +247,7 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
               ),
             ],
-            const SectionHeader('Status PC', sub: 'Diperbarui sekitar 20 detik', top: 18),
+            const SectionHeader('Status PC', sub: 'Jam sisa dihitung live · status tiap 15 detik', top: 18),
             if (pcs.isEmpty && !_pernahCoba)
               const TeksMemuat(teks: 'Menyegarkan status PC…')
             else if (pcs.isEmpty)
@@ -225,14 +266,14 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
                 ),
               ...pcs.map((pc) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _KartuPc(pc: pc),
+                    child: _KartuPc(pc: pc, sekarang: now),
                   )),
             ],
             if (jadwal.isNotEmpty) ...[
-              const SectionHeader('Yang booking', sub: 'Nama dan jam main (WIB)', top: 18),
+              const SectionHeader('Yang booking', sub: 'Waktu kiri · nama · PC (WIB)', top: 18),
               ...jadwal.map((j) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: _KartuJadwal(item: j),
+                    child: _KartuJadwal(item: j, sekarang: now),
                   )),
             ],
             const SizedBox(height: 8),
@@ -299,8 +340,9 @@ class _CloudGimeScreenState extends State<CloudGimeScreen> {
 }
 
 class _KartuPc extends StatelessWidget {
-  const _KartuPc({required this.pc});
+  const _KartuPc({required this.pc, required this.sekarang});
   final CloudGimePc pc;
+  final DateTime sekarang;
 
   @override
   Widget build(BuildContext context) {
@@ -311,9 +353,17 @@ class _KartuPc extends StatelessWidget {
       'maintenance' => ('Perawatan', XyTheme.violet),
       _ => ('Nonaktif', t.muted),
     };
+    final sisaLive = pc.sedang?.selesai == null ? null : pc.sedang!.selesai!.difference(sekarang);
+    final progres = _progresSlot(pc.sedang, sekarang);
     return XyCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
+          Container(
+            width: 4,
+            height: 46,
+            decoration: BoxDecoration(color: warna, borderRadius: BorderRadius.circular(4)),
+          ),
+          const SizedBox(width: 10),
           GradientThumb(seed: pc.id, icon: Icons.desktop_windows_rounded, size: 46),
           const SizedBox(width: 12),
           Expanded(
@@ -326,59 +376,105 @@ class _KartuPc extends StatelessWidget {
           ),
           Pill(label, warna: warna, solid: true),
         ]),
-        const SizedBox(height: 12),
+        if (pc.sedang != null) ...[
+          const SizedBox(height: 12),
+          Text(pc.sedang!.nama?.trim().isNotEmpty == true ? pc.sedang!.nama! : 'Sedang dipakai',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          const SizedBox(height: 2),
+          Text('${_rentangWib(pc.sedang!)} WIB',
+              style: TextStyle(color: t.inkSoft, fontSize: 13, fontWeight: FontWeight.w600)),
+          if (sisaLive != null && !sisaLive.isNegative) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: progres,
+                minHeight: 6,
+                backgroundColor: t.lineSoft,
+                color: warna,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text('Sisa ${_labelSisa(sisaLive)}',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5, color: warna)),
+          ],
+        ],
+        if (pc.berikutnya != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Berikutnya ${_rentangWib(pc.berikutnya!)} · ${pc.berikutnya!.nama ?? 'pemesan'}',
+            style: TextStyle(color: t.muted, fontSize: 12),
+          ),
+        ],
+        const SizedBox(height: 10),
         Row(children: [
           Text(rupiah(pc.hargaPerJam),
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: XyTheme.primary)),
           Text('  /jam', style: TextStyle(color: t.muted, fontSize: 12)),
           const Spacer(),
-          if (pc.dipakai && pc.sisaMenit > 0)
-            Text('Sisa ~${pc.sisaMenit} mnt',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5, color: XyTheme.warning)),
+          if (pc.tersedia)
+            Text('Siap dipesan', style: TextStyle(color: t.muted, fontSize: 12, fontWeight: FontWeight.w600)),
         ]),
-        if (pc.sedang != null) ...[
-          const SizedBox(height: 6),
-          Text(_barisSlot('Sedang', pc.sedang!), style: TextStyle(color: t.inkSoft, fontSize: 12)),
-        ],
-        if (pc.berikutnya != null) ...[
-          const SizedBox(height: 4),
-          Text(_barisSlot('Berikutnya', pc.berikutnya!), style: TextStyle(color: t.muted, fontSize: 11.5)),
-        ],
       ]),
     );
   }
 }
 
-String _barisSlot(String label, CloudGimeSlot s) {
-  final nama = (s.nama ?? '').trim();
-  final jaman = [
-    if (s.mulai != null) jam(s.mulai!),
-    if (s.selesai != null) jam(s.selesai!),
-  ].join('–');
-  final siapa = nama.isEmpty ? '' : ' · $nama';
-  return '$label $jaman$siapa';
+String _labelSisa(Duration d) {
+  if (d.isNegative) return 'Selesai';
+  final h = d.inHours;
+  final m = d.inMinutes % 60;
+  final s = d.inSeconds % 60;
+  if (h > 0) return '${h}j ${m}m ${s.toString().padLeft(2, '0')}d';
+  if (m > 0) return '${m}m ${s}d';
+  return '${s}d';
+}
+
+String _rentangWib(CloudGimeSlot s) {
+  final a = s.mulai == null ? '—' : jamWib(s.mulai!);
+  final b = s.selesai == null ? '—' : jamWib(s.selesai!);
+  return '$a–$b';
+}
+
+double _progresSlot(CloudGimeSlot? s, DateTime now) {
+  if (s?.mulai == null || s?.selesai == null) return 0;
+  final total = s!.selesai!.difference(s.mulai!).inSeconds;
+  if (total <= 0) return 1;
+  return (now.difference(s.mulai!).inSeconds / total).clamp(0.0, 1.0);
 }
 
 class _KartuJadwal extends StatelessWidget {
-  const _KartuJadwal({required this.item});
+  const _KartuJadwal({required this.item, required this.sekarang});
   final CloudGimeJadwal item;
+  final DateTime sekarang;
 
   @override
   Widget build(BuildContext context) {
     final t = XyTheme.of(context);
     final pending = item.status == 'pending' || item.status == 'waiting';
-    final jaman = [
-      if (item.mulai != null) tanggal(item.mulai!),
-      if (item.selesai != null) jam(item.selesai!),
-    ].join(' → ');
+    final hidup = item.mulai != null &&
+        item.selesai != null &&
+        !sekarang.isBefore(item.mulai!) &&
+        sekarang.isBefore(item.selesai!);
     return XyCard(
-      child: Row(children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: t.primarySoft,
-          child: Text(
-            item.nama.isEmpty ? '?' : item.nama[0].toUpperCase(),
-            style: const TextStyle(fontWeight: FontWeight.w800, color: XyTheme.primary),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(
+          width: 52,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Text(item.mulai == null ? '—' : jamWib(item.mulai!),
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5, letterSpacing: -.3)),
+            const SizedBox(height: 2),
+            Text(item.selesai == null ? '—' : jamWib(item.selesai!),
+                style: TextStyle(color: t.muted, fontSize: 12, fontWeight: FontWeight.w600)),
+          ]),
+        ),
+        const SizedBox(width: 10),
+        Container(
+          width: 3,
+          height: 42,
+          decoration: BoxDecoration(
+            color: hidup ? XyTheme.warning : (pending ? t.line : XyTheme.success),
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
         const SizedBox(width: 12),
@@ -387,12 +483,14 @@ class _KartuJadwal extends StatelessWidget {
             Text(item.nama.isEmpty ? 'Pemesan' : item.nama,
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
             const SizedBox(height: 2),
-            Text('${item.pc} · $jaman',
-                style: TextStyle(color: t.muted, fontSize: 12, height: 1.35)),
+            Text('${item.pc} · WIB', style: TextStyle(color: t.muted, fontSize: 12, height: 1.35)),
           ]),
         ),
-        Pill(pending ? 'Menunggu' : 'Disetujui',
-            warna: pending ? XyTheme.warning : XyTheme.success, solid: true),
+        Pill(
+          hidup ? 'Main' : (pending ? 'Menunggu' : 'Disetujui'),
+          warna: hidup ? XyTheme.warning : (pending ? XyTheme.warning : XyTheme.success),
+          solid: true,
+        ),
       ]),
     );
   }
@@ -689,7 +787,7 @@ class KartuCloudGimeHome extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('CloudGime', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
             const SizedBox(height: 2),
-            Text('Sewa PC fisik mitra · nama & jam booking live',
+            Text('Sewa PC fisik mitra · jam WIB realtime',
                 style: TextStyle(color: t.muted, fontSize: 12)),
           ]),
         ),

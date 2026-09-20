@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/motion.dart';
 import '../../core/theme.dart';
 import '../../providers/app_state.dart';
 import '../screens/pembaruan_screen.dart';
@@ -39,7 +40,7 @@ Future<void> tampilkanRilisPopup(BuildContext context, AppState s) async {
   );
   if (hasil == 'buka' && context.mounted) {
     Navigator.of(context, rootNavigator: true)
-        .push(MaterialPageRoute(builder: (_) => const PembaruanScreen()));
+        .push(xyRoute(const PembaruanScreen()));
   }
 }
 

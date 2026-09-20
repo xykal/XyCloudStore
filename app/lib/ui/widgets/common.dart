@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/motion.dart';
+import '../../core/pengaturan.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme.dart';
 import '../../data/realtime_service.dart';
@@ -1002,14 +1003,22 @@ class FadeInUp extends StatefulWidget {
 
 class _FadeInUpState extends State<FadeInUp> with SingleTickerProviderStateMixin {
   late final AnimationController c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 360))..repeat();
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 280));
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(widget.delay, () {
-      if (mounted) c.forward();
-    });
+    if (!PengaturanLokal.animasi) {
+      c.value = 1;
+      return;
+    }
+    if (widget.delay == Duration.zero) {
+      c.forward();
+    } else {
+      Future.delayed(widget.delay, () {
+        if (mounted) c.forward();
+      });
+    }
   }
 
   @override

@@ -36,6 +36,13 @@ class XyRadius {
   /// Radius khusus tombol: pil penuh (rounded-full) di SELURUH aplikasi —
   /// permintaan UI 2026-09-14: "semua button rounded full agar bagus".
   static const double tombol = 99;
+
+  /// Kolom input selalu pil penuh (light + dark).
+  static OutlineInputBorder input(Color sisi, {double lebar = 1}) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(tombol),
+        borderSide: BorderSide(color: sisi, width: lebar),
+      );
 }
 
 class XyTheme {
@@ -245,23 +252,19 @@ class XyTheme {
             const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
         prefixIconColor: muted,
         suffixIconColor: muted,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: const BorderSide(color: line),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: const BorderSide(color: line),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: const BorderSide(color: primary, width: 1.6),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: const BorderSide(color: danger),
-        ),
+        border: XyRadius.input(line),
+        enabledBorder: XyRadius.input(line),
+        focusedBorder: XyRadius.input(primary, lebar: 1.6),
+        errorBorder: XyRadius.input(danger),
+        focusedErrorBorder: XyRadius.input(danger, lebar: 1.6),
         hintStyle: const TextStyle(color: muted, fontWeight: FontWeight.w500),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith((s) =>
+            s.contains(MaterialState.selected) ? Colors.white : const Color(0xFFF4F4F5)),
+        trackColor: MaterialStateProperty.resolveWith((s) =>
+            s.contains(MaterialState.selected) ? primary : line),
+        trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: lineSoft,
@@ -383,20 +386,29 @@ class XyTheme {
             const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
         prefixIconColor: mutedGelap,
         suffixIconColor: mutedGelap,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: const BorderSide(color: violet, width: 1.2),
-        ),
+        border: XyRadius.input(const Color(0xFF3A3A3A)),
+        enabledBorder: XyRadius.input(const Color(0xFF3A3A3A)),
+        focusedBorder: XyRadius.input(violet, lebar: 1.4),
+        errorBorder: XyRadius.input(danger),
+        focusedErrorBorder: XyRadius.input(danger, lebar: 1.4),
         hintStyle:
             const TextStyle(color: mutedGelap, fontWeight: FontWeight.w500),
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        backgroundColor: surfaceGelap,
+        side: const BorderSide(color: Color(0xFF3A3A3A)),
+        labelStyle:
+            const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5, color: inkGelap),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(XyRadius.pill)),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: MaterialStateProperty.resolveWith((s) =>
+            s.contains(MaterialState.selected) ? Colors.white : const Color(0xFFB0B0B0)),
+        trackColor: MaterialStateProperty.resolveWith((s) =>
+            s.contains(MaterialState.selected) ? violet : const Color(0xFF3A3A3A)),
+        trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
       ),
       dividerTheme:
           const DividerThemeData(color: Color(0xFF1E1E1E), space: 1, thickness: 1),

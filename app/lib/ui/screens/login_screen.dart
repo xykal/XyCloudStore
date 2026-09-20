@@ -208,8 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       delay: const Duration(milliseconds: 140),
                       child: Text(
                         daftar
-                            ? 'Pendaftaran dibatasi per perangkat, jaringan, dan email. Pastikan email aktif untuk menerima kode verifikasi.'
-                            : 'Masuk untuk melanjutkan sewa PC, membeli akun, dan memantau order kamu.',
+                            ? 'Kode email hanya untuk aktivasi akun baru. Setelah terverifikasi, masuk cukup dengan password — termasuk setelah uninstall.'
+                            : 'Masuk dengan email dan password. Kode OTP hanya untuk daftar pertama atau reset password.',
                         style:  TextStyle(color: XyTheme.of(context).muted, fontSize: 14, height: 1.6),
                       ),
                     ),

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/format.dart';
+import '../../core/motion.dart';
 import '../../core/prefs.dart';
 import '../../core/theme.dart';
 import '../../models/models.dart';
@@ -1124,7 +1125,7 @@ class _StartLiveFormState extends State<_StartLiveForm> {
               ],
             ));
             if (go == true && context.mounted) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderListScreen()));
+              Navigator.push(context, xyRoute(const OrderListScreen()));
             }
             return;
           }
@@ -1145,8 +1146,8 @@ class _StartLiveFormState extends State<_StartLiveForm> {
               final activeItem = state.liveAktifSaya ?? state.creatorLive?.active;
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => MobileBroadcastLiveScreen(
+                xyRoute(
+                  MobileBroadcastLiveScreen(
                     title: judul,
                     game: namaGame,
                     sumber: sumber,

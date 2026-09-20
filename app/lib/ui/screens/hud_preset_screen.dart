@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/hud_store.dart';
+import '../../core/motion.dart';
 import '../../core/pengaturan.dart';
 import '../../core/theme.dart';
 import '../../data/api_client.dart';
@@ -222,7 +223,7 @@ class _HudPresetScreenState extends State<HudPresetScreen> {
   Future<void> _bukaEditor(HudLayout layout) async {
     final hasil = await Navigator.push<HudLayout>(
       context,
-      MaterialPageRoute(builder: (_) => HudEditorScreen(awal: layout)),
+      xyRoute(HudEditorScreen(awal: layout)),
     );
     if (hasil != null && mounted) await _muat(tenang: true);
   }

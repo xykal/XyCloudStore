@@ -66,3 +66,25 @@ test('Hash tersimpan dengan iterasi di atas batas runtime ditolak 401, bukan 500
   assert.equal(r.status,401,`diharapkan 401, dapat ${r.status}: ${JSON.stringify(r.json)}`);
  }finally{await h.mf.dispose();}
 });
+
+test('Login password akun terverifikasi tidak minta OTP di perangkat baru', {timeout:120000}, async()=>{
+ const h=await harness();
+ try{
+  const d1={'X-XY-Device':'a'.repeat(64),'X-XY-Device-Kind':'android'};
+  const d2={'X-XY-Device':'b'.repeat(64),'X-XY-Device-Kind':'android'};
+  let r=await h.call('/auth/register','POST',{nama:'Pengguna Uji',email:'otpfree@example.invalid',password:'Aman-Sekali-2026',phone:'08123456789'},d1);
+  assert.equal(r.status,201,JSON.stringify(r.json));
+  assert.equal(r.json.data.perluVerifikasi,true);
+  r=await h.call('/auth/login','POST',{email:'otpfree@example.invalid',password:'Aman-Sekali-2026'},d1);
+  assert.equal(r.status,200,JSON.stringify(r.json));
+  assert.equal(r.json.data.perluVerifikasi,true);
+  assert.equal(r.json.data.token,undefined);
+  await h.db.prepare("UPDATE users SET email_verified=1 WHERE email='otpfree@example.invalid'").run();
+  r=await h.call('/auth/login','POST',{email:'otpfree@example.invalid',password:'Aman-Sekali-2026'},d2);
+  assert.equal(r.status,200,JSON.stringify(r.json));
+  assert.ok(r.json.data.token,'login perangkat baru harus token, bukan OTP');
+  assert.equal(r.json.data.perluVerifikasi,undefined);
+  r=await h.call('/auth/resend','POST',{email:'otpfree@example.invalid',tipe:'verifikasi'});
+  assert.equal(r.status,409);
+ }finally{await h.mf.dispose();}
+});

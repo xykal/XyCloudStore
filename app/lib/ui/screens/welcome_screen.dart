@@ -8,6 +8,7 @@ import '../widgets/common.dart';
 import 'login_screen.dart';
 
 /// Welcome / gerbang masuk: value proposition singkat + CTA.
+/// Warna mengikuti tema terang/gelap (bukan selalu putih di atas indigo).
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -30,46 +31,44 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final t = XyTheme.of(context);
+    final gelap = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: XyTheme.of(context).ink,
+      backgroundColor: Colors.transparent,
       body: Stack(children: [
-        const Positioned.fill(child: AuroraBackground(dark: true)),
-        const Positioned.fill(child: DotGrid(color: Color(0x0AFFFFFF), gap: 28)),
+        const Positioned.fill(child: AuroraBackground()),
         Positioned.fill(
           child: AnimatedBuilder(
             animation: _a,
-            builder: (_, __) => CustomPaint(painter: _ConstellationPainter(_a.value)),
+            builder: (_, __) => CustomPaint(
+              painter: _ConstellationPainter(
+                _a.value,
+                t.ink.withOpacity(gelap ? .20 : .10),
+              ),
+            ),
           ),
         ),
-
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(26, 0, 26, 24),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Spacer(flex: 3),
-
               FadeInUp(
                 delay: const Duration(milliseconds: 80),
-                // XyWordmark sudah lockup lengkap (ikon + teks); XyLogo di
-                // sampingnya membuat ikon tampil dua kali.
-                child: const XyWordmark(tinggi: 34, putih: true),
+                child: XyWordmark(tinggi: 34, putih: gelap),
               ),
-
               const SizedBox(height: 10),
-
               FadeInUp(
                 delay: const Duration(milliseconds: 140),
-                child: Center(child: XyIlustrasi('sewa', tinggi: 210)),
+                child: const Center(child: XyIlustrasi('sewa', tinggi: 210)),
               ),
-
               const SizedBox(height: 10),
-
               FadeInUp(
                 delay: const Duration(milliseconds: 180),
-                child: const Text(
+                child: Text(
                   'Kekuatan PC\nkelas berat,\ndi genggamanmu.',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: t.ink,
                     fontSize: 32,
                     height: 1.16,
                     fontWeight: FontWeight.w700,
@@ -77,35 +76,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
               FadeInUp(
                 delay: const Duration(milliseconds: 280),
                 child: Text(
                   'Sewa cloud PC per jam, beli akun digital bergaransi, dan pantau semuanya langsung dalam satu aplikasi.',
+                  style: TextStyle(color: t.muted, fontSize: 14, height: 1.55),
                 ),
               ),
-
               const SizedBox(height: 14),
-
-              // Batch J: angka realtime dari /api/config (statistikPublik).
               FadeInUp(
                 delay: const Duration(milliseconds: 340),
-                child: _ChipStatistik(),
+                child: const _ChipStatistik(),
               ),
-
-
               const SizedBox(height: 30),
-
-              // Angka nyata dari server — tidak ada lagi statistik fiksi.
               FadeInUp(
                 delay: const Duration(milliseconds: 380),
                 child: const _StatistikReal(),
               ),
-
               const Spacer(flex: 2),
-
               FadeInUp(
                 delay: const Duration(milliseconds: 460),
                 child: GradientButton(
@@ -125,13 +114,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     scale: .975,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(.07),
-                        borderRadius: BorderRadius.circular(XyRadius.md),
-                        border: Border.all(color: Colors.white.withOpacity(.14)),
+                        color: t.surface,
+                        borderRadius: BorderRadius.circular(XyRadius.tombol),
+                        border: Border.all(color: t.line),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text('Buat Akun Baru',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                            style: TextStyle(color: t.ink, fontWeight: FontWeight.w700, fontSize: 15)),
                       ),
                     ),
                   ),
@@ -142,7 +131,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                 child: Text(
                   'Dengan melanjutkan, kamu menyetujui Syarat Layanan\ndan Kebijakan Privasi XyCloud.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white.withOpacity(.30), fontSize: 11, height: 1.6),
+                  style: TextStyle(color: t.muted, fontSize: 11, height: 1.6),
                 ),
               ),
             ]),
@@ -159,11 +148,12 @@ class _Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = XyTheme.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(nilai,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 19, letterSpacing: -.6)),
+          style: TextStyle(color: t.ink, fontWeight: FontWeight.w700, fontSize: 19, letterSpacing: -.6)),
       const SizedBox(height: 2),
-      Text(label, style: TextStyle(color: Colors.white.withOpacity(.40), fontSize: 11, fontWeight: FontWeight.w600)),
+      Text(label, style: TextStyle(color: t.muted, fontSize: 11, fontWeight: FontWeight.w600)),
     ]);
   }
 }
@@ -175,12 +165,10 @@ class _Divider extends StatelessWidget {
         width: 1,
         height: 30,
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        color: Colors.white.withOpacity(.12),
+        color: XyTheme.of(context).line,
       );
 }
 
-/// Statistik asli dari server (/api/config) — menggantikan angka statis
-/// yang tidak nyata ("19K+ pengguna" dlm. versi lama).
 class _StatistikReal extends StatelessWidget {
   const _StatistikReal();
 
@@ -206,8 +194,9 @@ class _StatistikReal extends StatelessWidget {
 }
 
 class _ConstellationPainter extends CustomPainter {
-  _ConstellationPainter(this.t);
+  _ConstellationPainter(this.t, this.warna);
   final double t;
+  final Color warna;
 
   static final _rnd = math.Random(7);
   static final _pts = List.generate(18, (_) => Offset(_rnd.nextDouble(), _rnd.nextDouble()));
@@ -222,7 +211,7 @@ class _ConstellationPainter extends CustomPainter {
         .toList();
 
     final line = Paint()
-      ..color = Colors.white.withOpacity(.06)
+      ..color = warna.withOpacity(.18)
       ..strokeWidth = .9;
     for (var i = 0; i < pts.length; i++) {
       for (var j = i + 1; j < pts.length; j++) {
@@ -231,16 +220,14 @@ class _ConstellationPainter extends CustomPainter {
       }
     }
     for (final p in pts) {
-      canvas.drawCircle(p, 1.5, Paint()..color = Colors.white.withOpacity(.22));
+      canvas.drawCircle(p, 1.5, Paint()..color = warna.withOpacity(.45));
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ConstellationPainter old) => old.t != t;
+  bool shouldRepaint(covariant _ConstellationPainter old) => old.t != t || old.warna != warna;
 }
 
-
-/// Baris angka realtime (Batch J): jumlah pengguna terdaftar & unit online.
 class _ChipStatistik extends StatelessWidget {
   const _ChipStatistik();
 
@@ -256,6 +243,7 @@ class _ChipStatistik extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = XyTheme.of(context);
     final k = context.watch<AppState>().konfigurasi;
     if (k.statistikPengguna <= 0 && k.statistikUnitOnline <= 0) {
       return const SizedBox.shrink();
@@ -264,21 +252,24 @@ class _ChipStatistik extends StatelessWidget {
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.10),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.white.withOpacity(.16)),
+          color: t.primarySoft,
+          borderRadius: BorderRadius.circular(XyRadius.pill),
+          border: Border.all(color: t.line),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.group_rounded, size: 14, color: Colors.white70),
+          Icon(Icons.group_rounded, size: 14, color: t.inkSoft),
           const SizedBox(width: 6),
           Text('${_fmt(k.statistikPengguna)} pengguna',
-              style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700)),
+              style: TextStyle(color: t.ink, fontSize: 11.5, fontWeight: FontWeight.w700)),
           if (k.statistikUnitOnline > 0) ...[
-            Container(margin: const EdgeInsets.symmetric(horizontal: 8), width: 1, height: 12, color: Colors.white24),
-            Container(width: 7, height: 7, decoration: const BoxDecoration(color: Color(0xFF34D399), shape: BoxShape.circle)),
+            Container(margin: const EdgeInsets.symmetric(horizontal: 8), width: 1, height: 12, color: t.line),
+            Container(
+                width: 7,
+                height: 7,
+                decoration: const BoxDecoration(color: Color(0xFF34D399), shape: BoxShape.circle)),
             const SizedBox(width: 5),
             Text('${k.statistikUnitOnline} unit online',
-                style: const TextStyle(color: Colors.white70, fontSize: 11.5, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: t.inkSoft, fontSize: 11.5, fontWeight: FontWeight.w600)),
           ],
         ]),
       ),
