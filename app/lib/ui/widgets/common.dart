@@ -501,6 +501,7 @@ class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final t = XyTheme.of(context);
     return AnimatedBuilder(
       animation: c,
       builder: (_, __) => Container(
@@ -511,7 +512,7 @@ class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
           gradient: LinearGradient(
             begin: Alignment(-1 + c.value * 3, 0),
             end: Alignment(c.value * 3, 0),
-            colors: [XyTheme.shimmerA, XyTheme.shimmerB, XyTheme.shimmerA],
+            colors: [t.shimmerA, t.shimmerB, t.shimmerA],
           ),
         ),
       ),
@@ -846,6 +847,26 @@ class SkeletonLiveGrid extends StatelessWidget {
 // ============================================================
 //  Empty state — flat
 // ============================================================
+
+/// Teks tenang saat data pertama belum ada. Bukan spinner, bukan shimmer.
+class TeksMemuat extends StatelessWidget {
+  const TeksMemuat({super.key, this.teks = 'Memuat…'});
+  final String teks;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Text(
+          teks,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: XyTheme.of(context).muted, fontSize: 13.5, height: 1.45),
+        ),
+      ),
+    );
+  }
+}
 
 class Kosong extends StatelessWidget {
   const Kosong({super.key, required this.icon, required this.judul, this.sub, this.aksi, this.ilustrasi = 'kosong'});

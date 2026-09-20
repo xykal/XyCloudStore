@@ -18,6 +18,7 @@ import 'livestream_screen.dart';
 import 'notifikasi_screen.dart';
 import 'order_detail_screen.dart';
 import 'referral_screen.dart';
+import 'cloudgime_screen.dart';
 import 'sewa_pc_screen.dart';
 import 'statistik_screen.dart';
 import 'tier_screen.dart';
@@ -68,6 +69,12 @@ class HomeScreen extends StatelessWidget {
               ),
               FadeInUp(child: _LiveHomeCard(catalog: s.liveCatalog)),
 
+              const SectionHeader(
+                'Sewa PC Fisik',
+                sub: 'Mitra CloudGime · status live',
+              ),
+              const KartuCloudGimeHome(),
+
               SectionHeader(
                 'PC Siap Pakai',
                 sub: 'Stok unit tersedia',
@@ -77,7 +84,12 @@ class HomeScreen extends StatelessWidget {
               SizedBox(
                 height: 198,
                 child: s.plans.isEmpty
-                    ? _skeletonRow()
+                    ? Center(
+                        child: Text(
+                          'Paket PC sedang disiapkan',
+                          style: TextStyle(color: XyTheme.of(context).muted, fontSize: 13),
+                        ),
+                      )
                     : ListView.separated(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
@@ -117,12 +129,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _skeletonRow() => ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (_, __) => const SizedBox(width: 214, child: Shimmer(height: 198, radius: XyRadius.lg)),
-      );
 }
 
 // ------------------------------------------------------------------

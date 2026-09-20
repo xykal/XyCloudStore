@@ -165,7 +165,7 @@ class _LisensiScreenState extends State<LisensiScreen> {
           ),
           const SizedBox(height: 18),
           if (lisensi == null)
-            const Center(child: Padding(padding: EdgeInsets.all(30), child: CircularProgressIndicator()))
+            const TeksMemuat(teks: 'Menyiapkan daftar lisensi…')
           else
             ...lisensi!.map((l) {
               final m = l as Map;

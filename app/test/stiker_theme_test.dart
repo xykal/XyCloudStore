@@ -63,6 +63,16 @@ void main() {
     expect(b.stiker, isA<Stiker>());
     expect(b.stiker!.dariGiphy, true);
   });
+  test('Tema terang sungguhan, bukan gelap disamarkan', () {
+    expect(XyTheme.light().brightness, Brightness.light);
+    expect(XyTheme.light().scaffoldBackgroundColor, Colors.transparent);
+    expect(XyTheme.gelap().brightness, Brightness.dark);
+    expect(const XyPalette(false).bg, XyTheme.bg);
+    expect(const XyPalette(true).bg, const Color(0xFF0A0A0A));
+    expect(const XyPalette(false).ink, XyTheme.ink);
+    expect(const XyPalette(true).ink, XyTheme.inkGelap);
+  });
+
   testWidgets('Permukaan kartu benar-benar mengikuti dark mode',
       (tester) async {
     await tester.pumpWidget(MaterialApp(

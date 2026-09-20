@@ -13,6 +13,7 @@ import {
   responsHalamanLivestream,
 } from './livestream.js';
 import { kataTerlarangDalam, KATA_TERLARANG } from './kata.js';
+import { statusCloudGime, bookingCloudGime, CloudGimeError } from './cloudgime.js';
 /**
  * ============================================================
  *  XyCloud API — Cloudflare Worker
@@ -2614,7 +2615,7 @@ ${halaman.map(([u, p2, f]) => `  <url>
       // login, permintaan tanpa pengecualian tetap mendapat 503 dan aplikasi
       // menampilkan halaman perawatan. /api/legal/* adalah dokumen publik
       // (syarat/privasi/refund) yang dibutuhkan layar persetujuan login.
-      if (kena && p !== 'config' && !p.startsWith('auth/') && !p.startsWith('legal/')) {
+      if (kena && p !== 'config' && !p.startsWith('auth/') && !p.startsWith('legal/') && !p.startsWith('cloudgime/')) {
         return err(
           await setelan(env, 'pesan_pemeliharaan',
             'Kami sedang melakukan perawatan singkat. Silakan coba lagi beberapa menit lagi.'),
@@ -3027,6 +3028,26 @@ ${halaman.map(([u, p2, f]) => `  <url>
       if (p === 'legal/privasi' && req.method === 'GET') return json(isiLegal('privasi'), 200, env);
       if (p === 'legal/refund' && req.method === 'GET') return json(isiLegal('refund'), 200, env);
       if (p === 'legal/live' && req.method === 'GET') return json(isiLegal('live'), 200, env);
+
+      // ---------------- CLOUDGIME (mitra sewa PC fisik) ----------------
+      if (p === 'cloudgime/status' && req.method === 'GET') {
+        try {
+          return json(await statusCloudGime(env), 200, env);
+        } catch (e) {
+          if (e instanceof CloudGimeError) return err(e.message, e.status, env, e.code);
+          return err('Server CloudGime tidak dapat dihubungi.', 502, env, 'UPSTREAM_DOWN');
+        }
+      }
+      if (p.startsWith('cloudgime/booking/') && req.method === 'GET') {
+        const id = decodeURIComponent(p.slice('cloudgime/booking/'.length).split('/')[0] || '');
+        const token = url.searchParams.get('token') || '';
+        try {
+          return json(await bookingCloudGime(env, id, token), 200, env);
+        } catch (e) {
+          if (e instanceof CloudGimeError) return err(e.message, e.status, env, e.code);
+          return err('Server CloudGime tidak dapat dihubungi.', 502, env, 'UPSTREAM_DOWN');
+        }
+      }
 
       // ---------------- KONFIGURASI APLIKASI ----------------
       if (p === 'config' && req.method === 'GET') {

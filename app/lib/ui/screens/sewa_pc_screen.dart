@@ -125,6 +125,8 @@ class _SewaPcScreenState extends State<SewaPcScreen> {
               ),
             ],
             const SizedBox(height: 8),
+            const KartuCloudGimeHome(),
+            const SizedBox(height: 8),
             Container(
               margin: const EdgeInsets.only(top: 8, bottom: 4),
               padding: const EdgeInsets.all(12),

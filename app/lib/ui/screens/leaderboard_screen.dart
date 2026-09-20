@@ -160,8 +160,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
             if (_memuat && d == null)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 60),
-                child: Center(child: CircularProgressIndicator()),
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: TeksMemuat(teks: 'Menyusun papan peringkat…'),
               )
             else if (_galat != null)
               Kosong(

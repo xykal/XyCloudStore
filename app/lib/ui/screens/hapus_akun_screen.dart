@@ -115,7 +115,7 @@ class _HapusAkunScreenState extends State<HapusAkunScreen> {
               style: TextStyle(color: pal.inkSoft, height: 1.65)),
           const SizedBox(height: 20),
           if (_info == null && _galat == null)
-            const Center(child: CircularProgressIndicator()),
+            const TeksMemuat(teks: 'Memeriksa syarat penghapusan…'),
           if (_info != null && !boleh)
             XyCard(
                 child: Column(

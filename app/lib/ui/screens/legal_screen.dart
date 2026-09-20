@@ -66,7 +66,7 @@ class _LegalScreenState extends State<LegalScreen> {
               sub: galat,
               ilustrasi: 'kosong')
           : data == null
-              ? const Center(child: CircularProgressIndicator())
+              ? const TeksMemuat(teks: 'Menyiapkan dokumen…')
               : RefreshIndicator(
                   onRefresh: _muat,
                   child: ListView(

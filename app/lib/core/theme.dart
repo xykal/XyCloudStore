@@ -135,7 +135,6 @@ class XyTheme {
 
   // ---------- palet gelap — TIKTOK STYLE (No Border, Abu-abu) ----------
   // TikTok: background hitam pekat, card abu-abu gelap tanpa border, clean
-  // Light mode juga dibikin ala TikTok dark biar tidak ada garis border
   static const Color bgGelap = Color(0xFF0A0A0A); // TikTok black
   static const Color bgGelap2 = Color(0xFF141414); // TikTok subtle
   static const Color surfaceGelap = Color(0xFF1E1E1E); // Card abu-abu TikTok
@@ -149,70 +148,69 @@ class XyTheme {
 
   // ---------- tema ----------
   static ThemeData light() {
-    // TikTok style: even light mode pakai background hitam ke abu-abuan, card abu-abu tanpa border
     final base = ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark, // pakai dark brightness biar TikTok style di light mode juga
+      brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primary,
         primary: primary,
-        surface: surfaceGelap,
-        onSurface: inkGelap,
-        onSurfaceVariant: mutedGelap,
-        brightness: Brightness.dark,
+        surface: surface,
+        onSurface: ink,
+        onSurfaceVariant: muted,
+        brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: const Color(0xFF0A0A0A),
+      scaffoldBackgroundColor: Colors.transparent,
       splashFactory: InkSparkle.splashFactory,
     );
 
     final text = GoogleFonts.interTextTheme(base.textTheme).apply(
-      bodyColor: inkGelap,
-      displayColor: inkGelap,
+      bodyColor: ink,
+      displayColor: ink,
     );
 
     return base.copyWith(
       textTheme: text.copyWith(
         displayLarge: text.displayLarge
-            ?.copyWith(color: inkGelap, fontWeight: FontWeight.w700, letterSpacing: -1),
+            ?.copyWith(color: ink, fontWeight: FontWeight.w700, letterSpacing: -1),
         headlineMedium: text.headlineMedium
-            ?.copyWith(color: inkGelap, fontWeight: FontWeight.w700, letterSpacing: -1),
+            ?.copyWith(color: ink, fontWeight: FontWeight.w700, letterSpacing: -1),
         titleLarge: text.titleLarge
-            ?.copyWith(color: inkGelap, fontWeight: FontWeight.w700, letterSpacing: -.5),
+            ?.copyWith(color: ink, fontWeight: FontWeight.w700, letterSpacing: -.5),
         titleMedium: text.titleMedium
-            ?.copyWith(color: inkGelap, fontWeight: FontWeight.w600, letterSpacing: -.1),
+            ?.copyWith(color: ink, fontWeight: FontWeight.w600, letterSpacing: -.1),
         titleSmall: text.titleSmall
-            ?.copyWith(color: inkGelap, fontWeight: FontWeight.w600),
-        bodyLarge: text.bodyLarge?.copyWith(color: inkGelap),
-        bodyMedium: text.bodyMedium?.copyWith(color: inkGelap, height: 1.55),
-        bodySmall: text.bodySmall?.copyWith(color: mutedGelap),
-        labelLarge: text.labelLarge?.copyWith(color: inkGelap, fontWeight: FontWeight.w700),
-        labelMedium: text.labelMedium?.copyWith(color: mutedGelap),
-        labelSmall: text.labelSmall?.copyWith(color: mutedGelap),
+            ?.copyWith(color: ink, fontWeight: FontWeight.w600),
+        bodyLarge: text.bodyLarge?.copyWith(color: ink),
+        bodyMedium: text.bodyMedium?.copyWith(color: ink, height: 1.55),
+        bodySmall: text.bodySmall?.copyWith(color: muted),
+        labelLarge: text.labelLarge?.copyWith(color: ink, fontWeight: FontWeight.w700),
+        labelMedium: text.labelMedium?.copyWith(color: muted),
+        labelSmall: text.labelSmall?.copyWith(color: muted),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF0A0A0A),
-        foregroundColor: inkGelap,
+        backgroundColor: Colors.transparent,
+        foregroundColor: ink,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          color: inkGelap,
+          color: ink,
           fontSize: 18,
           fontWeight: FontWeight.w700,
           letterSpacing: -.4,
         ),
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF2A2A2A),
+          disabledBackgroundColor: lineSoft,
           minimumSize: const Size.fromHeight(54),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(XyRadius.tombol)),
@@ -222,10 +220,10 @@ class XyTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: inkGelap,
-          backgroundColor: surfaceGelap,
+          foregroundColor: ink,
+          backgroundColor: Colors.white,
           minimumSize: const Size.fromHeight(52),
-          side: BorderSide.none, // No border ala TikTok
+          side: const BorderSide(color: line),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(XyRadius.tombol)),
           textStyle:
@@ -241,43 +239,43 @@ class XyTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceGelap,
+        fillColor: Colors.white,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 18, vertical: 17),
-        prefixIconColor: mutedGelap,
-        suffixIconColor: mutedGelap,
+        prefixIconColor: muted,
+        suffixIconColor: muted,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: BorderSide.none, // No border
+          borderSide: const BorderSide(color: line),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: line),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(XyRadius.md),
-          borderSide: const BorderSide(color: primary, width: 1.2),
+          borderSide: const BorderSide(color: primary, width: 1.6),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(XyRadius.md),
           borderSide: const BorderSide(color: danger),
         ),
-        hintStyle: const TextStyle(color: mutedGelap, fontWeight: FontWeight.w500),
+        hintStyle: const TextStyle(color: muted, fontWeight: FontWeight.w500),
       ),
       chipTheme: base.chipTheme.copyWith(
-        backgroundColor: surfaceGelap2,
-        side: BorderSide.none,
+        backgroundColor: lineSoft,
+        side: const BorderSide(color: line),
         labelStyle:
             const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(XyRadius.pill)),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       ),
-      dividerTheme: const DividerThemeData(color: Color(0xFF1E1E1E), space: 1, thickness: 1),
+      dividerTheme: const DividerThemeData(color: line, space: 1, thickness: 1),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: surfaceGelap2,
+        backgroundColor: ink,
         contentTextStyle: const TextStyle(
-            color: inkGelap, fontWeight: FontWeight.w600, fontSize: 13),
+            color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(XyRadius.sm)),
@@ -288,7 +286,7 @@ class XyTheme {
         surfaceTintColor: Colors.transparent,
       ),
       dialogTheme: DialogTheme(
-        backgroundColor: surfaceGelap2,
+        backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(XyRadius.xl)),
@@ -433,17 +431,19 @@ class XyTheme {
 class XyPalette {
   const XyPalette(this.dark);
   final bool dark;
-  Color get bg => const Color(0xFF0A0A0A); // TikTok black untuk light & dark
-  Color get surface => const Color(0xFF1E1E1E); // Card abu-abu TikTok
-  Color get surfaceHigh => const Color(0xFF262626);
-  Color get ink => const Color(0xFFF1F1F2);
-  Color get inkSoft => const Color(0xFFC7C7C7);
-  Color get muted => const Color(0xFF8A8B8F);
-  Color get line => const Color(0xFF1E1E1E); // No visible border
-  Color get lineSoft => const Color(0xFF232323);
-  Color get primarySoft => const Color(0xFF262626);
-  Color get accent => XyTheme.lavender;
-  LinearGradient? get gradSoft => null;
+  Color get bg => dark ? const Color(0xFF0A0A0A) : XyTheme.bg;
+  Color get surface => dark ? const Color(0xFF1E1E1E) : XyTheme.surface;
+  Color get surfaceHigh => dark ? const Color(0xFF262626) : const Color(0xFFF8F6FF);
+  Color get ink => dark ? const Color(0xFFF1F1F2) : XyTheme.ink;
+  Color get inkSoft => dark ? const Color(0xFFC7C7C7) : XyTheme.inkSoft;
+  Color get muted => dark ? const Color(0xFF8A8B8F) : XyTheme.muted;
+  Color get line => dark ? const Color(0xFF1E1E1E) : XyTheme.line;
+  Color get lineSoft => dark ? const Color(0xFF232323) : XyTheme.lineSoft;
+  Color get primarySoft => dark ? const Color(0xFF262626) : const Color(0xFFEEE8FA);
+  Color get accent => dark ? XyTheme.lavender : XyTheme.primary;
+  Color get shimmerA => dark ? const Color(0xFF1A1A1A) : XyTheme.shimmerA;
+  Color get shimmerB => dark ? const Color(0xFF2A2A2A) : XyTheme.shimmerB;
+  LinearGradient? get gradSoft => dark ? null : XyTheme.gradSoft;
   LinearGradient? get gradCard => null;
 }
 

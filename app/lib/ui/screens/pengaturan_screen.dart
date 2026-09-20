@@ -233,7 +233,7 @@ class KustomProfilScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final u = context.watch<AppState>().user;
     if (u == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: TeksMemuat(teks: 'Menyiapkan profil…'));
     }
     return Scaffold(
       appBar: AppBar(title: const Text('Kustomisasi Profil')),

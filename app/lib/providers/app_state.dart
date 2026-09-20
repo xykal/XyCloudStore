@@ -290,6 +290,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   late final ApiClient _api;
   late final XyRepository _repo;
 
+  /// Client HTTP untuk layar yang memanggil endpoint sendiri (mis. CloudGime).
+  ApiClient get api => _api;
+
   /// Akses repository untuk layar sosial (Batch D): profil publik, DM, follows.
   XyRepository get repo => _repo;
   RealtimeService? _rt;
