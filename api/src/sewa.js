@@ -78,9 +78,9 @@ export async function probePortTcp(host,port,ms=6000){
       sock.opened.then(()=>true).catch(()=>false),
       new Promise((r)=>setTimeout(()=>r(false),ms)),
     ]);
-    try{sock.close();}catch(_){}
+    try{sock.close();}catch(_){/* soket probe: tutup best-effort */}
     return terbuka;
-  }catch(_){return false;}
+  }catch(_){/* probe gagal total = port tertutup */return false;}
 }
 // Lampirkan IP LAN + tunnel_host + relay_host dari agen spec agar app bisa fallback
 // tanpa Tailscale: Tunnel Cloudflare (gratis, tanpa buka port) > Publik > Relay > LAN
@@ -108,7 +108,7 @@ async function lampirkanHostLan(env,s){
     if(relay) s.relay_host = relay;
     // Fallback host dari agen.host jika sesi.host kosong
     if(!s.host && ag.host) s.host = ag.host;
-  }catch(_){}
+  }catch(_){/* fallback host best-effort */}
   return s;
 }
 

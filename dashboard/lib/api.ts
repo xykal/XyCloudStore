@@ -8,7 +8,9 @@ export type AdminFetchOpts = {
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://api.xycloud.my.id";
 const BASE = API_BASE;
 
-export async function adminFetch(path: string, opts: AdminFetchOpts = {}) {
+/** Generik bertahap (P2 rapih/semua): `adminFetch<Unit[]>` mengetik respons tanpa
+ *  mengubah pemanggil lama (`adminFetch(...)` tetap `any`). */
+export async function adminFetch<T = any>(path: string, opts: AdminFetchOpts = {}): Promise<T> {
   const key = opts.adminKey || (typeof window !== "undefined" ? sessionStorage.getItem("xy_admin_key") || "" : "");
   const headers: Record<string,string> = {
     "Content-Type": "application/json",

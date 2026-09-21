@@ -26,6 +26,7 @@ on:
     branches:
       - "ci/**"
       - "verifikasi/**"
+      - "rapih/**"
   pull_request:
     branches: [main]
 

@@ -131,7 +131,7 @@ class WalletScreen extends StatelessWidget {
                 icon: Icons.swap_horiz_rounded,
                 glowColor: XyTheme.plum,
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFC084FC), Color(0xFF9333EA)],
+                  colors: [XyTheme.purple400, Color(0xFF9333EA)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),

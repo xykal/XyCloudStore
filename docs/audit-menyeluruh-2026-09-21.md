@@ -92,14 +92,27 @@ pemilik: *"sangat tidak konsisten, apalagi kualitasnya"*.
 
 ## Roadmap (prioritas)
 
-1. **P0** — `flutter analyze/test/build` di CI untuk cabang rapih (tutup celah verifikasi).
-2. **P0** — Pecah `index.js`: `admin/*` dulu (paling besar, paling berisiko).
-3. **P1** — Wajibkan kit di 6 page + ekstrak `Bar` + hapus `rupiah` lokal.
-4. **P1** — Gabung/bedakan `laporan` vs `moderasi`; audit menu ganda lain.
-5. **P1** — Flutter: 0 hardcode warna di luar theme (codemod + review visual).
-6. **P2** — Pecah god files Flutter per seksi.
-7. **P2** — Ketik respons API dashboard (ganti `any` bertahap).
-8. **P2** — Audit 49 `catch(_)` + tambah log sistem di jalur tulis.
+> Status eksekusi cabang `rapih/semua` (2026-09-21, komit terpisah): ✅=selesai,
+> 🟡=sebagian + sisa terdokumentasi.
+
+1. **P0** ✅ — `flutter analyze/test/build` di CI untuk cabang rapih
+   (`rapih/**` ditambah ke `verifikasi-build.yml`).
+2. **P0** ✅ — Pecah `index.js`: `admin/*` → `api/src/admin/index.js`
+   (index 8705→6719; 81/81 API hijau; pelajaran: `return await` + scope `url`).
+3. **P1** ✅ — Kit di 6 page + `Bar` kit (unifikasi 4 varian) + 0 `rupiah` lokal
+   + `Stat` kit dukung ikon + `toneStatus` diperkaya.
+4. **P1** ✅ — `laporan` vs `moderasi`: satu `LaporanList` bersama;
+   `/laporan`=antrean murni, `/moderasi`=pusat (laporan+banding+AI).
+5. **P1** 🟡 — Flutter: 216/287 situs → `XyTheme` (+45 token baru, 11 alpha →
+   `withOpacity`); sisa 71 warna artistik 1x di 15 file (perlu review visual
+   per situs; reproduce di bawah).
+6. **P2** 🟡 — God files: `models.dart` 1898→barrel+8 file domain, 0 referensi
+   silang; `pengaturan_screen`/`forum_screen`/`app_state` masih god (butuh
+   `flutter analyze` + review visual, di luar jangkauan tanpa toolchain).
+7. **P2** 🟡 — `adminFetch<T>` + `useAdminList<T>` generik (fondasi ketik
+   bertahap); 210 `any` belum dimigrasi per situs.
+8. **P2** 🟡 — 8 `catch` kosong diberi komentar penjelas (fail-open forum
+   ditandai); 83 `catch(_)` lain sudah berkomentar/tujuan jelas.
 
 ## Lampiran — reproduce
 
@@ -108,8 +121,8 @@ pemilik: *"sangat tidak konsisten, apalagi kualitasnya"*.
 diff dashboard/app/ulasan/page.tsx dashboard/app/ulasan-pc/page.tsx | wc -l
 # rupiah lokal
 grep -rn "const rupiah" dashboard/app/*/page.tsx
-# hardcode warna Flutter
-grep -rln "Color(0x" app/lib --include="*.dart" | wc -l
+# hardcode warna Flutter (di luar theme; target 0, sisa artistik 1x)
+grep -ro "Color(0x[0-9A-Fa-f]*)" app/lib --include="*.dart" | grep -v "core/theme.dart" | wc -l
 # secret
 python3 tools/cek_secret_source.py
 # test & build

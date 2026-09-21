@@ -92,6 +92,55 @@ class XyTheme {
   static const Color dangerBright = Color(0xFFE05B5B);
   static const Color dangerDeep = Color(0xFFC81E1E);
 
+  // ---------- token hasil codemod 2026-09-21 (P1 rapih/semua) ----------
+  // Warna Tailwind/efek yang dipakai >=2x di luar theme — dipusatkan di sini
+  // supaya tidak ada lagi Color(0x…) tersebar di screens/widgets.
+  static const Color red500 = Color(0xFFEF4444);
+  static const Color red600 = Color(0xFFDC2626);
+  static const Color rose400 = Color(0xFFFB7185);
+  static const Color rose600 = Color(0xFFE11D48);
+  static const Color pink200 = Color(0xFFFBCFE8);
+  static const Color pink400 = Color(0xFFF472B6);
+  static const Color pink500 = Color(0xFFEC4899);
+  static const Color pink700 = Color(0xFFBE185D);
+  static const Color pink900 = Color(0xFF831843);
+  static const Color fuchsia400 = Color(0xFFE879F9);
+  static const Color purple200 = Color(0xFFE9D5FF);
+  static const Color purple400 = Color(0xFFC084FC);
+  static const Color purple800 = Color(0xFF6B21A8);
+  static const Color purple950 = Color(0xFF3B0764);
+  static const Color violet900 = Color(0xFF4C1D95);
+  static const Color indigo950 = Color(0xFF1E1B4B);
+  static const Color blue400 = Color(0xFF60A5FA);
+  static const Color blue600 = Color(0xFF2563EB);
+  static const Color sky400 = Color(0xFF38BDF8);
+  static const Color sky600 = Color(0xFF0284C7);
+  static const Color cyan300 = Color(0xFF67E8F9);
+  static const Color cyan400 = Color(0xFF22D3EE);
+  static const Color cyan500 = Color(0xFF06B6D4);
+  static const Color emerald500 = Color(0xFF10B981);
+  static const Color emerald600 = Color(0xFF059669);
+  static const Color green800 = Color(0xFF166534);
+  static const Color neonGreen = Color(0xFF00FF66);
+  static const Color amber200 = Color(0xFFFDE68A);
+  static const Color amber500 = Color(0xFFF59E0B);
+  static const Color amber600 = Color(0xFFD97706);
+  static const Color amber900 = Color(0xFF78350F);
+  static const Color starYellow = Color(0xFFFFE066);
+  static const Color creamGold = Color(0xFFF7E7B3);
+  static const Color creamPale = Color(0xFFFDF2C5);
+  static const Color goldShine = Color(0xFFD3A625);
+  static const Color emberRed = Color(0xFFFF1E00);
+  static const Color slate400 = Color(0xFF94A3B8);
+  static const Color slate900 = Color(0xFF0F172A);
+  static const Color grayBlue = Color(0xFF8B949E);
+  static const Color lilacPale = Color(0xFFD8C9FF);
+  static const Color navyDeep = Color(0xFF07101D);
+  static const Color panelDark = Color(0xFF0D1117);
+  static const Color panelHigh = Color(0xFF21262D);
+  static const Color cardDark = Color(0xFF16151E);
+  static const Color inkPurple = Color(0xFF1E1730);
+
   // ---------- gradien (VIOLET-INDIGO GLOSSY) ----------
   // Glossy vertikal: terang di atas (efek kaca) → pekat di bawah.
   // - gradPrimary: tombol & kartu saldo (paling sering dipakai)

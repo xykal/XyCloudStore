@@ -2,18 +2,17 @@
 import { useEffect, useState } from "react";
 import { adminFetch } from "@/lib/api";
 import { AlertCircle, Banknote, Download, Hourglass, Landmark, TrendingUp, Users, Wallet } from "lucide-react";
+import { Bar, Btn, Chip, EmptyBox, ErrBox, Header, Load, rupiah } from "@/components/ui/kit";
 
-const rupiah = (n: number | string | undefined | null) =>
-  "Rp " + Number(n || 0).toLocaleString("id-ID");
+const TONE_BADGE: Record<string, "ok" | "warn" | "bad" | "info" | "netral"> = {
+  menunggu: "warn",
+  diperiksa: "info",
+  disetujui: "ok",
+  ditolak: "bad",
+};
 
 function Badge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    menunggu: "bg-amber-500/15 border border-amber-500/30 text-amber-600",
-    diperiksa: "bg-sky-500/15 border border-sky-500/30 text-sky-600",
-    disetujui: "bg-emerald-500/15 border border-emerald-500/30 text-emerald-600",
-    ditolak: "bg-rose-500/15 border border-rose-500/30 text-rose-600",
-  };
-  return <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold tracking-wide ${map[status] || map.menunggu}`}>{status}</span>;
+  return <Chip tone={TONE_BADGE[status] || "warn"}>{status}</Chip>;
 }
 
 export default function KeuanganPage() {
@@ -79,24 +78,18 @@ export default function KeuanganPage() {
 
   return (
     <div className="space-y-4 font-[var(--font-inter)]">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl xy-btn grid place-items-center"><Wallet size={18} className="text-white" /></div>
-          <div>
-            <h1 className="text-xl font-semibold text-[#1E1B2E] tracking-tight">Keuangan <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-[#F3F0FF] font-semibold">BARU</span></h1>
-            <p className="text-sm text-[#7C738F] font-medium">Pendapatan, top up, dan tren pesanan — langsung dari D1</p>
-          </div>
-        </div>
-        <button onClick={unduhCSV} className="text-xs px-3 py-2 rounded-xl xy-btn font-semibold text-white flex items-center gap-1.5">
-          <Download size={13} /> Export CSV
-        </button>
-      </div>
+      <Header
+        icon={Wallet}
+        title="Keuangan"
+        sub="Pendapatan, top up, dan tren pesanan — langsung dari D1"
+        right={
+          <Btn onClick={unduhCSV}>
+            <Download size={13} /> Export CSV
+          </Btn>
+        }
+      />
 
-      {loading ? (
-        <div className="xy-card rounded-xl p-10 text-center text-[#7C738F] font-medium">Memuat data keuangan…</div>
-      ) : err ? (
-        <div className="xy-card rounded-xl p-4 text-red-600 font-medium">{err}</div>
-      ) : (
+      {loading ? <Load /> : err ? <ErrBox msg={err} /> : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
             {cards.map((c) => (
@@ -127,21 +120,19 @@ export default function KeuanganPage() {
                 <span className="text-[11px] text-[#7C738F] font-mono">{harian.length} hari</span>
               </div>
               {harian.length === 0 ? (
-                <div className="py-10 text-center text-[#7C738F] text-sm font-medium">Belum ada pesanan tercatat.</div>
+                <EmptyBox msg="Belum ada pesanan tercatat." />
               ) : (
                 <div className="mt-4 space-y-1.5 max-h-[360px] overflow-auto pr-1">
-                  {harian.slice(-14).map((r: any) => {
-                    const p = totalHarian ? Math.max(3, Math.round((Number(r.v || 0) / totalHarian) * 100)) : 0;
-                    return (
-                      <div key={r.d} className="grid grid-cols-[92px_1fr_110px] items-center gap-2 text-[12px]">
-                        <span className="text-[#7C738F] font-medium">{String(r.d).slice(5)}</span>
-                        <div className="h-2 rounded-full bg-[#F3F0FF] overflow-hidden">
-                          <div className="h-full rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7]" style={{ width: `${p}%` }} />
-                        </div>
-                        <span className="text-right font-mono text-[#1E1B2E]">{rupiah(r.v || 0)}<span className="text-[#7C738F]"> • {r.n}</span></span>
-                      </div>
-                    );
-                  })}
+                  {harian.slice(-14).map((r: any) => (
+                    <Bar
+                      key={r.d}
+                      label={String(r.d).slice(5)}
+                      nilai={Number(r.v || 0)}
+                      total={totalHarian || 1}
+                      kananLebar
+                      kanan={<>{rupiah(r.v || 0)}<span className="text-[#7C738F]"> • {r.n}</span></>}
+                    />
+                  ))}
                 </div>
               )}
             </div>
@@ -152,7 +143,7 @@ export default function KeuanganPage() {
                 <Banknote size={15} className="text-[#7C738F]" />
               </div>
               {pending.length === 0 ? (
-                <div className="py-10 text-center text-[#7C738F] text-sm font-medium">Tidak ada top up menunggu — semua sudah diproses.</div>
+                <EmptyBox msg="Tidak ada top up menunggu." sub="Semua sudah diproses." />
               ) : (
                 <div className="mt-3 space-y-2 max-h-[360px] overflow-auto pr-1">
                   {pending.map((t: any) => (

@@ -119,7 +119,7 @@ class _GayaNamaState extends State<GayaNama>
         return _shader(
             nama,
             const LinearGradient(colors: [
-              Color(0xFFA78BFA), XyTheme.violet, Color(0xFF7C3AED),
+              XyTheme.lilac, XyTheme.violet, XyTheme.primary,
             ]));
       case 'emas':
         // Kilau emas bergerak pelan (shimmer) — premium tapi kalem.
@@ -133,8 +133,8 @@ class _GayaNamaState extends State<GayaNama>
                     begin: Alignment(-1.5 + t * 3, 0),
                     end: Alignment(-.5 + t * 3, 0),
                     colors: const [
-                      Color(0xFFB98A18), Color(0xFFFDF2C5),
-                      Color(0xFFD3A625), Color(0xFF9A7113),
+                      Color(0xFFB98A18), XyTheme.creamPale,
+                      XyTheme.goldShine, Color(0xFF9A7113),
                     ],
                     stops: const [0, .45, .6, 1],
                     tileMode: TileMode.clamp,
@@ -145,15 +145,15 @@ class _GayaNamaState extends State<GayaNama>
         return Text(nama,
             maxLines: widget.maxLines,
             style: _dasar.copyWith(
-              color: gelap ? const Color(0xFF6BF3FF) : const Color(0xFF0284C7),
+              color: gelap ? const Color(0xFF6BF3FF) : const XyTheme.sky600,
               shadows: gelap
                   ? const [
-                      Shadow(color: Color(0xAA22D3EE), blurRadius: 12),
-                      Shadow(color: Color(0x668B5CF6), blurRadius: 22),
+                      Shadow(color: XyTheme.cyan400.withOpacity(0.67), blurRadius: 12),
+                      Shadow(color: XyTheme.violet.withOpacity(0.4), blurRadius: 22),
                     ]
                   : const [
-                      Shadow(color: Color(0x440284C7), blurRadius: 8),
-                      Shadow(color: Color(0x337C3AED), blurRadius: 16),
+                      Shadow(color: XyTheme.sky600.withOpacity(0.27), blurRadius: 8),
+                      Shadow(color: XyTheme.primary.withOpacity(0.2), blurRadius: 16),
                     ],
             ));
       case 'pelangi':

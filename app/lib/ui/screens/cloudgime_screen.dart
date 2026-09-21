@@ -673,7 +673,7 @@ class _SheetPesanCloudGimeState extends State<_SheetPesanCloudGime> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF16151E)
+            ? const XyTheme.cardDark
             : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),

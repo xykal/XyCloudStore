@@ -95,7 +95,7 @@ class _BlokirScreenState extends State<BlokirScreen> {
         warna: [
           const Color(0xFF64748B).withOpacity(.14),
           XyTheme.primary.withOpacity(.10),
-          const Color(0xFF94A3B8).withOpacity(.12),
+          const XyTheme.slate400.withOpacity(.12),
         ],
         child: SafeArea(
         child: ListView(

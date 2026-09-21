@@ -2,21 +2,7 @@
 import { useEffect, useState } from "react";
 import { adminFetch } from "@/lib/api";
 import { BarChart3, Flame, MessageSquare, Package, Server, Star, Users, Wallet } from "lucide-react";
-
-const rupiah = (n: number | string | undefined | null) => "Rp " + Number(n || 0).toLocaleString("id-ID");
-
-function TrenBaris({ d, v, total }: { d: string; v: number; total: number }) {
-  const p = total ? Math.max(2, Math.round((v / total) * 100)) : 0;
-  return (
-    <div className="grid grid-cols-[86px_1fr_86px] items-center gap-2 text-[11px]">
-      <span className="text-[#7C738F] font-medium">{String(d).slice(5)}</span>
-      <div className="h-2 rounded-full bg-[#F3F0FF] overflow-hidden">
-        <div className="h-full rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7]" style={{ width: `${p}%` }} />
-      </div>
-      <span className="text-right font-mono text-[#1E1B2E]">{v}</span>
-    </div>
-  );
-}
+import { Bar, EmptyBox, ErrBox, Header, Load, rupiah } from "@/components/ui/kit";
 
 export default function StatistikPage() {
   const [d, setD] = useState<any>(null);
@@ -48,18 +34,14 @@ export default function StatistikPage() {
 
   return (
     <div className="space-y-4 font-[var(--font-inter)]">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl xy-btn grid place-items-center"><BarChart3 size={18} className="text-white" /></div>
-        <div>
-          <h1 className="text-xl font-semibold text-[#1E1B2E] tracking-tight">Statistik</h1>
-          <p className="text-sm text-[#7C738F] font-medium">Ringkasan bisnis dari /api/admin/statistik (D1 agregat)</p>
-        </div>
-      </div>
+      <Header
+        icon={BarChart3}
+        title="Statistik"
+        sub="Ringkasan bisnis dari /api/admin/statistik (D1 agregat)"
+      />
 
-      {loading ? (
-        <div className="xy-card rounded-xl p-10 text-center text-[#7C738F] font-medium">Menghitung statistik…</div>
-      ) : err ? (
-        <div className="xy-card rounded-xl p-4 text-red-600 font-medium">{err} — pastikan endpoint /api/admin/statistik tersedia di Worker.</div>
+      {loading ? <Load /> : err ? (
+        <ErrBox msg={`${err} — pastikan endpoint /api/admin/statistik tersedia di Worker.`} />
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -80,9 +62,9 @@ export default function StatistikPage() {
               <h3 className="font-semibold text-[#1E1B2E] tracking-tight flex items-center gap-2"><Flame size={15} className="text-[#7C3AED]" /> Pesanan per Hari (30 hari)</h3>
               <div className="mt-4 space-y-1.5 max-h-[260px] overflow-auto pr-1">
                 {(d?.harian || []).slice(-14).map((r: any) => (
-                  <TrenBaris key={r.d} d={r.d} v={k(r.n)} total={Math.max(1, (d?.harian || []).reduce((s2: number, x: any) => s2 + k(x.n), 0))} />
+                  <Bar key={r.d} label={String(r.d).slice(5)} nilai={k(r.n)} total={Math.max(1, (d?.harian || []).reduce((s2: number, x: any) => s2 + k(x.n), 0))} />
                 ))}
-                {(d?.harian || []).length === 0 && <div className="py-8 text-center text-[#7C738F] text-sm font-medium">Belum ada pesanan.</div>}
+                {(d?.harian || []).length === 0 && <EmptyBox msg="Belum ada pesanan." />}
               </div>
             </div>
 
@@ -90,9 +72,9 @@ export default function StatistikPage() {
               <h3 className="font-semibold text-[#1E1B2E] tracking-tight flex items-center gap-2"><Users size={15} className="text-[#7C3AED]" /> Pengguna Baru per Hari</h3>
               <div className="mt-4 space-y-1.5 max-h-[260px] overflow-auto pr-1">
                 {(d?.penggunaHarian || []).slice(-14).map((r: any) => (
-                  <TrenBaris key={r.d} d={r.d} v={k(r.n)} total={totPengguna || 1} />
+                  <Bar key={r.d} label={String(r.d).slice(5)} nilai={k(r.n)} total={totPengguna || 1} />
                 ))}
-                {(d?.penggunaHarian || []).length === 0 && <div className="py-8 text-center text-[#7C738F] text-sm font-medium">Belum ada pendaftar baru.</div>}
+                {(d?.penggunaHarian || []).length === 0 && <EmptyBox msg="Belum ada pendaftar baru." />}
               </div>
             </div>
           </div>
@@ -107,7 +89,7 @@ export default function StatistikPage() {
                     <span className="text-[11px] font-mono text-[#7C3AED] shrink-0">{k(p.terjual)} terjual{k(p.rating) ? ` • ★${k(p.rating)}` : ""}</span>
                   </div>
                 ))}
-                {(d?.produkTeratas || []).length === 0 && <div className="py-6 text-center text-[#7C738F] text-sm font-medium">Belum ada produk terjual.</div>}
+                {(d?.produkTeratas || []).length === 0 && <EmptyBox msg="Belum ada produk terjual." />}
               </div>
             </div>
             <div className="xy-card rounded-[16px] p-5">
@@ -119,7 +101,7 @@ export default function StatistikPage() {
                     <span className="text-[11px] font-mono text-[#7C3AED] shrink-0">{k(p.n)}x • {rupiah(p.v)}</span>
                   </div>
                 ))}
-                {(d?.paketTeratas || []).length === 0 && <div className="py-6 text-center text-[#7C738F] text-sm font-medium">Belum ada order sewa.</div>}
+                {(d?.paketTeratas || []).length === 0 && <EmptyBox msg="Belum ada order sewa." />}
               </div>
               {totHarian > 0 && <div className="mt-3 text-[11px] text-[#7C738F] font-medium">Omzet 30 hari (chart atas) total {rupiah(totHarian)}.</div>}
             </div>

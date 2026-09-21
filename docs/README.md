@@ -19,6 +19,7 @@ Folder ini berisi dokumen topikal (per fitur/subsistem).
 ## Keamanan & audit
 
 - [`audit-menyeluruh-2026-09-21.md`](audit-menyeluruh-2026-09-21.md) — **audit terbaru**: skor 6,5/10, temuan + roadmap
+- [`streaming-otomatis-relay-2026-09-21.md`](streaming-otomatis-relay-2026-09-21.md) — streaming tanpa set manual (STREAM-A jadi, STREAM-B desain relay + keputusan VPS)
 - [`keamanan-audit.md`](keamanan-audit.md) — audit keamanan
 - [`audit-duplikasi.md`](audit-duplikasi.md) — audit duplikasi kode
 - [`audit-konsistensi-2026-09-18.md`](audit-konsistensi-2026-09-18.md) — audit konsistensi

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, LogIn, ExternalLink } from "lucide-react";
 import { loginAdmin, setAdminKey } from "@/lib/api";
+import { Btn, Field, FieldError, Input } from "@/components/ui/kit";
 
 export default function LoginPage() {
   const [key, setKey] = useState("");
@@ -45,30 +46,27 @@ export default function LoginPage() {
           <p className="text-[13px] text-[#7C738F] font-medium leading-[1.5] mt-1.5">Masukkan Admin Key. Key hanya disimpan selama tab browser ini terbuka dan tidak dimasukkan ke URL.</p>
 
           <div className="mt-5 space-y-4">
-            <div>
-              <label className="block text-[11px] font-semibold tracking-wide uppercase text-[#7C738F] mb-2">Admin Key</label>
+            <Field label="Admin Key">
               <div className="relative">
-                <input
+                <Input
                   type={show ? "text" : "password"}
                   value={key}
                   onChange={e => setKey(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleLogin(); }}
                   placeholder="xya_xxx atau key utama"
-                  className="xy-input w-full pr-10"
+                  className="pr-10"
                 />
                 <button type="button" onClick={() => setShow(!show)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 grid place-items-center rounded-lg bg-[#F3F0FF] hover:bg-[#E9E3F5]">
                   {show ? <EyeOff size={16} className="text-[#7C738F]" /> : <Eye size={16} className="text-[#7C738F]" />}
                 </button>
               </div>
-            </div>
+            </Field>
 
-            {err && (
-              <div className="p-3 rounded-xl bg-[#FFF1F2] border border-[#FECDD3] text-[#BE123C] text-[12px] font-semibold leading-[1.4]">{err}</div>
-            )}
+            <FieldError msg={err} />
 
-            <button onClick={handleLogin} disabled={loading} className="xy-btn w-full h-[46px] flex items-center justify-center gap-2 text-[14px] disabled:opacity-60">
+            <Btn onClick={handleLogin} disabled={loading} className="w-full !h-[46px] !text-[14px]">
               {loading ? "Memeriksa..." : <><LogIn size={16} /> Masuk</>}
-            </button>
+            </Btn>
 
             <div className="h-px bg-[#E9E3F5] my-1" />
 

@@ -1787,9 +1787,9 @@ class _StoriesBar extends StatelessWidget {
                             gradient: punyaStorySaya
                                 ? const LinearGradient(
                                     colors: [
-                                      Color(0xFFF59E0B),
-                                      Color(0xFFEC4899),
-                                      Color(0xFF8B5CF6)
+                                      XyTheme.amber500,
+                                      XyTheme.pink500,
+                                      XyTheme.violet
                                     ],
                                   )
                                 : null,
@@ -1849,9 +1849,9 @@ class _StoriesBar extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [
-                          Color(0xFFF59E0B),
-                          Color(0xFFEC4899),
-                          Color(0xFF8B5CF6)
+                          XyTheme.amber500,
+                          XyTheme.pink500,
+                          XyTheme.violet
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -2030,19 +2030,19 @@ class _StoryFullScreenViewerState extends State<StoryFullScreenViewer>
     switch (jenis) {
       case 'emas':
         return const LinearGradient(
-            colors: [Color(0xFF78350F), Color(0xFFD97706), Color(0xFFF59E0B)]);
+            colors: [XyTheme.amber900, XyTheme.amber600, XyTheme.amber500]);
       case 'neon':
         return const LinearGradient(
-            colors: [Color(0xFF0284C7), Color(0xFF06B6D4), Color(0xFF10B981)]);
+            colors: [XyTheme.sky600, XyTheme.cyan500, XyTheme.emerald500]);
       case 'senja':
         return const LinearGradient(
-            colors: [Color(0xFF831843), Color(0xFFBE185D), Color(0xFFFB7185)]);
+            colors: [XyTheme.pink900, XyTheme.pink700, XyTheme.rose400]);
       case 'cyber':
         return const LinearGradient(
-            colors: [Color(0xFF1E1B4B), Color(0xFF4C1D95), Color(0xFF06B6D4)]);
+            colors: [XyTheme.indigo950, XyTheme.violet900, XyTheme.cyan500]);
       default:
         return const LinearGradient(
-            colors: [Color(0xFF3B0764), Color(0xFF6B21A8), Color(0xFFA855F7)]);
+            colors: [XyTheme.purple950, XyTheme.purple800, XyTheme.plum]);
     }
   }
 
@@ -2071,7 +2071,7 @@ class _StoryFullScreenViewerState extends State<StoryFullScreenViewer>
                         imageUrl: s.mediaUrl!,
                         fit: BoxFit.contain,
                         placeholder: (_, __) =>
-                            const ColoredBox(color: Color(0x33000000)),
+                            const ColoredBox(color: Colors.black.withOpacity(0.2)),
                         errorWidget: (_, __, ___) => const Center(
                             child: Icon(Icons.broken_image_rounded, size: 54, color: Colors.white54)),
                       ),
@@ -2368,11 +2368,11 @@ class _SheetBuatStoryState extends State<_SheetBuatStory> {
   bool _memuat = false;
 
   final _opsiBg = const [
-    ('ungu', Color(0xFF6B21A8)),
-    ('emas', Color(0xFFD97706)),
-    ('neon', Color(0xFF0284C7)),
-    ('senja', Color(0xFFBE185D)),
-    ('cyber', Color(0xFF1E1B4B)),
+    ('ungu', XyTheme.purple800),
+    ('emas', XyTheme.amber600),
+    ('neon', XyTheme.sky600),
+    ('senja', XyTheme.pink700),
+    ('cyber', XyTheme.indigo950),
   ];
 
   @override

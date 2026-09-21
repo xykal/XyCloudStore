@@ -986,7 +986,7 @@ class AuroraBackground extends StatelessWidget {
   @override Widget build(BuildContext context)=>XyLatar(padat:true,paksaGelap:dark?true:null,child:child??const SizedBox.shrink());
 }
 class DotGrid extends StatelessWidget {
-  const DotGrid({super.key,this.color=const Color(0x14FFFFFF),this.gap=22});
+  const DotGrid({super.key,this.color=const Colors.white.withOpacity(0.08),this.gap=22});
   final Color color;final double gap;
   @override Widget build(BuildContext context)=>const SizedBox.shrink();
 }

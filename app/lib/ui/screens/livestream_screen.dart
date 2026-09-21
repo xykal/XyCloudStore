@@ -288,7 +288,7 @@ class _HeroLive extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
-          colors: [Color(0xFF16002F), Color(0xFF4C1D95), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF16002F), XyTheme.violet900, XyTheme.violet],
           begin: Alignment.bottomLeft,
           end: Alignment.topRight,
         ),
@@ -308,7 +308,7 @@ class _HeroLive extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: enabled ? const Color(0xFFEF4444) : Colors.white.withOpacity(.14), borderRadius: BorderRadius.circular(99)),
+                decoration: BoxDecoration(color: enabled ? const XyTheme.red500 : Colors.white.withOpacity(.14), borderRadius: BorderRadius.circular(99)),
                 child: Text(enabled ? '●  $count LIVE' : 'SEGERA HADIR',
                     style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: .7)),
               ),
@@ -343,14 +343,14 @@ class _LiveCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               gradient: LinearGradient(
-                colors: [const Color(0xFF090014), _warnaGame(live.game), const Color(0xFF2E1065)],
+                colors: [const Color(0xFF090014), _warnaGame(live.game), const XyTheme.primaryDark],
                 begin: Alignment.bottomLeft,
                 end: Alignment.topRight,
               ),
             ),
             child: Stack(children: [
               Center(child: Icon(Icons.sports_esports_rounded, size: 78, color: Colors.white.withOpacity(.16))),
-              Positioned(left: 12, top: 12, child: _Badge(text: live.status == 'live' ? '● LIVE' : 'MENYIAPKAN', color: live.status == 'live' ? const Color(0xFFEF4444) : const Color(0xFFF59E0B))),
+              Positioned(left: 12, top: 12, child: _Badge(text: live.status == 'live' ? '● LIVE' : 'MENYIAPKAN', color: live.status == 'live' ? const XyTheme.red500 : const XyTheme.amber500)),
               Positioned(right: 12, top: 12, child: _Badge(text: '${live.viewers} menonton', color: Colors.black.withOpacity(.55))),
               Positioned(left: 15, right: 15, bottom: 13, child: Text(live.game.toUpperCase(), maxLines: 1,
                   style: TextStyle(color: Colors.white.withOpacity(.84), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.1))),
@@ -384,7 +384,7 @@ class _LiveCard extends StatelessWidget {
   }
 
   Color _warnaGame(String seed) {
-    const colors = [Color(0xFF7C3AED), Color(0xFF1D4ED8), Color(0xFFBE185D), Color(0xFF0F766E)];
+    const colors = [XyTheme.primary, Color(0xFF1D4ED8), XyTheme.pink700, Color(0xFF0F766E)];
     return colors[seed.codeUnits.fold<int>(0, (a, b) => a + b) % colors.length];
   }
 }
@@ -431,7 +431,7 @@ class _LiveDetail extends StatelessWidget {
           Row(children: [
             _Badge(
               text: statusText,
-              color: aktif ? const Color(0xFFEF4444) : XyTheme.warning,
+              color: aktif ? const XyTheme.red500 : XyTheme.warning,
             ),
             const SizedBox(width: 8),
             Text(
@@ -901,7 +901,7 @@ class _ActiveCreatorLive extends StatelessWidget {
             : XyTheme.danger;
     return XyCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
-        _Badge(text: live.status.toUpperCase(), color: live.status == 'live' ? const Color(0xFFEF4444) : XyTheme.warning),
+        _Badge(text: live.status.toUpperCase(), color: live.status == 'live' ? const XyTheme.red500 : XyTheme.warning),
         const Spacer(),
         Text('${live.viewers} menonton', style: TextStyle(color: XyTheme.of(context).muted)),
       ]),
@@ -1366,7 +1366,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Lanjut Live')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+            style: FilledButton.styleFrom(backgroundColor: const XyTheme.red500),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Akhiri Sekarang'),
           ),
@@ -1420,22 +1420,22 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
               const SizedBox(height: 6),
               Text(
                 'Koneksi Cloudflare Stream Ingest resmi untuk siaran ${widget.sumber == 'kamera' ? 'Kamera' : 'Layar'}.',
-                style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
+                style: const TextStyle(color: XyTheme.grayBlue, fontSize: 12),
               ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0D1117),
+                  color: const XyTheme.panelDark,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF30363D)),
                 ),
                 child: Column(
                   children: [
                     _barisInfo('Endpoint RTMP', 'rtmps://live.cloudflare.com:443/live/'),
-                    const Divider(color: Color(0xFF21262D), height: 16),
+                    const Divider(color: XyTheme.panelHigh, height: 16),
                     _barisInfo('Mode Sumber', widget.sumber == 'kamera' ? 'Kamera Smartphone' : 'Layar Smartphone (Game)'),
-                    const Divider(color: Color(0xFF21262D), height: 16),
+                    const Divider(color: XyTheme.panelHigh, height: 16),
                     _barisInfo('ID Siaran', widget.liveId ?? 'Membuat sesi...'),
                   ],
                 ),
@@ -1443,7 +1443,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
               const SizedBox(height: 16),
               FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF7C3AED),
+                  backgroundColor: const XyTheme.primary,
                   minimumSize: const Size.fromHeight(44),
                 ),
                 onPressed: () {
@@ -1471,7 +1471,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
           width: 100,
           child: Text(
             label,
-            style: const TextStyle(color: Color(0xFF8B949E), fontSize: 11.5),
+            style: const TextStyle(color: XyTheme.grayBlue, fontSize: 11.5),
           ),
         ),
         Expanded(
@@ -1509,7 +1509,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                           center: Alignment.center,
                           radius: 1.2,
                           colors: [
-                            const Color(0xFF1E1B2E),
+                            const XyTheme.ink,
                             Colors.black,
                           ],
                         ),
@@ -1560,14 +1560,14 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(0xFF7C3AED).withOpacity(0.6),
+                                  color: const XyTheme.primary.withOpacity(0.6),
                                   width: 2,
                                 ),
                               ),
                               child: const Icon(
                                 Icons.screen_share_rounded,
                                 size: 36,
-                                color: Color(0xFFA78BFA),
+                                color: XyTheme.lilac,
                               ),
                             ),
                             const SizedBox(height: 14),
@@ -1607,11 +1607,11 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFDC2626),
+                          color: const XyTheme.red600,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFDC2626).withOpacity(0.5),
+                              color: const XyTheme.red600.withOpacity(0.5),
                               blurRadius: 8,
                             ),
                           ],
@@ -1768,7 +1768,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                                   TextSpan(
                                     text: '${msg['nama']}: ',
                                     style: const TextStyle(
-                                      color: Color(0xFFA78BFA),
+                                      color: XyTheme.lilac,
                                       fontSize: 11.5,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -1837,7 +1837,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                       _hudBulat(
                         icon: Icons.stop_rounded,
                         tooltip: 'Akhiri Siaran',
-                        warnaKhusus: const Color(0xFFEF4444),
+                        warnaKhusus: const XyTheme.red500,
                         onTap: _akhiriSiaran,
                       ),
                     ],
@@ -1859,8 +1859,8 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
     bool aktif = false,
     Color? warnaKhusus,
   }) {
-    final borderColor = warnaKhusus ?? (aktif ? const Color(0xFFA78BFA) : Colors.white.withOpacity(0.80));
-    final iconColor = warnaKhusus ?? (aktif ? const Color(0xFFA78BFA) : Colors.white);
+    final borderColor = warnaKhusus ?? (aktif ? const XyTheme.lilac : Colors.white.withOpacity(0.80));
+    final iconColor = warnaKhusus ?? (aktif ? const XyTheme.lilac : Colors.white);
 
     return Tooltip(
       message: tooltip,
@@ -1876,7 +1876,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
             shape: BoxShape.circle,
             color: warnaKhusus != null
                 ? warnaKhusus.withOpacity(0.12)
-                : (aktif ? const Color(0x33A78BFA) : Colors.white.withOpacity(0.06)),
+                : (aktif ? const XyTheme.lilac.withOpacity(0.2) : Colors.white.withOpacity(0.06)),
             border: Border.all(
               color: borderColor,
               width: 1.8,
@@ -1884,7 +1884,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
             boxShadow: aktif
                 ? [
                     BoxShadow(
-                      color: (warnaKhusus ?? const Color(0xFF7C3AED)).withOpacity(0.4),
+                      color: (warnaKhusus ?? const XyTheme.primary).withOpacity(0.4),
                       blurRadius: 10,
                     )
                   ]

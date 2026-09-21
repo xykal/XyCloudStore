@@ -126,12 +126,43 @@ const TONE_TEKS: Record<string, string> = {
   info: "text-[#7C3AED]",
 };
 
-export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: string; tone?: string }) {
+export function Stat({ label, value, sub, tone, icon: Icon, toneIcon }: {
+  label: string; value: ReactNode; sub?: string; tone?: string; icon?: LucideIcon; toneIcon?: string;
+}) {
   return (
-    <div className="xy-card rounded-[14px] p-4">
-      <div className="text-[11px] text-[#7C738F] font-semibold tracking-wide uppercase">{label}</div>
-      <div className={`text-xl font-semibold tracking-tight mt-1 ${TONE_TEKS[tone || ""] || "text-[#1E1B2E]"}`}>{value}</div>
-      {sub && <div className="text-[11px] text-[#7C738F] mt-0.5 font-medium">{sub}</div>}
+    <div className="xy-card rounded-[14px] p-4 flex items-center gap-3">
+      {Icon && (
+        <div className="w-10 h-10 rounded-xl bg-[#F3F0FF] border border-[#E9E3F5] grid place-items-center shrink-0">
+          <Icon size={17} className={toneIcon || TONE_TEKS[tone || ""] || "text-[#7C3AED]"} />
+        </div>
+      )}
+      <div className="min-w-0">
+        <div className="text-[11px] text-[#7C738F] font-semibold tracking-wide uppercase">{label}</div>
+        <div className={`text-xl font-semibold tracking-tight mt-0.5 ${TONE_TEKS[tone || ""] || "text-[#1E1B2E]"}`}>{value}</div>
+        {sub && <div className="text-[11px] text-[#7C738F] mt-0.5 font-medium">{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+/** Baris batang progres mungil — unifikasi Baris/TrenBaris/Bar di analitik, statistik, live, keuangan. */
+export function Bar({ label, persen, nilai, total, kanan, warn, Icon, kananLebar }: {
+  label: string; persen?: number | null; nilai?: number; total?: number;
+  kanan?: ReactNode; warn?: boolean; Icon?: LucideIcon; kananLebar?: boolean;
+}) {
+  const modePersen = persen !== undefined && persen !== null && !Number.isNaN(Number(persen));
+  const p = modePersen
+    ? Math.max(0, Math.min(100, Math.round(Number(persen))))
+    : total ? Math.max(2, Math.round(((nilai || 0) / total) * 100)) : 0;
+  return (
+    <div className={`grid ${kananLebar ? "grid-cols-[92px_1fr_110px]" : "grid-cols-[92px_1fr_60px]"} items-center gap-2 text-[12px]`}>
+      <span className="text-[#7C738F] font-medium truncate flex items-center gap-1.5">
+        {Icon && <Icon size={11} className="shrink-0" />}{label}
+      </span>
+      <div className="h-2 rounded-full bg-[#F3F0FF] overflow-hidden">
+        <div className={`h-full rounded-full ${warn ? "bg-amber-400" : "bg-gradient-to-r from-[#7C3AED] to-[#A855F7]"}`} style={{ width: `${p}%` }} />
+      </div>
+      <span className="text-right font-mono text-[#1E1B2E] truncate">{kanan ?? (modePersen ? `${p}%` : (nilai ?? p))}</span>
     </div>
   );
 }
@@ -257,9 +288,9 @@ export function SelectBar({ count, onClear, children }: { count: number; onClear
   );
 }
 
-/** Hook muat list generik. */
-export function useAdminList(path: string, deps: any[] = []) {
-  const [rows, setRows] = useState<any[]>([]);
+/** Hook muat list generik. `useAdminList<Unit>(...)` mengetik baris (bawaan `any`). */
+export function useAdminList<T = any>(path: string, deps: any[] = []) {
+  const [rows, setRows] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [tick, setTick] = useState(0);
@@ -294,8 +325,10 @@ export async function runBatch(
 
 export function toneStatus(s?: string): "ok" | "warn" | "bad" | "info" | "netral" {
   const v = String(s || "").toLowerCase();
-  if (["selesai", "disetujui", "aktif", "ok", "online", "hidup", "siap", "berjalan"].includes(v)) return "ok";
-  if (["menunggu", "diperiksa", "antre", "provisioning", "pairing", "pending"].includes(v)) return "warn";
+  if (["selesai", "disetujui", "aktif", "ok", "online", "hidup", "siap", "berjalan",
+    "approved", "live", "paid", "available", "charged", "sent", "deleted", "effective"].includes(v)) return "ok";
+  if (["menunggu", "diperiksa", "antre", "provisioning", "pairing", "pending",
+    "sending", "starting", "ending", "held", "requested", "processing", "retrying"].includes(v)) return "warn";
   if (["batal", "ditolak", "gagal", "blocked", "diblokir", "error"].includes(v)) return "bad";
   if (["dibayar", "info", "baru"].includes(v)) return "info";
   return "netral";

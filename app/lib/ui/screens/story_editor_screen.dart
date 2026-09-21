@@ -51,11 +51,11 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
   bool _showBgEditor = false;
 
   final _opsiBg = const [
-    ('ungu', Color(0xFF6B21A8), 'Ungu'),
-    ('emas', Color(0xFFD97706), 'Emas'),
-    ('neon', Color(0xFF0284C7), 'Neon'),
-    ('senja', Color(0xFFBE185D), 'Senja'),
-    ('cyber', Color(0xFF1E1B4B), 'Cyber'),
+    ('ungu', XyTheme.purple800, 'Ungu'),
+    ('emas', XyTheme.amber600, 'Emas'),
+    ('neon', XyTheme.sky600, 'Neon'),
+    ('senja', XyTheme.pink700, 'Senja'),
+    ('cyber', XyTheme.indigo950, 'Cyber'),
   ];
 
   final _opsiGaya = const [
@@ -106,11 +106,11 @@ class _StoryEditorScreenState extends State<StoryEditorScreen> {
 
   LinearGradient _getGradient(String jenis) {
     switch (jenis) {
-      case 'emas': return const LinearGradient(colors: [Color(0xFF78350F), Color(0xFFD97706), Color(0xFFF59E0B)]);
-      case 'neon': return const LinearGradient(colors: [Color(0xFF0284C7), Color(0xFF06B6D4), Color(0xFF10B981)]);
-      case 'senja': return const LinearGradient(colors: [Color(0xFF831843), Color(0xFFBE185D), Color(0xFFFB7185)]);
-      case 'cyber': return const LinearGradient(colors: [Color(0xFF1E1B4B), Color(0xFF4C1D95), Color(0xFF06B6D4)]);
-      default: return const LinearGradient(colors: [Color(0xFF3B0764), Color(0xFF6B21A8), Color(0xFFA855F7)]);
+      case 'emas': return const LinearGradient(colors: [XyTheme.amber900, XyTheme.amber600, XyTheme.amber500]);
+      case 'neon': return const LinearGradient(colors: [XyTheme.sky600, XyTheme.cyan500, XyTheme.emerald500]);
+      case 'senja': return const LinearGradient(colors: [XyTheme.pink900, XyTheme.pink700, XyTheme.rose400]);
+      case 'cyber': return const LinearGradient(colors: [XyTheme.indigo950, XyTheme.violet900, XyTheme.cyan500]);
+      default: return const LinearGradient(colors: [XyTheme.purple950, XyTheme.purple800, XyTheme.plum]);
     }
   }
 

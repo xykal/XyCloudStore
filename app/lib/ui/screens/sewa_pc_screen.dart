@@ -67,7 +67,7 @@ class _SewaPcScreenState extends State<SewaPcScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1E1730), Color(0xFF2E1065)],
+                    colors: [XyTheme.inkPurple, XyTheme.primaryDark],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: XyTheme.primary.withOpacity(.35)),

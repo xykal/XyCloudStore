@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import { adminFetch } from "@/lib/api";
 import {
-  BrainCircuit, CheckCheck, Database, Eye, Flag, Gavel, Inbox, RefreshCw, ShieldCheck,
-  Trash2, Wifi, XCircle,
+  BrainCircuit, CheckCheck, Database, Flag, Gavel, Inbox, RefreshCw, ShieldCheck,
+  Wifi, XCircle,
 } from "lucide-react";
 import {
-  Btn, Chip, EmptyBox, ErrBox, Header, jam, Load, MsgOk, toneStatus, useAdminList,
+  Btn, Chip, EmptyBox, ErrBox, Header, jam, Load, MsgOk, useAdminList,
 } from "@/components/ui/kit";
-import { konfirm, mintaTeks } from "@/components/ui/dialog";
+import { mintaTeks } from "@/components/ui/dialog";
+import LaporanList from "@/components/ui/laporan-list";
 
 export default function ModerasiPage() {
   const [tab, setTab] = useState<"laporan" | "banding" | "ai">("laporan");
@@ -40,111 +41,10 @@ export default function ModerasiPage() {
 }
 
 // ---------------------------------------------------------------------------
-//  Tab laporan konten (perilaku lama)
+//  Tab laporan konten — implementasi bersama dengan /laporan
 // ---------------------------------------------------------------------------
 function TabLaporan() {
-  const { rows, loading, err, setErr, reload } = useAdminList("/api/admin/laporan");
-  const [ok, setOk] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function selesai(id: string) {
-    setBusy(true); setErr(""); setOk("");
-    try {
-      await adminFetch(`/api/admin/laporan/${id}`, { method: "PATCH", body: { status: "selesai" } });
-      setOk("Laporan ditutup");
-      await reload();
-    } catch (e: any) { setErr(e.message); }
-    finally { setBusy(false); }
-  }
-
-  async function hapusKonten(l: any) {
-    if (!await konfirm({ pesan: "Hapus konten terkait laporan ini? Permanen.", bahaya: true })) return;
-    setBusy(true); setErr(""); setOk("");
-    try {
-      const jenis = String(l.jenis || l.tipe || "");
-      const ref = l.ref_id || l.target_id;
-      if (jenis.includes("balasan")) {
-        await adminFetch(`/api/admin/forum/balasan/${ref}`, { method: "DELETE" });
-      } else if (jenis.includes("forum") || jenis.includes("post")) {
-        await adminFetch(`/api/admin/forum/${ref}`, { method: "DELETE" });
-      } else if (l.konten_path) {
-        await adminFetch(`/api/admin/konten/${l.konten_path}`, { method: "DELETE" });
-      }
-      await adminFetch(`/api/admin/laporan/${l.id}`, { method: "PATCH", body: { status: "selesai" } });
-      setOk("Konten dihapus & laporan ditutup");
-      await reload();
-    } catch (e: any) { setErr(e.message); }
-    finally { setBusy(false); }
-  }
-
-  // Tandai konten sensitif (tetap tampil tapi diburamkan di aplikasi) lalu tutup laporan.
-  async function tandaiSensitif(l: any) {
-    const jenis = String(l.jenis || l.tipe || "");
-    const ref = l.ref_id || l.target_id;
-    if (!ref) { setErr("Laporan ini tidak punya referensi konten."); return; }
-    const tabel = jenis.includes("ulasan") ? "ulasan" : "forum";
-    setBusy(true); setErr(""); setOk("");
-    try {
-      await adminFetch(`/api/admin/konten/${tabel}/${ref}`, { method: "PATCH", body: { sensitif: true } });
-      await adminFetch(`/api/admin/laporan/${l.id}`, { method: "PATCH", body: { status: "selesai" } });
-      setOk("Konten ditandai sensitif & laporan ditutup");
-      await reload();
-    } catch (e: any) { setErr(e.message); }
-    finally { setBusy(false); }
-  }
-
-  const open = rows.filter((r) => !["selesai", "ditutup", "closed"].includes(String(r.status || "").toLowerCase()));
-
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
-        <span className="text-xs px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-700 font-semibold">{open.length} terbuka</span>
-        <span className="text-xs px-3 py-1.5 rounded-full bg-[#F3F0FF] border border-[#E9E3F5] font-medium">{rows.length} total</span>
-      </div>
-      {ok && <MsgOk msg={ok} />}
-      {err && <ErrBox msg={err} />}
-      {loading ? <Load /> : rows.length === 0 ? <EmptyBox msg="Belum ada laporan konten." /> : (
-        <div className="space-y-3">
-          {rows.map((l) => (
-            <div key={l.id} className="xy-card rounded-[16px] p-4 space-y-2">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-[#1E1B2E]">{l.judul || l.jenis || l.id}</span>
-                    <Chip tone={toneStatus(l.status)}>{l.status || "baru"}</Chip>
-                  </div>
-                  <div className="text-[11px] text-[#7C738F] mt-0.5">
-                    {l.pelapor || l.nama_pelapor || "anon"} · {l.jenis} · {jam(l.dibuat || l.created_at)}
-                  </div>
-                </div>
-                <div className="flex gap-1.5">
-                  <Btn tone="ok" className="!h-8" disabled={busy} onClick={() => selesai(l.id)}>
-                    <CheckCheck size={12} /> Tutup
-                  </Btn>
-                  {(String(l.jenis || l.tipe || "").includes("forum")
-                    || String(l.jenis || l.tipe || "").includes("post")
-                    || String(l.jenis || l.tipe || "").includes("ulasan")) && (l.ref_id || l.target_id) && (
-                    <Btn tone="ghost" className="!h-8" disabled={busy} onClick={() => tandaiSensitif(l)} title="Blur konten di aplikasi, tanpa menghapus">
-                      <Eye size={12} /> Sensitif
-                    </Btn>
-                  )}
-                  {(String(l.jenis || l.tipe || "").includes("balasan")
-                    || String(l.jenis || l.tipe || "").includes("forum")
-                    || String(l.jenis || l.tipe || "").includes("post")
-                    || Boolean(l.konten_path)) && (
-                    <Btn tone="bahaya" className="!h-8" disabled={busy} onClick={() => hapusKonten(l)}>
-                      <Trash2 size={12} /> Hapus konten
-                    </Btn>
-                  )}
-                </div>
-              </div>
-              {l.alasan && <div className="text-[12px] text-[#4B445F] bg-[#F5F3FF] border border-[#E9E3F5] rounded-xl px-3 py-2">{l.alasan}</div>}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return <LaporanList tampilCari={false} />;
 }
 
 // ---------------------------------------------------------------------------

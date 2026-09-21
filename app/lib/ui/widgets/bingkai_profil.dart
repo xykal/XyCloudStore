@@ -69,11 +69,11 @@ Gradient? _gradBingkai(String? id) => switch (id) {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'emas' => const LinearGradient(
-          colors: [Color(0xFFF7E7B3), Color(0xFFD3A625), Color(0xFF7A5A10)],
+          colors: [XyTheme.creamGold, XyTheme.goldShine, Color(0xFF7A5A10)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'neon' => const LinearGradient(
-          colors: [Color(0xFF22D3EE), Color(0xFF8B5CF6), Color(0xFFF472B6)],
+          colors: [XyTheme.cyan400, XyTheme.violet, XyTheme.pink400],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'cyberpunk' => const LinearGradient(
@@ -81,46 +81,46 @@ Gradient? _gradBingkai(String? id) => switch (id) {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'hologram' => const LinearGradient(
-          colors: [Color(0xFFFDE047), Color(0xFF67E8F9), Color(0xFFF472B6), Color(0xFFA78BFA)],
+          colors: [Color(0xFFFDE047), XyTheme.cyan300, XyTheme.pink400, XyTheme.lilac],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'es' => const LinearGradient(
-          colors: [Color(0xFFE0F2FE), Color(0xFF38BDF8), Color(0xFF0284C7)],
+          colors: [Color(0xFFE0F2FE), XyTheme.sky400, XyTheme.sky600],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'pelangi' => const SweepGradient(
           colors: [
-            Color(0xFFEF4444), Color(0xFFF59E0B), Color(0xFF10B981),
-            Color(0xFF06B6D4), Color(0xFF6366F1), Color(0xFFEC4899), Color(0xFFEF4444),
+            XyTheme.red500, XyTheme.amber500, XyTheme.emerald500,
+            XyTheme.cyan500, Color(0xFF6366F1), XyTheme.pink500, XyTheme.red500,
           ]),
       'ruby' => const LinearGradient(
-          colors: [Color(0xFFFECDD3), Color(0xFFE11D48), Color(0xFF881337)],
+          colors: [Color(0xFFFECDD3), XyTheme.rose600, Color(0xFF881337)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'emerald' => const LinearGradient(
-          colors: [Color(0xFFA7F3D0), Color(0xFF059669), Color(0xFF064E3B)],
+          colors: [Color(0xFFA7F3D0), XyTheme.emerald600, Color(0xFF064E3B)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'inferno' => const SweepGradient(
           colors: [
-            Color(0xFFFF1E00), Color(0xFFFF8500), Color(0xFFFFD600),
-            Color(0xFFFF1E00),
+            XyTheme.emberRed, Color(0xFFFF8500), Color(0xFFFFD600),
+            XyTheme.emberRed,
           ]),
       'matrix' => const LinearGradient(
-          colors: [Color(0xFF00FF66), Color(0xFF008F11), Color(0xFF042F2E)],
+          colors: [XyTheme.neonGreen, Color(0xFF008F11), Color(0xFF042F2E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'samurai' => const LinearGradient(
-          colors: [Color(0xFFF8FAFC), Color(0xFF60A5FA), Color(0xFF1E3A8A)],
+          colors: [Color(0xFFF8FAFC), XyTheme.blue400, Color(0xFF1E3A8A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       'nebula' => const SweepGradient(
           colors: [
-            Color(0xFFC084FC), Color(0xFFE879F9), Color(0xFF4C1D95),
-            Color(0xFF818CF8), Color(0xFFC084FC),
+            XyTheme.purple400, XyTheme.fuchsia400, XyTheme.violet900,
+            Color(0xFF818CF8), XyTheme.purple400,
           ]),
       'phantom' => const LinearGradient(
-          colors: [Color(0xFF22D3EE), Color(0xFFA855F7), Color(0xFF0F172A)],
+          colors: [XyTheme.cyan400, XyTheme.plum, XyTheme.slate900],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight),
       _ => null,
@@ -237,8 +237,8 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: id == 'api'
-                    ? [const Color(0xFFF472B6), XyTheme.violet, const Color(0xFF7C2D12)]
-                    : [const Color(0xFF22D3EE), XyTheme.violet, const Color(0xFF312E81)],
+                    ? [const XyTheme.pink400, XyTheme.violet, const Color(0xFF7C2D12)]
+                    : [const XyTheme.cyan400, XyTheme.violet, const Color(0xFF312E81)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -262,11 +262,11 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
                               ? _gradBingkai('nebula')
                               : const SweepGradient(
                           colors: [
-                            Color(0xFF22D3EE),
+                            XyTheme.cyan400,
                             XyTheme.violet,
-                            Color(0xFFF472B6),
-                            Color(0xFFA78BFA),
-                            Color(0xFF22D3EE),
+                            XyTheme.pink400,
+                            XyTheme.lilac,
+                            XyTheme.cyan400,
                           ],
                           stops: [0, .28, .52, .78, 1],
                         ),
@@ -280,10 +280,10 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
           gradient: id == 'permata'
               ? const LinearGradient(
                   colors: [
-                    Color(0xFFF7E7B3),
-                    Color(0xFF8B5CF6),
-                    Color(0xFFD3A625),
-                    Color(0xFF4C1D95),
+                    XyTheme.creamGold,
+                    XyTheme.violet,
+                    XyTheme.goldShine,
+                    XyTheme.violet900,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight)
@@ -356,7 +356,7 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
                   tebal: tebal,
                   putar: _putar,
                   warna: const [
-                    Color(0xFF93C5FD), Color(0xFFC4B5FD), Colors.white,
+                    Color(0xFF93C5FD), XyTheme.lavender, Colors.white,
                   ])),
         if (id == 'sirkuit')
           Positioned.fill(
@@ -365,7 +365,7 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
                   tebal: tebal,
                   putar: _putar,
                   warna: const [
-                    Color(0xFF22D3EE), Color(0xFFF472B6), Color(0xFF67E8F9),
+                    XyTheme.cyan400, XyTheme.pink400, XyTheme.cyan300,
                   ])),
         if (id == 'mahkota')
           Positioned.fill(
@@ -374,7 +374,7 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
                   tebal: tebal,
                   putar: _putar,
                   warna: const [
-                    XyTheme.goldSoft, Colors.white, Color(0xFFFCA5A5),
+                    XyTheme.goldSoft, Colors.white, XyTheme.csFail,
                   ])),
         if (id == 'celestial')
           Positioned.fill(
@@ -383,7 +383,7 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
                   tebal: tebal,
                   putar: _putar,
                   warna: const [
-                    Color(0xFFE9D5FF), Color(0xFFFDE68A), Color(0xFFC084FC), Colors.white,
+                    XyTheme.purple200, XyTheme.amber200, XyTheme.purple400, Colors.white,
                   ])),
         if (id == 'sakura_angin')
           Positioned.fill(
@@ -497,7 +497,7 @@ class PilihBingkai extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: b.vip
                         ? const LinearGradient(colors: [
-                            Color(0xFFD3A625), Color(0xFF8B5CF6),
+                            XyTheme.goldShine, XyTheme.violet,
                           ])
                         : null,
                     color: b.vip ? null : XyTheme.violet.withOpacity(.14),
@@ -610,9 +610,9 @@ class _BaraNaik extends StatelessWidget {
 
   static const _bara = [
     Color(0xFFFBBF24),
-    Color(0xFFF472B6),
-    Color(0xFFA78BFA),
-    Color(0xFFFDE68A),
+    XyTheme.pink400,
+    XyTheme.lilac,
+    XyTheme.amber200,
     Color(0xFFF97316),
   ];
 
@@ -662,10 +662,10 @@ class _KelopakJatuh extends StatelessWidget {
   final Animation<double> apung;
 
   static const _warna = [
-    Color(0xFFFBCFE8),
+    XyTheme.pink200,
     Color(0xFFF9A8D4),
     Color(0xFFFDF2F8),
-    Color(0xFFF472B6),
+    XyTheme.pink400,
   ];
 
   @override
@@ -709,7 +709,7 @@ class _CahayaNaik extends StatelessWidget {
 
   static const _warna = [
     Colors.white,
-    Color(0xFFFDF2C5),
+    XyTheme.creamPale,
     Color(0xFFE0E7FF),
     XyTheme.goldSoft,
   ];

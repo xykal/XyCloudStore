@@ -638,7 +638,7 @@ class _Gelembung extends StatelessWidget {
                         ? Icons.done_all_rounded
                         : Icons.done_rounded,
                     size: 13,
-                    color: msg.dibaca ? const Color(0xFF7DD3FC) : Colors.white70),
+                    color: msg.dibaca ? const XyTheme.csRead : Colors.white70),
               ],
             ]),
           ),
@@ -680,7 +680,7 @@ class _Gelembung extends StatelessWidget {
               Icon(
                   msg.dibaca ? Icons.done_all_rounded : Icons.done_rounded,
                   size: 13,
-                  color: msg.dibaca ? const Color(0xFF7DD3FC) : Colors.white70),
+                  color: msg.dibaca ? const XyTheme.csRead : Colors.white70),
             ],
           ]),
         ]),
@@ -857,7 +857,7 @@ class _SuaraDmState extends State<_SuaraDm> {
           const SizedBox(width: 6),
           Icon(widget.msg.dibaca ? Icons.done_all_rounded : Icons.done_rounded,
               size: 13,
-              color: widget.msg.dibaca ? const Color(0xFF7DD3FC) : Colors.white70),
+              color: widget.msg.dibaca ? const XyTheme.csRead : Colors.white70),
         ],
       ]),
     );

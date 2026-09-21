@@ -104,7 +104,7 @@ async function cariDuplikat(env, hash) {
   try {
     const cek = await fetch(item.url, { method: 'HEAD' });
     if (cek.ok) return item;
-  } catch (_) {}
+  } catch (_) { /* HEAD gagal: anggap URL tidak valid */ }
   return null;
 }
 

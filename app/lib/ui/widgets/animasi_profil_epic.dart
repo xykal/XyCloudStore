@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../core/theme.dart';
 
 /// ============================================================
 ///  Animasi Profil Epik (Cinematic Frame Overlay)
@@ -127,7 +128,7 @@ class _EpicPainter extends CustomPainter {
     final paintNaga = Paint()
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
-    final paintMata = Paint()..color = const Color(0xFFFFE066);
+    final paintMata = Paint()..color = const XyTheme.starYellow;
 
     // Lintasan sinus naga meluncur dari kanan ke kiri
     final p = progress;
@@ -208,7 +209,7 @@ class _EpicPainter extends CustomPainter {
   void _gambarMatrix(Canvas canvas, Size size) {
     final colCount = 14;
     final paintGlow = Paint()
-      ..color = const Color(0xFF00FF66).withOpacity(0.85)
+      ..color = const XyTheme.neonGreen.withOpacity(0.85)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
     final paintTrail = Paint()..strokeWidth = 2.0;
 
@@ -226,7 +227,7 @@ class _EpicPainter extends CustomPainter {
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
         colors: [
-          const Color(0xFF00FF66).withOpacity(0.6),
+          const XyTheme.neonGreen.withOpacity(0.6),
           Colors.transparent,
         ],
       );
@@ -253,7 +254,7 @@ class _EpicPainter extends CustomPainter {
       canvas.drawLine(start, currentEnd, slashPaint);
 
       final glowPaint = Paint()
-        ..color = const Color(0xFF60A5FA).withOpacity((1.0 - t) * 0.7)
+        ..color = const XyTheme.blue400.withOpacity((1.0 - t) * 0.7)
         ..strokeWidth = 9.0
         ..style = PaintingStyle.stroke
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -265,7 +266,7 @@ class _EpicPainter extends CustomPainter {
       final pKelopak = (progress + i * 0.15) % 1.0;
       final x = size.width * (0.15 + (i * 0.12)) + math.sin(pKelopak * 4) * 14;
       final y = pKelopak * size.height;
-      final petalPaint = Paint()..color = const Color(0xFFE11D48).withOpacity(0.7);
+      final petalPaint = Paint()..color = const XyTheme.rose600.withOpacity(0.7);
       canvas.drawOval(
         Rect.fromCenter(center: Offset(x, y), width: 6, height: 10),
         petalPaint,
@@ -287,7 +288,7 @@ class _EpicPainter extends CustomPainter {
       final opacity = (0.4 + 0.6 * math.sin((progress * 3 + i) * math.pi)).clamp(0.0, 1.0);
 
       final starPaint = Paint()
-        ..color = (i % 2 == 0 ? const Color(0xFFC084FC) : const Color(0xFF38BDF8)).withOpacity(opacity)
+        ..color = (i % 2 == 0 ? const XyTheme.purple400 : const XyTheme.sky400).withOpacity(opacity)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
 
       canvas.drawCircle(Offset(x, y), 2.5 + (i % 3), starPaint);
@@ -303,7 +304,7 @@ class _EpicPainter extends CustomPainter {
     canvas.drawCircle(Offset(kometX, kometY), 3, kometPaint);
 
     final kometTrail = Paint()
-      ..color = const Color(0xFFE879F9).withOpacity(0.5)
+      ..color = const XyTheme.fuchsia400.withOpacity(0.5)
       ..strokeWidth = 2.0;
     canvas.drawLine(Offset(kometX, kometY), Offset(kometX + 35, kometY - 18), kometTrail);
   }
@@ -317,7 +318,7 @@ class _EpicPainter extends CustomPainter {
       final alpha = math.sin(pGhost * math.pi).clamp(0.0, 1.0) * 0.7;
 
       final ghostPaint = Paint()
-        ..color = (i % 2 == 0 ? const Color(0xFFA855F7) : const Color(0xFF06B6D4)).withOpacity(alpha)
+        ..color = (i % 2 == 0 ? const XyTheme.plum : const XyTheme.cyan500).withOpacity(alpha)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
       canvas.drawCircle(Offset(x, y), 12 + (i % 4) * 3, ghostPaint);
@@ -334,7 +335,7 @@ class _EpicPainter extends CustomPainter {
     final petirP = (progress * 2.5) % 1.0;
     if (petirP < 0.25) {
       final pLight = Paint()
-        ..color = const Color(0xFF38BDF8).withOpacity(0.9)
+        ..color = const XyTheme.sky400.withOpacity(0.9)
         ..strokeWidth = 2.5
         ..style = PaintingStyle.stroke
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
@@ -356,7 +357,7 @@ class _EpicPainter extends CustomPainter {
   // 8. Sayap Surgawi & Cahaya Ilahi
   void _gambarSayap(Canvas canvas, Size size) {
     final beamPaint = Paint()
-      ..color = const Color(0xFFFFE066).withOpacity(0.18 + 0.1 * math.sin(progress * 2 * math.pi))
+      ..color = const XyTheme.starYellow.withOpacity(0.18 + 0.1 * math.sin(progress * 2 * math.pi))
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
 
     final path = Path();
@@ -386,7 +387,7 @@ class _EpicPainter extends CustomPainter {
       final alpha = math.sin(pSakura * math.pi).clamp(0.0, 1.0) * 0.85;
 
       final sPaint = Paint()
-        ..color = (i % 2 == 0 ? const Color(0xFFF472B6) : const Color(0xFFFBCFE8)).withOpacity(alpha);
+        ..color = (i % 2 == 0 ? const XyTheme.pink400 : const XyTheme.pink200).withOpacity(alpha);
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(pSakura * 8 * math.pi + i);

@@ -379,7 +379,7 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
         const SizedBox(width: 10),
         Expanded(child: Text(teks)),
       ]),
-      backgroundColor: galat ? XyTheme.danger : const Color(0xFF166534),
+      backgroundColor: galat ? XyTheme.danger : const XyTheme.green800,
     ));
   }
 
@@ -413,7 +413,7 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF07101D),
+        backgroundColor: const XyTheme.navyDeep,
         appBar: AppBar(
           leading: IconButton(
               tooltip: 'Kembali', onPressed: _keluar, icon: const Icon(Icons.arrow_back_rounded)),
@@ -497,7 +497,7 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF13243B), Color(0xFF07101D)],
+                        colors: [Color(0xFF13243B), XyTheme.navyDeep],
                       ),
                     ),
                   )),
@@ -506,11 +506,11 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
                     child: IgnorePointer(
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
                         Icon(Icons.desktop_windows_outlined,
-                            size: 52, color: Color(0x337C3AED)),
+                            size: 52, color: XyTheme.primary.withOpacity(0.2)),
                         SizedBox(height: 8),
                         Text('AREA VIDEO 16:9',
                             style: TextStyle(
-                                color: Color(0x557C3AED),
+                                color: XyTheme.primary.withOpacity(0.33),
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 2)),
                       ]),
@@ -546,18 +546,18 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _terpilihId == b.id
-                                ? const Color(0x33A78BFA)
+                                ? const XyTheme.lilac.withOpacity(0.2)
                                 : Colors.white.withOpacity(0.06 * b.opacity),
                             border: Border.all(
                               color: _terpilihId == b.id
-                                  ? const Color(0xFFA78BFA)
+                                  ? const XyTheme.lilac
                                   : Colors.white.withOpacity(0.80 * b.opacity),
                               width: _terpilihId == b.id ? 2.6 : 1.6,
                             ),
                             boxShadow: _terpilihId == b.id
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF7C3AED).withOpacity(.55),
+                                      color: const XyTheme.primary.withOpacity(.55),
                                       blurRadius: 14,
                                     )
                                   ]
@@ -722,7 +722,7 @@ class _HudGridPainter extends CustomPainter {
       ..color = Colors.white.withOpacity(.055)
       ..strokeWidth = 1;
     final besar = Paint()
-      ..color = const Color(0xFF7C3AED).withOpacity(.14)
+      ..color = const XyTheme.primary.withOpacity(.14)
       ..strokeWidth = 1;
     const jarak = 24.0;
     for (double x = 0; x <= size.width; x += jarak) {

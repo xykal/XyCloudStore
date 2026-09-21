@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { adminFetch } from "@/lib/api";
 import { Activity, Cpu, Gauge, Radio, Server, Wifi } from "lucide-react";
+import { Bar, Chip, EmptyBox, ErrBox, Header, Load } from "@/components/ui/kit";
 
 type Agen = any;
 
@@ -10,20 +11,6 @@ const HIDUP_MS = 90000; // sesuai Worker: terakhir < 90 detik = hidup
 function hidup(terakhir?: string) {
   if (!terakhir) return false;
   return Date.now() - new Date(terakhir).getTime() < HIDUP_MS;
-}
-
-function Bar({ label, persen, warn }: { label: string; persen?: number | null; warn?: boolean }) {
-  const p = Math.max(0, Math.min(100, Math.round(Number(persen ?? 0))));
-  const warna = warn ? "bg-amber-400" : "bg-gradient-to-r from-[#7C3AED] to-[#A855F7]";
-  return (
-    <div className="flex items-center gap-2">
-      <span className="w-14 text-[10px] text-[#7C738F] font-semibold uppercase tracking-wide">{label}</span>
-      <div className="flex-1 h-1.5 rounded-full bg-[#F3F0FF] overflow-hidden">
-        <div className={`h-full ${warna}`} style={{ width: `${p}%` }} />
-      </div>
-      <span className="w-9 text-right text-[11px] font-mono text-[#1E1B2E]">{p}%</span>
-    </div>
-  );
 }
 
 function specAman(raw: any) {
@@ -69,19 +56,17 @@ export default function LivePage() {
 
   return (
     <div className="space-y-4 font-[var(--font-inter)]">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl xy-btn grid place-items-center"><Activity size={18} className="text-white" /></div>
-          <div>
-            <h1 className="text-xl font-semibold text-[#1E1B2E] tracking-tight">Live Monitor <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-[#F3F0FF] font-semibold">BARU</span></h1>
-            <p className="text-sm text-[#7C738F] font-medium">Status agen PC realtime — CPU/RAM/GPU dari heartbeat agen, refresh tiap 8 detik</p>
-          </div>
-        </div>
-        <span className="text-xs px-3 py-1.5 rounded-full bg-[#F3F0FF] border border-[#E9E3F5] font-mono text-[#7C3AED] flex items-center gap-1.5">
-          <span className={`w-2 h-2 rounded-full ${online > 0 ? "bg-emerald-400" : "bg-rose-400"} animate-pulse`} />
-          {jam.toLocaleTimeString("id-ID")}
-        </span>
-      </div>
+      <Header
+        icon={Activity}
+        title="Live Monitor"
+        sub="Status agen PC realtime — CPU/RAM/GPU dari heartbeat agen, refresh tiap 8 detik"
+        right={
+          <span className="text-xs px-3 py-1.5 rounded-full bg-[#F3F0FF] border border-[#E9E3F5] font-mono text-[#7C3AED] flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${online > 0 ? "bg-emerald-400" : "bg-rose-400"} animate-pulse`} />
+            {jam.toLocaleTimeString("id-ID")}
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
@@ -99,16 +84,10 @@ export default function LivePage() {
         ))}
       </div>
 
-      {loading ? (
-        <div className="xy-card rounded-xl p-10 text-center text-[#7C738F] font-medium">Menghubungi Worker…</div>
-      ) : err ? (
-        <div className="xy-card rounded-xl p-4 text-red-600 font-medium">{err} — pastikan /api/admin/unit tersedia di Worker.</div>
+      {loading ? <Load /> : err ? (
+        <ErrBox msg={`${err} — pastikan /api/admin/unit tersedia di Worker.`} />
       ) : agen.length === 0 ? (
-        <div className="xy-card rounded-xl p-10 text-center">
-          <div className="w-12 h-12 mx-auto rounded-xl bg-[#F3F0FF] grid place-items-center"><Gauge size={20} className="text-[#7C3AED]" /></div>
-          <div className="mt-3 text-sm text-[#7C738F] font-semibold tracking-tight">Belum ada agen terdaftar</div>
-          <div className="text-[11px] text-[#7C738F] mt-1 font-medium">Daftarkan unit lewat menu Unit PC & jalankan xy_agent.py di host.</div>
-        </div>
+        <EmptyBox msg="Belum ada agen terdaftar" sub="Daftarkan unit lewat menu Unit PC & jalankan xy_agent.py di host." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {agen.map((a) => {
@@ -121,15 +100,13 @@ export default function LivePage() {
                   <span className="font-semibold text-[#1E1B2E] text-[13px] tracking-tight flex items-center gap-2 truncate">
                     <Server size={14} className="text-[#7C3AED] shrink-0" /> {a.nama || a.kode || a.id}
                   </span>
-                  <span className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full font-semibold tracking-wide ${hidupFlag ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-600" : "bg-rose-500/15 border border-rose-500/30 text-rose-600"}`}>
-                    {hidupFlag ? "ONLINE" : "OFFLINE"}
-                  </span>
+                  <Chip tone={hidupFlag ? "ok" : "bad"}>{hidupFlag ? "ONLINE" : "OFFLINE"}</Chip>
                 </div>
                 <div className="mt-1 text-[11px] text-[#7C738F] font-mono truncate">{a.host || a.plan_id || "—"}{a.versi ? ` • agen ${a.versi}` : ""}</div>
 
                 {a.sesi_aktif && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full bg-[#F3F0FF] border border-[#E9E3F5] font-semibold text-amber-600">
-                    <Radio size={10} /> Sesi aktif
+                  <div className="mt-2 inline-flex items-center gap-1.5">
+                    <Chip tone="warn"><span className="inline-flex items-center gap-1"><Radio size={10} /> Sesi aktif</span></Chip>
                   </div>
                 )}
 

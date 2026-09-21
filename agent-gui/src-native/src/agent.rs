@@ -800,6 +800,23 @@ fn kerjakan(k: &Konfig, perintah: &Value, log: &Logger) {
     }
 }
 
+/// Deteksi IP LAN utama tanpa crate tambahan: "hubungkan" socket UDP ke
+/// alamat publik (tidak ada paket yang benar-benar dikirim), lalu baca
+/// alamat lokal yang dipilih OS. Dilaporkan tiap heartbeat supaya aplikasi
+/// bisa memakai jalur LAN saat satu WiFi — tanpa set manual.
+fn ip_lan() -> Option<String> {
+    use std::net::UdpSocket;
+    let sok = UdpSocket::bind("0.0.0.0:0").ok()?;
+    sok.connect("8.8.8.8:80").ok()?;
+    let ip = sok.local_addr().ok()?.ip();
+    match ip {
+        std::net::IpAddr::V4(v4) if !v4.is_loopback() && !v4.is_unspecified() => {
+            Some(v4.to_string())
+        }
+        _ => None,
+    }
+}
+
 fn detak(k: &Konfig, log: &Logger) {
     let cek = periksa_sunshine(k);
     let mut spec = spesifikasi();
@@ -808,11 +825,16 @@ fn detak(k: &Konfig, log: &Logger) {
     let live_health = obs_live::pantau(k, log);
     let stream = alamat_stream(k);
     spec["stream_host"] = json!(stream);
+    let lan = ip_lan().unwrap_or_default();
+    if !lan.is_empty() {
+        spec["ip_lan"] = json!(lan);
+    }
     let muatan = json!({
         "status": "online",
         "versi": VERSI,
         "spec": spec,
         "host": stream,
+        "host_lan": lan,
         "hostname": std::env::var("COMPUTERNAME").unwrap_or_default(),
         "live_health": live_health,
     });

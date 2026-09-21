@@ -77,6 +77,22 @@ export default function UnitPage() {
     navigator.clipboard?.writeText(teks).then(() => setOk("Kode disalin")).catch(() => setOk(teks));
   }
 
+  const [uji, setUji] = useState<Record<string, { host: string; hasil: { port: number; terbuka: boolean }[] }>>({});
+  const [ujiBusy, setUjiBusy] = useState<string | null>(null);
+
+  async function ujiPort(id: string) {
+    setUjiBusy(id); setErr(""); setOk("");
+    try {
+      const d = await adminFetch(`/api/admin/agen/${id}/cek-port`, { method: "POST" });
+      setUji((s) => ({ ...s, [id]: { host: d.host, hasil: d.hasil || [] } }));
+      const gagal = (d.hasil || []).filter((h: any) => !h.terbuka);
+      setOk(gagal.length === 0
+        ? `Port streaming ${d.host} terbuka semua — HP bisa Hubungkan.`
+        : `Port tertutup di ${d.host}: ${gagal.map((h: any) => h.port).join(", ")} — cek UPnP/port-forward di PC.`);
+    } catch (e: any) { setErr(e.message); }
+    finally { setUjiBusy(null); }
+  }
+
   const hidup = (u: any) => {
     if (!u.terakhir && !u.last_seen) return false;
     const t = new Date(u.terakhir || u.last_seen).getTime();
@@ -109,9 +125,9 @@ export default function UnitPage() {
       {err && <ErrBox msg={err} />}
 
       <div className="rounded-[16px] border border-amber-200 bg-amber-50 p-4 text-[12.5px] text-amber-900 leading-relaxed">
-        <b>Penting streaming:</b> Host harus <b>IP publik</b> (contoh 103.x.x.x) atau domain yang resolve dari internet —
-        <b> bukan</b> nama PC Windows (runnervm…, DESKTOP-…). Tanpa ini HP gagal DNS saat Hubungkan PC.
-        Agen 1.3.3+ mengirim IP publik otomatis; tetap bisa override di sini.
+        <b>Streaming otomatis:</b> agen melaporkan <b>IP publik</b> tiap 20 dtk (ikut berubah saat IP ISP berganti), membuka port via <b>UPnP</b>,
+        dan melaporkan <b>IP LAN</b> (jalur satu WiFi). Host manual di bawah hanya <b>override</b> bila auto gagal — mis. PC di balik CGNAT
+        (cek <i>Uji port</i>; bila tertutup semua, PC butuh port-forward manual atau jalur tunnel/relay).
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -156,12 +172,28 @@ export default function UnitPage() {
                       <button type="button" className="text-[#7C3AED] font-semibold" onClick={() => salin(u.kode)}>salin</button>
                     </div>}
                     <div>host: {u.host || <span className="text-rose-600 font-sans font-semibold">belum diisi</span>}</div>
+                    {u.host_lan && <div>lan: {u.host_lan} <span className="font-sans text-emerald-700">(auto)</span></div>}
+                    {u.tunnel_host && <div>tunnel: {u.tunnel_host} <span className="font-sans text-emerald-700">(auto)</span></div>}
+                    {u.relay_host && <div>relay: {u.relay_host} <span className="font-sans text-emerald-700">(auto)</span></div>}
+                    {uji[u.id] && (
+                      <div className="font-sans pt-1">
+                        port {uji[u.id].host}:{" "}
+                        {uji[u.id].hasil.map((h) => (
+                          <span key={h.port} className={`ml-1 px-1.5 py-0.5 rounded text-[10.5px] font-semibold ${h.terbuka ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-700"}`}>
+                            {h.port} {h.terbuka ? "✓" : "✗"}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     {u.plan_id && <div>plan: {u.plan_id}</div>}
                     <div>terakhir: {jam(u.terakhir || u.last_seen || u.dibuat)}</div>
                     {u.versi && <div>agen: {u.versi}</div>}
                   </div>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 flex-wrap justify-end">
+                  <Btn tone="ghost" className="!h-8" disabled={busy || ujiBusy === u.id} onClick={() => ujiPort(u.id)}>
+                    {ujiBusy === u.id ? "Menguji…" : "Uji port"}
+                  </Btn>
                   <Btn tone="ghost" className="!h-8" disabled={busy} onClick={() => mulaiEdit(u)}>
                     <Pencil size={13} /> Edit host
                   </Btn>

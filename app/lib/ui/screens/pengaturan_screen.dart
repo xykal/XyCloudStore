@@ -958,10 +958,10 @@ class _UbahProfilScreenState extends State<UbahProfilScreen> {
                         )
                       : _cekStatus == 'ok'
                           ? const Icon(Icons.check_circle_rounded,
-                              color: Color(0xFF2D7357))
+                              color: XyTheme.success)
                           : _cekStatus == 'galat'
                               ? const Icon(Icons.cancel_rounded,
-                                  color: Color(0xFFB54450))
+                                  color: XyTheme.danger)
                               : null,
               helperText: usernameTerkunci
                   ? 'Username hanya bisa diganti 30 hari sekali (sisa $sisaUsername hari).'
@@ -977,8 +977,8 @@ class _UbahProfilScreenState extends State<UbahProfilScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: _cekStatus == 'ok'
-                          ? const Color(0xFF2D7357)
-                          : const Color(0xFFB54450))),
+                          ? const XyTheme.success
+                          : const XyTheme.danger)),
             ),
           const SizedBox(height: 18),
           const XyLabel('Bio'),

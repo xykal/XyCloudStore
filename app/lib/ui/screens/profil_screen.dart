@@ -186,7 +186,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                color: Color(0xFFC4B5FD),
+                                color: XyTheme.lavender,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: .2)),
@@ -663,7 +663,7 @@ class _SheetAturTataLetakState extends State<_SheetAturTataLetak> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF16151E) : Colors.white,
+        color: isDark ? const XyTheme.cardDark : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 20),

@@ -6,6 +6,7 @@ import {
   Activity, AlertTriangle, BadgeCheck, Ban, BellRing, CheckCircle2, CircleDollarSign, Eye,
   HeartHandshake, Radio, RefreshCw, Settings2, ShieldCheck, Square, Users, Wallet, Wrench,
 } from "lucide-react";
+import { Btn, Chip, ErrBox, Header, jam, MsgOk, rupiah, Stat, toneStatus } from "@/components/ui/kit";
 
 type Data = {
   config?: any;
@@ -18,25 +19,9 @@ type Data = {
   provider_cleanup?: { stats?: any; rows?: any[] };
 };
 
-const rp = (n: any) => `Rp${Math.max(0, Number(n) || 0).toLocaleString("id-ID")}`;
-const dt = (v: any) => v ? new Date(v).toLocaleString("id-ID") : "—";
-
+/** Badge status livestream di atas Chip kit (toneStatus sudah mengenal katanya). */
 function Badge({ value }: { value: string }) {
-  const good = ["approved", "live", "paid", "available", "charged", "sent", "deleted", "effective", "provider ready"].includes(value);
-  const warn = ["pending", "sending", "starting", "ending", "held", "requested", "processing", "off"].includes(value);
-  return <span className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wide ${
-    good ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
-    warn ? "bg-amber-50 border-amber-200 text-amber-700" :
-    "bg-rose-50 border-rose-200 text-rose-700"
-  }`}>{value || "—"}</span>;
-}
-
-function Stat({ label, value, icon: Icon, tone = "text-[#7C3AED]" }: any) {
-  return <div className="xy-card rounded-[14px] p-4 flex items-center gap-3">
-    <div className="w-10 h-10 rounded-xl bg-[#F3F0FF] grid place-items-center"><Icon size={17} className={tone}/></div>
-    <div><div className="text-[10px] uppercase tracking-wide font-semibold text-[#7C738F]">{label}</div>
-      <div className="text-lg font-semibold text-[#1E1B2E] mt-0.5">{value}</div></div>
-  </div>;
+  return <Chip tone={toneStatus(value)}>{value || "—"}</Chip>;
 }
 
 export default function LivestreamOperationsPage() {
@@ -228,19 +213,19 @@ export default function LivestreamOperationsPage() {
   const pushNeedsAttention = Number(pushStats.retrying || 0) + pushRows.filter(x => x.status === "sent" && x.last_error).length;
 
   return <div className="space-y-4 font-[var(--font-inter)]">
-    <div className="flex items-start justify-between gap-3 flex-wrap">
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#A855F7] grid place-items-center"><Radio size={19} className="text-white"/></div>
-        <div><h1 className="text-xl font-semibold text-[#1E1B2E] tracking-tight">XyCloud Live</h1>
-          <p className="text-sm text-[#7C738F] font-medium">Approval kreator, operasi OBS/Stream, ledger dukungan, payout, dan budget guard</p></div>
-      </div>
-      <button onClick={load} disabled={loading || !!busy} className="h-10 px-3 rounded-xl border border-[#E9E3F5] bg-white text-[#6B5A8A] text-xs font-semibold flex items-center gap-2 disabled:opacity-50">
-        <RefreshCw size={14} className={loading ? "animate-spin" : ""}/> Segarkan
-      </button>
-    </div>
+    <Header
+      icon={Radio}
+      title="XyCloud Live"
+      sub="Approval kreator, operasi OBS/Stream, ledger dukungan, payout, dan budget guard"
+      right={
+        <Btn tone="ghost" onClick={load} disabled={loading || !!busy}>
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Segarkan
+        </Btn>
+      }
+    />
 
-    {error && <div role="alert" aria-live="assertive" className="rounded-xl border border-rose-200 bg-rose-50 text-rose-700 p-3 text-sm font-medium flex gap-2"><AlertTriangle size={16} className="shrink-0 mt-0.5"/>{error}</div>}
-    {success && <div role="status" aria-live="polite" className="rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 p-3 text-sm font-medium flex gap-2"><CheckCircle2 size={16} className="shrink-0 mt-0.5"/>{success}</div>}
+    {error && <ErrBox msg={error} />}
+    {success && <MsgOk msg={success} />}
     {pushNeedsAttention > 0 && <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-800 p-3 text-xs font-medium flex gap-2">
       <AlertTriangle size={15} className="shrink-0"/> Outbox push follower memiliki {pushNeedsAttention} operasi retry/peringatan provider. Buka tab Push follower; jangan mengirim ulang manual dengan idempotency key baru.
     </div>}
@@ -249,12 +234,12 @@ export default function LivestreamOperationsPage() {
     </div>}
 
     <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-      <Stat label="Live aktif/terkunci" value={active.length} icon={Activity} tone="text-rose-600"/>
+      <Stat label="Live aktif/terkunci" value={active.length} icon={Activity} tone="bad" toneIcon="text-rose-600"/>
       <Stat label="Pending creator" value={creators.filter(x => x.status === "pending").length} icon={Users}/>
-      <Stat label="Gross dukungan" value={rp(finance.gross)} icon={HeartHandshake} tone="text-pink-600"/>
-      <Stat label="Fee platform" value={rp(finance.platform_fee)} icon={CircleDollarSign} tone="text-emerald-600"/>
-      <Stat label="Liabilitas creator" value={rp(Number(finance.held || 0) + Number(finance.available || 0) + Number(finance.reserved || 0))} icon={Wallet} tone="text-amber-600"/>
-      <Stat label="Push perlu perhatian" value={pushNeedsAttention} icon={BellRing} tone={pushNeedsAttention ? "text-rose-600" : "text-emerald-600"}/>
+      <Stat label="Gross dukungan" value={rupiah(finance.gross)} icon={HeartHandshake} tone="info" toneIcon="text-pink-600"/>
+      <Stat label="Fee platform" value={rupiah(finance.platform_fee)} icon={CircleDollarSign} tone="ok" toneIcon="text-emerald-600"/>
+      <Stat label="Liabilitas creator" value={rupiah(Number(finance.held || 0) + Number(finance.available || 0) + Number(finance.reserved || 0))} icon={Wallet} tone="warn" toneIcon="text-amber-600"/>
+      <Stat label="Push perlu perhatian" value={pushNeedsAttention} icon={BellRing} tone={pushNeedsAttention ? "bad" : "ok"} toneIcon={pushNeedsAttention ? "text-rose-600" : "text-emerald-600"}/>
     </div>
 
     <section className="xy-card rounded-[16px] p-4">
@@ -298,7 +283,7 @@ export default function LivestreamOperationsPage() {
         <td className="p-3"><Badge value={c.status}/>{c.review_note && <div className="mt-1 text-[10px] text-[#7C738F] max-w-[180px]">{c.review_note}</div>}</td>
         <td className="p-3">{c.age_18 ? "18+" : "Tidak"}<br/><span className="text-[10px] text-[#7C738F]">{c.terms_version}</span></td>
         <td className="p-3">{c.payout_verified ? <><BadgeCheck size={14} className="inline text-emerald-600"/> {c.payout_label}</> : "Belum diverifikasi"}</td>
-        <td className="p-3 whitespace-nowrap">{dt(c.applied_at)}</td>
+        <td className="p-3 whitespace-nowrap">{jam(c.applied_at)}</td>
         <td className="p-3"><div className="flex justify-end gap-1 flex-wrap">
           {c.status !== "approved" && <button onClick={() => review(c,"approved")} disabled={!!busy} className="px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-semibold disabled:opacity-50">Setujui</button>}
           {c.status === "pending" && <button onClick={() => review(c,"rejected")} disabled={!!busy} className="px-2 py-1 rounded bg-rose-50 text-rose-700 font-semibold disabled:opacity-50">Tolak</button>}
@@ -324,8 +309,8 @@ export default function LivestreamOperationsPage() {
           </div></div><Badge value={l.status}/></div>
         <div className="grid grid-cols-3 gap-2 mt-3 text-center"><div className="bg-[#F8F7FC] rounded-lg p-2"><Eye size={13} className="mx-auto text-[#7C3AED]"/><b>{l.viewers || 0}</b><small className="block text-[#7C738F]">aktif</small></div>
           <div className="bg-[#F8F7FC] rounded-lg p-2"><Users size={13} className="mx-auto text-[#7C3AED]"/><b>{l.viewer_peak || 0}</b><small className="block text-[#7C738F]">puncak</small></div>
-          <div className="bg-[#F8F7FC] rounded-lg p-2"><HeartHandshake size={13} className="mx-auto text-pink-600"/><b>{rp(l.gross_tip)}</b><small className="block text-[#7C738F]">gross</small></div></div>
-        <div className="mt-3 text-[10px] text-[#7C738F]">Mulai {dt(l.started_at)} · Batas {dt(l.scheduled_end)} · credential {l.credential_issued_at ? "pernah diambil" : "belum diambil"}<br/>Provider input …{String(l.provider_input_uid || "").slice(-8)} · {l.provider_deleted_at ? `dihapus ${dt(l.provider_deleted_at)}` : l.provider_disabled_at ? `ingress diblokir ${dt(l.provider_disabled_at)}` : "aktif/belum dicek"} · health {l.health_code || "menunggu"} · audit {dt(l.last_health_at)} {l.output_reconnecting ? "· reconnecting" : ""} {l.cleanup_pending ? "· CLEANUP PENDING" : ""}<br/>Congestion {Math.round(Number(l.output_congestion || 0) * 100)}% · frame lewat {Number(l.output_skipped_frames || 0).toLocaleString("id-ID")}/{Number(l.output_total_frames || 0).toLocaleString("id-ID")} {l.failure_code ? `· fault ${l.failure_code}` : ""}{l.end_reason ? <><br/>Alasan akhir: {l.end_reason}</> : null}</div>
+          <div className="bg-[#F8F7FC] rounded-lg p-2"><HeartHandshake size={13} className="mx-auto text-pink-600"/><b>{rupiah(l.gross_tip)}</b><small className="block text-[#7C738F]">gross</small></div></div>
+        <div className="mt-3 text-[10px] text-[#7C738F]">Mulai {jam(l.started_at)} · Batas {jam(l.scheduled_end)} · credential {l.credential_issued_at ? "pernah diambil" : "belum diambil"}<br/>Provider input …{String(l.provider_input_uid || "").slice(-8)} · {l.provider_deleted_at ? `dihapus ${jam(l.provider_deleted_at)}` : l.provider_disabled_at ? `ingress diblokir ${jam(l.provider_disabled_at)}` : "aktif/belum dicek"} · health {l.health_code || "menunggu"} · audit {jam(l.last_health_at)} {l.output_reconnecting ? "· reconnecting" : ""} {l.cleanup_pending ? "· CLEANUP PENDING" : ""}<br/>Congestion {Math.round(Number(l.output_congestion || 0) * 100)}% · frame lewat {Number(l.output_skipped_frames || 0).toLocaleString("id-ID")}/{Number(l.output_total_frames || 0).toLocaleString("id-ID")} {l.failure_code ? `· fault ${l.failure_code}` : ""}{l.end_reason ? <><br/>Alasan akhir: {l.end_reason}</> : null}</div>
         {providerReport[l.id] && <div className="mt-3 rounded-lg border border-[#E9E3F5] bg-[#F8F7FC] p-2 text-[10px] text-[#6B5A8A]">
           Cloudflare: <b>{providerReport[l.id].ok ? providerReport[l.id].status || "terhubung" : providerReport[l.id].code || "gagal"}</b>
           {typeof providerReport[l.id].enabled === "boolean" ? ` · ingress ${providerReport[l.id].enabled ? "aktif" : "nonaktif"}` : ""}
@@ -351,7 +336,7 @@ export default function LivestreamOperationsPage() {
     {!loading && tab === "payout" && <div className="xy-card rounded-[16px] overflow-x-auto"><table className="w-full text-left text-xs"><thead className="bg-[#F8F7FC] text-[10px] uppercase text-[#7C738F]"><tr>
       <th className="p-3">Kreator</th><th className="p-3">Jumlah</th><th className="p-3">Metode</th><th className="p-3">Status</th><th className="p-3">Waktu</th><th className="p-3 text-right">Aksi</th></tr></thead>
       <tbody>{payouts.map(p => <tr key={p.id} className="border-t border-[#E9E3F5]"><td className="p-3"><b>{p.user_nama || "Akun dihapus"}</b><div className="text-[10px] text-[#7C738F]">{p.user_email}</div></td>
-        <td className="p-3 font-semibold">{rp(p.amount)}</td><td className="p-3">{p.payout_label}</td><td className="p-3"><Badge value={p.status}/>{(p.provider_ref || p.note) && <div className="mt-1 text-[10px] text-[#7C738F] max-w-[220px] break-words">{p.provider_ref ? `Ref ${p.provider_ref}` : ""}{p.provider_ref && p.note ? " · " : ""}{p.note || ""}</div>}</td><td className="p-3">{dt(p.requested_at)}{p.processed_at && <div className="text-[10px] text-[#7C738F]">diproses {dt(p.processed_at)}</div>}</td>
+        <td className="p-3 font-semibold">{rupiah(p.amount)}</td><td className="p-3">{p.payout_label}</td><td className="p-3"><Badge value={p.status}/>{(p.provider_ref || p.note) && <div className="mt-1 text-[10px] text-[#7C738F] max-w-[220px] break-words">{p.provider_ref ? `Ref ${p.provider_ref}` : ""}{p.provider_ref && p.note ? " · " : ""}{p.note || ""}</div>}</td><td className="p-3">{jam(p.requested_at)}{p.processed_at && <div className="text-[10px] text-[#7C738F]">diproses {jam(p.processed_at)}</div>}</td>
         <td className="p-3"><div className="flex justify-end gap-1">{p.status === "requested" && <button onClick={() => payoutAction(p,"processing")} disabled={!!busy} className="px-2 py-1 bg-amber-50 text-amber-700 rounded font-semibold disabled:opacity-50">Proses</button>}
           {["requested","processing"].includes(p.status) && <><button onClick={() => payoutAction(p,"paid")} disabled={!!busy} className="px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-semibold disabled:opacity-50">Sudah transfer</button><button onClick={() => payoutAction(p,"rejected")} disabled={!!busy} className="px-2 py-1 bg-rose-50 text-rose-700 rounded font-semibold disabled:opacity-50">Tolak</button></>}</div></td></tr>)}</tbody></table>
       {!payouts.length && <div className="p-8 text-center text-[#7C738F]">Belum ada payout.</div>}
@@ -359,8 +344,8 @@ export default function LivestreamOperationsPage() {
 
     {!loading && tab === "tip" && <div className="xy-card rounded-[16px] overflow-x-auto"><table className="w-full text-left text-xs"><thead className="bg-[#F8F7FC] text-[10px] uppercase text-[#7C738F]"><tr>
       <th className="p-3">Waktu</th><th className="p-3">Viewer → creator</th><th className="p-3">Gross</th><th className="p-3">Fee / net</th><th className="p-3">Earning</th><th className="p-3 text-right">Anti-fraud</th></tr></thead>
-      <tbody>{tips.map(t => <tr key={t.id} className="border-t border-[#E9E3F5]"><td className="p-3 whitespace-nowrap">{dt(t.created_at)}</td><td className="p-3">{t.viewer_name || "Akun dihapus"} → {t.creator_name || "Akun dihapus"}<div className="text-[10px] text-[#7C738F]">{t.livestream_id}</div></td>
-        <td className="p-3 font-semibold">{rp(t.gross)}</td><td className="p-3">{rp(t.platform_fee)} / {rp(t.creator_net)}</td><td className="p-3"><Badge value={t.earning_status || t.status}/>{t.reverse_reason && <div className="mt-1 text-[10px] text-[#7C738F] max-w-[220px]">{t.reverse_reason}</div>}</td>
+      <tbody>{tips.map(t => <tr key={t.id} className="border-t border-[#E9E3F5]"><td className="p-3 whitespace-nowrap">{jam(t.created_at)}</td><td className="p-3">{t.viewer_name || "Akun dihapus"} → {t.creator_name || "Akun dihapus"}<div className="text-[10px] text-[#7C738F]">{t.livestream_id}</div></td>
+        <td className="p-3 font-semibold">{rupiah(t.gross)}</td><td className="p-3">{rupiah(t.platform_fee)} / {rupiah(t.creator_net)}</td><td className="p-3"><Badge value={t.earning_status || t.status}/>{t.reverse_reason && <div className="mt-1 text-[10px] text-[#7C738F] max-w-[220px]">{t.reverse_reason}</div>}</td>
         <td className="p-3 text-right">{t.status === "charged" && ["held","available"].includes(t.earning_status) ? <button onClick={() => reverseTip(t)} disabled={!!busy} className="px-2 py-1 bg-rose-50 text-rose-700 rounded font-semibold disabled:opacity-50">Refund</button> : <Badge value={t.status}/>}</td></tr>)}</tbody></table>
       {!tips.length && <div className="p-8 text-center text-[#7C738F]">Ledger dukungan masih kosong.</div>}
     </div>}
@@ -371,25 +356,25 @@ export default function LivestreamOperationsPage() {
         <button onClick={reconcile} disabled={!!busy} className="h-9 px-3 rounded-lg border border-[#E9E3F5] text-[#7C3AED] text-xs font-semibold disabled:opacity-50"><Wrench size={13} className="inline mr-1"/>{busy === "reconcile" ? "Mengantrikan…" : "Jalankan rekonsiliasi"}</button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat label="Menunggu" value={Number(pushStats.pending || 0)} icon={BellRing} tone="text-amber-600"/>
+        <Stat label="Menunggu" value={Number(pushStats.pending || 0)} icon={BellRing} tone="warn" toneIcon="text-amber-600"/>
         <Stat label="Sedang dikirim" value={Number(pushStats.sending || 0)} icon={RefreshCw}/>
-        <Stat label="Terkirim" value={Number(pushStats.sent || 0)} icon={BadgeCheck} tone="text-emerald-600"/>
-        <Stat label="Dibatalkan" value={Number(pushStats.cancelled || 0)} icon={Ban} tone="text-rose-600"/>
+        <Stat label="Terkirim" value={Number(pushStats.sent || 0)} icon={BadgeCheck} tone="ok" toneIcon="text-emerald-600"/>
+        <Stat label="Dibatalkan" value={Number(pushStats.cancelled || 0)} icon={Ban} tone="bad" toneIcon="text-rose-600"/>
       </div>
       <div className="xy-card rounded-[16px] overflow-x-auto">
         <table className="w-full text-left text-xs"><thead className="bg-[#F8F7FC] text-[10px] uppercase text-[#7C738F]"><tr>
           <th className="p-3">Live / dibuat</th><th className="p-3">Status</th><th className="p-3">Percobaan</th><th className="p-3">Jadwal/lease</th><th className="p-3">Provider</th><th className="p-3">Error/peringatan</th>
         </tr></thead><tbody>{pushRows.map(o => <tr key={o.id} className="border-t border-[#E9E3F5] align-top">
-          <td className="p-3"><b>{o.livestream_id}</b><div className="text-[10px] text-[#7C738F]">{dt(o.created_at)}</div></td>
+          <td className="p-3"><b>{o.livestream_id}</b><div className="text-[10px] text-[#7C738F]">{jam(o.created_at)}</div></td>
           <td className="p-3"><Badge value={o.status}/></td><td className="p-3 font-semibold">{Number(o.attempts || 0)}</td>
-          <td className="p-3 text-[10px]">next {dt(o.next_attempt_at)}<br/>lease {dt(o.lease_until)}</td>
-          <td className="p-3 text-[10px]">{o.provider_id || (o.status === "sent" ? "tanpa subscription aktif" : "—")}<br/>{o.sent_at ? dt(o.sent_at) : ""}</td>
+          <td className="p-3 text-[10px]">next {jam(o.next_attempt_at)}<br/>lease {jam(o.lease_until)}</td>
+          <td className="p-3 text-[10px]">{o.provider_id || (o.status === "sent" ? "tanpa subscription aktif" : "—")}<br/>{o.sent_at ? jam(o.sent_at) : ""}</td>
           <td className={`p-3 text-[10px] max-w-[280px] ${o.last_error ? "text-amber-700" : "text-[#7C738F]"}`}>{o.last_error || "—"}</td>
         </tr>)}</tbody></table>
         {!pushRows.length && <div className="p-8 text-center text-[#7C738F]">Outbox belum memiliki event follower.</div>}
       </div>
       <div className="rounded-xl border border-[#E9E3F5] bg-[#F8F7FC] p-3 text-[11px] text-[#6B5A8A]">
-        Oldest open: {dt(pushStats.oldest_open_at)} · maksimum percobaan {Number(pushStats.max_attempts || 0)}. Retry selalu memakai UUID OneSignal yang sama; status sent dengan peringatan tidak boleh dikirim ulang manual.
+        Oldest open: {jam(pushStats.oldest_open_at)} · maksimum percobaan {Number(pushStats.max_attempts || 0)}. Retry selalu memakai UUID OneSignal yang sama; status sent dengan peringatan tidak boleh dikirim ulang manual.
       </div>
       <div className="xy-card rounded-[16px] overflow-x-auto">
         <div className="p-3 border-b border-[#E9E3F5]"><b className="text-xs text-[#1E1B2E]">Kompensasi resource Cloudflare</b><div className="text-[10px] text-[#7C738F]">Live Input yang sempat tercipta ketika transaksi D1 gagal/race. Pending wajib nol sebelum rollout.</div></div>
@@ -398,11 +383,11 @@ export default function LivestreamOperationsPage() {
         </tr></thead><tbody>{cleanupRows.map(o => <tr key={o.input_uid} className="border-t border-[#E9E3F5] align-top">
           <td className="p-3"><b>{o.live_id}</b><div className="text-[10px] text-[#7C738F]">…{String(o.input_uid || "").slice(-8)}</div></td>
           <td className="p-3"><Badge value={o.status}/></td><td className="p-3 font-semibold">{Number(o.attempts || 0)}</td>
-          <td className="p-3 text-[10px]">{o.reason}</td><td className="p-3 text-[10px] text-rose-700">{o.last_error || "—"}</td><td className="p-3 text-[10px]">{dt(o.updated_at)}</td>
+          <td className="p-3 text-[10px]">{o.reason}</td><td className="p-3 text-[10px] text-rose-700">{o.last_error || "—"}</td><td className="p-3 text-[10px]">{jam(o.updated_at)}</td>
         </tr>)}</tbody></table>
         {!cleanupRows.length && <div className="p-6 text-center text-[#7C738F] text-xs">Tidak ada resource kompensasi.</div>}
       </div>
-      <div className="text-[10px] text-[#7C738F]">Provider cleanup pending {Number(cleanupStats.pending || 0)} · oldest {dt(cleanupStats.oldest_pending_at)} · max attempts {Number(cleanupStats.max_attempts || 0)}</div>
+      <div className="text-[10px] text-[#7C738F]">Provider cleanup pending {Number(cleanupStats.pending || 0)} · oldest {jam(cleanupStats.oldest_pending_at)} · max attempts {Number(cleanupStats.max_attempts || 0)}</div>
     </div>}
 
     <div className="xy-card rounded-xl p-3 text-[11px] text-[#7C738F] flex gap-2"><ShieldCheck size={14} className="text-[#7C3AED] shrink-0"/>

@@ -83,7 +83,7 @@ class TierScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [const Color(0xFF1E1730), XyTheme.primaryDark, sekarang.warna.withOpacity(.7)],
+                colors: [const XyTheme.inkPurple, XyTheme.primaryDark, sekarang.warna.withOpacity(.7)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -168,7 +168,7 @@ class TierScreen extends StatelessWidget {
                         height: 12,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFD8C9FF), Colors.white],
+                            colors: [XyTheme.lilacPale, Colors.white],
                           ),
                           borderRadius: BorderRadius.circular(99),
                         ),

@@ -222,7 +222,7 @@ class _SheetTopupState extends State<_SheetTopup> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [const Color(0xFF1E1B2E), XyTheme.primaryDark],
+              colors: [const XyTheme.ink, XyTheme.primaryDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -241,7 +241,7 @@ class _SheetTopupState extends State<_SheetTopup> {
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
                     const SizedBox(height: 4),
                     Text('Saldo saat ini: ${rupiah(s.user?.saldo ?? 0)}',
-                        style: const TextStyle(color: Color(0xFFD8C9FF), fontSize: 12.5, fontWeight: FontWeight.w700)),
+                        style: const TextStyle(color: XyTheme.lilacPale, fontSize: 12.5, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 3),
                     const Text('Otomatis masuk 24/7 • QRIS & Virtual Account',
                         style: TextStyle(color: Colors.white70, fontSize: 10.5)),
