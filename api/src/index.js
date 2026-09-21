@@ -740,7 +740,16 @@ async function akunSosial(env, ctx, prof, provider, deviceId, req) {
   }
 
   if (!u) {
-    await beforeRegistration(env, req, deviceId);
+    try {
+      await beforeRegistration(env, req, deviceId);
+    } catch (e) {
+      if (e && (e.code === 'DEVICE_LIMIT' || String(e && e.message || e).includes('batas'))) {
+        throw new SecurityError(
+          `Email ${provider} (${prof.email}) belum terdaftar di XyCloudStore, dan perangkat ini sudah mencapai batas pendaftaran akun. ` +
+          `Masuk dengan email+password akun yang sudah ada, atau hapus akun percobaan yang tidak dipakai lalu hubungi admin.`, 429, 'DEVICE_LIMIT');
+      }
+      throw e;
+    }
     const idBaru = uid('u_');
     try {
       await env.DB.prepare(
@@ -3501,16 +3510,13 @@ async function statistikPublik(env) {
         assertAccountEnabled(u,{izinkanBlokir:true});
         if (!(await cocokPw(password, u.password))) return err('Password salah. Coba lagi.', 401, env);
 
-        // Batas maksimal 2 akun per 1 device (kebijakan keamanan ketat)
-        if (deviceId) {
-          const akunTerkait = await env.DB.prepare(
-            `SELECT COUNT(DISTINCT user_id) AS total FROM security_device_users
-             WHERE device_id = ? AND user_id != ?`
-          ).bind(deviceId, u.id).first();
-          if (Number(akunTerkait?.total || 0) >= 2) {
-            return err('Perangkat ini sudah mencapai batas maksimal 2 akun. Tidak dapat masuk dengan akun lain di perangkat ini.', 403, env);
-          }
-        }
+        // CATATAN 2026-09-21: login TIDAK dibatasi jumlah akun per perangkat.
+        // Batasan 2-akun-per-device di sini dulu menolak LOGIN yang sah (baris
+        // security_device_users menumpuk permanen: tiap login/logout, tiap
+        // percobaan daftar yang belum diverifikasi ikut dihitung, tanpa
+        // unlink). Anti-abuse yang benar tetap di PENDAFTARAN: trigger
+        // register_device_quota + beforeRegistration (maks 2 akun baru per
+        // perangkat). Login = masuk akun sendiri, bukan daftar akun baru.
 
         // OTP hanya untuk aktivasi akun baru (email belum diverifikasi) atau
         // alur reset password.

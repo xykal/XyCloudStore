@@ -69,6 +69,10 @@ async function tandaTangan(params, secret) {
 async function kirimUnggah(env, endpoint, { folder, timestamp, signParams = {}, file, resourceType, extra = {} }) {
   const waktu = String(timestamp ?? Math.floor(Date.now() / 1000));
   const params = { ...signParams, timestamp: waktu };
+  // Kunci bernilai undefined (mis. eager/format opsional di jalur animasi)
+  // wajib dibuang: ikut ditandatangani sebagai string "undefined" membuat
+  // Cloudinary menjawab "Invalid Signature".
+  for (const k of Object.keys(params)) if (params[k] === undefined) delete params[k];
   const signature = await tandaTangan(params, env.CLOUDINARY_SECRET);
   const form = new FormData();
   form.append('file', file);

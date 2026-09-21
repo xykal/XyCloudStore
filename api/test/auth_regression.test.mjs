@@ -121,3 +121,29 @@ test('Login perangkat baru minta tautan email; HP sama model+IP lolos tanpa merg
   assert.equal(cfg.json.data.rekening.nomor,'083116632566');
  }finally{await h.mf.dispose();}
 });
+
+test('Login tidak dibatasi 2 akun per perangkat; kuota hanya saat daftar (regresi 2026-09-21)', {timeout:120000}, async()=>{
+ const h=await harness();
+ try{
+  const dA={'X-XY-Device':'a'.repeat(64),'X-XY-Device-Kind':'android','X-XY-Device-Model':'Pixel 8'};
+  const dB={'X-XY-Device':'b'.repeat(64),'X-XY-Device-Kind':'android','X-XY-Device-Model':'Pixel 8'};
+  // 2 akun didaftarkan dari perangkat A (kuota pendaftaran penuh).
+  for(const [nama,email] of [['Akun Satu','satu@example.invalid'],['Akun Dua','dua@example.invalid']]){
+   const r=await h.call('/auth/register','POST',{nama,email,password:'Aman-Sekali-2026'},dA);
+   assert.equal(r.status,201,JSON.stringify(r.json));
+  }
+  await h.db.prepare("UPDATE users SET email_verified=1 WHERE email IN ('satu@example.invalid','dua@example.invalid')").run();
+  // Akun ketiga didaftarkan dari perangkat B.
+  let r=await h.call('/auth/register','POST',{nama:'Akun Tiga',email:'tiga@example.invalid',password:'Aman-Sekali-2026'},dB);
+  assert.equal(r.status,201,JSON.stringify(r.json));
+  await h.db.prepare("UPDATE users SET email_verified=1 WHERE email='tiga@example.invalid'").run();
+  // Login akun ketiga DARI perangkat A: dulu 403 "batas maksimal 2 akun".
+  r=await h.call('/auth/login','POST',{email:'tiga@example.invalid',password:'Aman-Sekali-2026'},dA);
+  assert.equal(r.status,200,JSON.stringify(r.json));
+  assert.ok(r.json.data.token||r.json.data.perluLoginBaru,'login harus diproses (token/tantangan), bukan ditolak perangkat');
+  // Kuota PENDAFTARAN tetap berlaku: akun ke-3 dari perangkat A ditolak.
+  r=await h.call('/auth/register','POST',{nama:'Akun Empat',email:'empat@example.invalid',password:'Aman-Sekali-2026'},dA);
+  assert.equal(r.status,429,JSON.stringify(r.json));
+  assert.equal(r.json.code,'DEVICE_LIMIT');
+ }finally{await h.mf.dispose();}
+});
