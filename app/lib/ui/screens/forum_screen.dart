@@ -2071,7 +2071,7 @@ class _StoryFullScreenViewerState extends State<StoryFullScreenViewer>
                         imageUrl: s.mediaUrl!,
                         fit: BoxFit.contain,
                         placeholder: (_, __) =>
-                            const ColoredBox(color: Colors.black.withOpacity(0.2)),
+                            ColoredBox(color: Colors.black.withOpacity(0.2)),
                         errorWidget: (_, __, ___) => const Center(
                             child: Icon(Icons.broken_image_rounded, size: 54, color: Colors.white54)),
                       ),

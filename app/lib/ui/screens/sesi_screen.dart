@@ -1084,12 +1084,12 @@ class _PanelBillingCyberindo extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: hampirHabis
-              ? const XyTheme.red500.withOpacity(0.6)
-              : const XyTheme.sky400.withOpacity(0.35),
+              ? XyTheme.red500.withOpacity(0.6)
+              : XyTheme.sky400.withOpacity(0.35),
         ),
         boxShadow: [
           BoxShadow(
-            color: (hampirHabis ? const XyTheme.red500 : const XyTheme.sky600).withOpacity(0.18),
+            color: (hampirHabis ? XyTheme.red500 : XyTheme.sky600).withOpacity(0.18),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1103,9 +1103,9 @@ class _PanelBillingCyberindo extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(11),
               decoration: BoxDecoration(
-                color: const XyTheme.red500.withOpacity(0.15),
+                color: XyTheme.red500.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const XyTheme.red500.withOpacity(0.4)),
+                border: Border.all(color: XyTheme.red500.withOpacity(0.4)),
               ),
               child: Row(
                 children: [
@@ -1169,11 +1169,11 @@ class _PanelBillingCyberindo extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: selesai ? const XyTheme.red500 : const XyTheme.okBright,
+                  color: selesai ? XyTheme.red500 : XyTheme.okBright,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: (selesai ? const XyTheme.red500 : const XyTheme.okBright)
+                      color: (selesai ? XyTheme.red500 : XyTheme.okBright)
                           .withOpacity(0.6),
                       blurRadius: 6,
                     ),
@@ -1184,7 +1184,7 @@ class _PanelBillingCyberindo extends StatelessWidget {
               Text(
                 selesai ? 'Billing Berakhir' : 'Online / Gac Server',
                 style: TextStyle(
-                  color: selesai ? const XyTheme.red500 : const XyTheme.okBright,
+                  color: selesai ? XyTheme.red500 : XyTheme.okBright,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1232,7 +1232,7 @@ class _PanelBillingCyberindo extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFF0369A1).withOpacity(0.35),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const XyTheme.sky400.withOpacity(0.4)),
+                      border: Border.all(color: XyTheme.sky400.withOpacity(0.4)),
                     ),
                     child: Text(
                       sisaWaktuTeks,

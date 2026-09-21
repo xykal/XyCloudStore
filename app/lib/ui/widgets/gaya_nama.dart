@@ -145,13 +145,13 @@ class _GayaNamaState extends State<GayaNama>
         return Text(nama,
             maxLines: widget.maxLines,
             style: _dasar.copyWith(
-              color: gelap ? const Color(0xFF6BF3FF) : const XyTheme.sky600,
+              color: gelap ? const Color(0xFF6BF3FF) : XyTheme.sky600,
               shadows: gelap
-                  ? const [
+                  ? [
                       Shadow(color: XyTheme.cyan400.withOpacity(0.67), blurRadius: 12),
                       Shadow(color: XyTheme.violet.withOpacity(0.4), blurRadius: 22),
                     ]
-                  : const [
+                  : [
                       Shadow(color: XyTheme.sky600.withOpacity(0.27), blurRadius: 8),
                       Shadow(color: XyTheme.primary.withOpacity(0.2), blurRadius: 16),
                     ],

@@ -2,6 +2,7 @@
 // models.dart tetap barrel export; import lama tidak berubah.
 
 import '../core/waktu.dart';
+import 'moderasi.dart';
 
 class ChatMessage {
   final String id;

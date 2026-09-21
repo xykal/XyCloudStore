@@ -977,8 +977,8 @@ class _UbahProfilScreenState extends State<UbahProfilScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: _cekStatus == 'ok'
-                          ? const XyTheme.success
-                          : const XyTheme.danger)),
+                          ? XyTheme.success
+                          : XyTheme.danger)),
             ),
           const SizedBox(height: 18),
           const XyLabel('Bio'),

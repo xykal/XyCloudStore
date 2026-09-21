@@ -66,7 +66,7 @@ class _ElemenMelayangState extends State<ElemenMelayang>
         [
           XyTheme.primary.withOpacity(.18),
           XyTheme.violet.withOpacity(.16),
-          const XyTheme.cyan400.withOpacity(.14),
+          XyTheme.cyan400.withOpacity(.14),
         ];
     return Stack(children: [
       widget.child,

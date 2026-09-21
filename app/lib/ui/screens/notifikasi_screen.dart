@@ -291,13 +291,13 @@ class _ItemNotifikasi extends StatelessWidget {
   (IconData, Color, String) _tampilan(BuildContext context) => switch (notif.jenis) {
         'suka' => (Icons.favorite_rounded, const Color(0xFFF43F5E), 'Suka'),
         'balasan' => (Icons.reply_rounded, XyTheme.primary, 'Balasan'),
-        'komunitas' => (Icons.groups_2_rounded, const XyTheme.violet, 'Komunitas'),
-        'peringatan' => (Icons.warning_amber_rounded, const XyTheme.amber500, 'Penting'),
+        'komunitas' => (Icons.groups_2_rounded, XyTheme.violet, 'Komunitas'),
+        'peringatan' => (Icons.warning_amber_rounded, XyTheme.amber500, 'Penting'),
         'sistem' => (Icons.verified_user_rounded, const Color(0xFF3B82F6), 'Sistem'),
-        'order' => (Icons.receipt_long_rounded, const XyTheme.emerald500, 'Pesanan'),
-        'wallet' => (Icons.account_balance_wallet_rounded, const XyTheme.emerald600, 'Dompet'),
-        'dm' => (Icons.chat_bubble_rounded, const XyTheme.violet, 'Pesan'),
-        'livestream' => (Icons.live_tv_rounded, const XyTheme.pink500, 'Live'),
+        'order' => (Icons.receipt_long_rounded, XyTheme.emerald500, 'Pesanan'),
+        'wallet' => (Icons.account_balance_wallet_rounded, XyTheme.emerald600, 'Dompet'),
+        'dm' => (Icons.chat_bubble_rounded, XyTheme.violet, 'Pesan'),
+        'livestream' => (Icons.live_tv_rounded, XyTheme.pink500, 'Live'),
         _ => (Icons.notifications_rounded, XyTheme.primary, 'Kabar'),
       };
 

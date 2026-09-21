@@ -102,7 +102,7 @@ class _HudPresetScreenState extends State<HudPresetScreen> {
   void _snack(String teks, {bool galat = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: galat ? XyTheme.danger : const XyTheme.green800,
+      backgroundColor: galat ? XyTheme.danger : XyTheme.green800,
       content: Row(children: [
         Icon(galat ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
             color: Colors.white),

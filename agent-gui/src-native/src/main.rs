@@ -166,6 +166,7 @@ impl Aplikasi {
             } else {
                 Some(self.d_stream_host.trim().into())
             },
+            relay: lama.relay.clone(),
         };
         if k.kode.is_empty() {
             self.status_simpan = Some((false, "Kode unit wajib diisi.".into()));

@@ -663,7 +663,7 @@ class _SheetAturTataLetakState extends State<_SheetAturTataLetak> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const XyTheme.cardDark : Colors.white,
+        color: isDark ? XyTheme.cardDark : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 20),

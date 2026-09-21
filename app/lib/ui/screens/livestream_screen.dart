@@ -308,7 +308,7 @@ class _HeroLive extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: enabled ? const XyTheme.red500 : Colors.white.withOpacity(.14), borderRadius: BorderRadius.circular(99)),
+                decoration: BoxDecoration(color: enabled ? XyTheme.red500 : Colors.white.withOpacity(.14), borderRadius: BorderRadius.circular(99)),
                 child: Text(enabled ? '●  $count LIVE' : 'SEGERA HADIR',
                     style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: .7)),
               ),
@@ -343,14 +343,14 @@ class _LiveCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               gradient: LinearGradient(
-                colors: [const Color(0xFF090014), _warnaGame(live.game), const XyTheme.primaryDark],
+                colors: [const Color(0xFF090014), _warnaGame(live.game), XyTheme.primaryDark],
                 begin: Alignment.bottomLeft,
                 end: Alignment.topRight,
               ),
             ),
             child: Stack(children: [
               Center(child: Icon(Icons.sports_esports_rounded, size: 78, color: Colors.white.withOpacity(.16))),
-              Positioned(left: 12, top: 12, child: _Badge(text: live.status == 'live' ? '● LIVE' : 'MENYIAPKAN', color: live.status == 'live' ? const XyTheme.red500 : const XyTheme.amber500)),
+              Positioned(left: 12, top: 12, child: _Badge(text: live.status == 'live' ? '● LIVE' : 'MENYIAPKAN', color: live.status == 'live' ? XyTheme.red500 : XyTheme.amber500)),
               Positioned(right: 12, top: 12, child: _Badge(text: '${live.viewers} menonton', color: Colors.black.withOpacity(.55))),
               Positioned(left: 15, right: 15, bottom: 13, child: Text(live.game.toUpperCase(), maxLines: 1,
                   style: TextStyle(color: Colors.white.withOpacity(.84), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.1))),
@@ -431,7 +431,7 @@ class _LiveDetail extends StatelessWidget {
           Row(children: [
             _Badge(
               text: statusText,
-              color: aktif ? const XyTheme.red500 : XyTheme.warning,
+              color: aktif ? XyTheme.red500 : XyTheme.warning,
             ),
             const SizedBox(width: 8),
             Text(
@@ -901,7 +901,7 @@ class _ActiveCreatorLive extends StatelessWidget {
             : XyTheme.danger;
     return XyCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
-        _Badge(text: live.status.toUpperCase(), color: live.status == 'live' ? const XyTheme.red500 : XyTheme.warning),
+        _Badge(text: live.status.toUpperCase(), color: live.status == 'live' ? XyTheme.red500 : XyTheme.warning),
         const Spacer(),
         Text('${live.viewers} menonton', style: TextStyle(color: XyTheme.of(context).muted)),
       ]),
@@ -1366,7 +1366,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Lanjut Live')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const XyTheme.red500),
+            style: FilledButton.styleFrom(backgroundColor: XyTheme.red500),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Akhiri Sekarang'),
           ),
@@ -1426,7 +1426,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const XyTheme.panelDark,
+                  color: XyTheme.panelDark,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF30363D)),
                 ),
@@ -1443,7 +1443,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
               const SizedBox(height: 16),
               FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: const XyTheme.primary,
+                  backgroundColor: XyTheme.primary,
                   minimumSize: const Size.fromHeight(44),
                 ),
                 onPressed: () {
@@ -1509,7 +1509,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                           center: Alignment.center,
                           radius: 1.2,
                           colors: [
-                            const XyTheme.ink,
+                            XyTheme.ink,
                             Colors.black,
                           ],
                         ),
@@ -1560,7 +1560,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const XyTheme.primary.withOpacity(0.6),
+                                  color: XyTheme.primary.withOpacity(0.6),
                                   width: 2,
                                 ),
                               ),
@@ -1607,11 +1607,11 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const XyTheme.red600,
+                          color: XyTheme.red600,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: const XyTheme.red600.withOpacity(0.5),
+                              color: XyTheme.red600.withOpacity(0.5),
                               blurRadius: 8,
                             ),
                           ],
@@ -1837,7 +1837,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
                       _hudBulat(
                         icon: Icons.stop_rounded,
                         tooltip: 'Akhiri Siaran',
-                        warnaKhusus: const XyTheme.red500,
+                        warnaKhusus: XyTheme.red500,
                         onTap: _akhiriSiaran,
                       ),
                     ],
@@ -1859,8 +1859,8 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
     bool aktif = false,
     Color? warnaKhusus,
   }) {
-    final borderColor = warnaKhusus ?? (aktif ? const XyTheme.lilac : Colors.white.withOpacity(0.80));
-    final iconColor = warnaKhusus ?? (aktif ? const XyTheme.lilac : Colors.white);
+    final borderColor = warnaKhusus ?? (aktif ? XyTheme.lilac : Colors.white.withOpacity(0.80));
+    final iconColor = warnaKhusus ?? (aktif ? XyTheme.lilac : Colors.white);
 
     return Tooltip(
       message: tooltip,
@@ -1876,7 +1876,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
             shape: BoxShape.circle,
             color: warnaKhusus != null
                 ? warnaKhusus.withOpacity(0.12)
-                : (aktif ? const XyTheme.lilac.withOpacity(0.2) : Colors.white.withOpacity(0.06)),
+                : (aktif ? XyTheme.lilac.withOpacity(0.2) : Colors.white.withOpacity(0.06)),
             border: Border.all(
               color: borderColor,
               width: 1.8,
@@ -1884,7 +1884,7 @@ class _MobileBroadcastLiveScreenState extends State<MobileBroadcastLiveScreen> {
             boxShadow: aktif
                 ? [
                     BoxShadow(
-                      color: (warnaKhusus ?? const XyTheme.primary).withOpacity(0.4),
+                      color: (warnaKhusus ?? XyTheme.primary).withOpacity(0.4),
                       blurRadius: 10,
                     )
                   ]

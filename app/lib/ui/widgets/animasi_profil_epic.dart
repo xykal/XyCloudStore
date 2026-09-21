@@ -128,7 +128,7 @@ class _EpicPainter extends CustomPainter {
     final paintNaga = Paint()
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
-    final paintMata = Paint()..color = const XyTheme.starYellow;
+    final paintMata = Paint()..color = XyTheme.starYellow;
 
     // Lintasan sinus naga meluncur dari kanan ke kiri
     final p = progress;
@@ -209,7 +209,7 @@ class _EpicPainter extends CustomPainter {
   void _gambarMatrix(Canvas canvas, Size size) {
     final colCount = 14;
     final paintGlow = Paint()
-      ..color = const XyTheme.neonGreen.withOpacity(0.85)
+      ..color = XyTheme.neonGreen.withOpacity(0.85)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
     final paintTrail = Paint()..strokeWidth = 2.0;
 
@@ -227,7 +227,7 @@ class _EpicPainter extends CustomPainter {
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
         colors: [
-          const XyTheme.neonGreen.withOpacity(0.6),
+          XyTheme.neonGreen.withOpacity(0.6),
           Colors.transparent,
         ],
       );
@@ -254,7 +254,7 @@ class _EpicPainter extends CustomPainter {
       canvas.drawLine(start, currentEnd, slashPaint);
 
       final glowPaint = Paint()
-        ..color = const XyTheme.blue400.withOpacity((1.0 - t) * 0.7)
+        ..color = XyTheme.blue400.withOpacity((1.0 - t) * 0.7)
         ..strokeWidth = 9.0
         ..style = PaintingStyle.stroke
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -266,7 +266,7 @@ class _EpicPainter extends CustomPainter {
       final pKelopak = (progress + i * 0.15) % 1.0;
       final x = size.width * (0.15 + (i * 0.12)) + math.sin(pKelopak * 4) * 14;
       final y = pKelopak * size.height;
-      final petalPaint = Paint()..color = const XyTheme.rose600.withOpacity(0.7);
+      final petalPaint = Paint()..color = XyTheme.rose600.withOpacity(0.7);
       canvas.drawOval(
         Rect.fromCenter(center: Offset(x, y), width: 6, height: 10),
         petalPaint,
@@ -288,7 +288,7 @@ class _EpicPainter extends CustomPainter {
       final opacity = (0.4 + 0.6 * math.sin((progress * 3 + i) * math.pi)).clamp(0.0, 1.0);
 
       final starPaint = Paint()
-        ..color = (i % 2 == 0 ? const XyTheme.purple400 : const XyTheme.sky400).withOpacity(opacity)
+        ..color = (i % 2 == 0 ? XyTheme.purple400 : XyTheme.sky400).withOpacity(opacity)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
 
       canvas.drawCircle(Offset(x, y), 2.5 + (i % 3), starPaint);
@@ -304,7 +304,7 @@ class _EpicPainter extends CustomPainter {
     canvas.drawCircle(Offset(kometX, kometY), 3, kometPaint);
 
     final kometTrail = Paint()
-      ..color = const XyTheme.fuchsia400.withOpacity(0.5)
+      ..color = XyTheme.fuchsia400.withOpacity(0.5)
       ..strokeWidth = 2.0;
     canvas.drawLine(Offset(kometX, kometY), Offset(kometX + 35, kometY - 18), kometTrail);
   }
@@ -318,7 +318,7 @@ class _EpicPainter extends CustomPainter {
       final alpha = math.sin(pGhost * math.pi).clamp(0.0, 1.0) * 0.7;
 
       final ghostPaint = Paint()
-        ..color = (i % 2 == 0 ? const XyTheme.plum : const XyTheme.cyan500).withOpacity(alpha)
+        ..color = (i % 2 == 0 ? XyTheme.plum : XyTheme.cyan500).withOpacity(alpha)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
       canvas.drawCircle(Offset(x, y), 12 + (i % 4) * 3, ghostPaint);
@@ -335,7 +335,7 @@ class _EpicPainter extends CustomPainter {
     final petirP = (progress * 2.5) % 1.0;
     if (petirP < 0.25) {
       final pLight = Paint()
-        ..color = const XyTheme.sky400.withOpacity(0.9)
+        ..color = XyTheme.sky400.withOpacity(0.9)
         ..strokeWidth = 2.5
         ..style = PaintingStyle.stroke
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
@@ -357,7 +357,7 @@ class _EpicPainter extends CustomPainter {
   // 8. Sayap Surgawi & Cahaya Ilahi
   void _gambarSayap(Canvas canvas, Size size) {
     final beamPaint = Paint()
-      ..color = const XyTheme.starYellow.withOpacity(0.18 + 0.1 * math.sin(progress * 2 * math.pi))
+      ..color = XyTheme.starYellow.withOpacity(0.18 + 0.1 * math.sin(progress * 2 * math.pi))
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
 
     final path = Path();
@@ -387,7 +387,7 @@ class _EpicPainter extends CustomPainter {
       final alpha = math.sin(pSakura * math.pi).clamp(0.0, 1.0) * 0.85;
 
       final sPaint = Paint()
-        ..color = (i % 2 == 0 ? const XyTheme.pink400 : const XyTheme.pink200).withOpacity(alpha);
+        ..color = (i % 2 == 0 ? XyTheme.pink400 : XyTheme.pink200).withOpacity(alpha);
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(pSakura * 8 * math.pi + i);

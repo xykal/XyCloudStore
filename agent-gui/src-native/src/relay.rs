@@ -538,7 +538,7 @@ fn layani_ws(alir: TcpStream, jalan: Arc<AtomicBool>, sesi: &str, log: &Logger) 
                 let _ = w.shutdown(std::net::Shutdown::Both);
             }
         }
-    }
+    };
 }
 
 fn proses_frame(

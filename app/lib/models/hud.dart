@@ -2,6 +2,7 @@
 // models.dart tetap barrel export; import lama tidak berubah.
 
 import 'dart:convert';
+import 'moderasi.dart';
 
 /// ============================================================
 ///  HUD streaming kustom (Batch P)

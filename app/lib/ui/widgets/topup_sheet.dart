@@ -222,7 +222,7 @@ class _SheetTopupState extends State<_SheetTopup> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [const XyTheme.ink, XyTheme.primaryDark],
+              colors: [XyTheme.ink, XyTheme.primaryDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

@@ -1,6 +1,20 @@
 // Model lainnya — dipecah dari models.dart (P2 rapih/semua).
 // models.dart tetap barrel export; import lama tidak berubah.
 
+import 'dart:convert';
+
+/// Baca peta JSON aman (hilang/teks/nilai aneh -> peta kosong).
+Map<String, dynamic> _petaAman(dynamic v) {
+  if (v == null) return const {};
+  if (v is Map) return Map<String, dynamic>.from(v);
+  if (v is String && v.trim().startsWith('{')) {
+    try {
+      return Map<String, dynamic>.from(jsonDecode(v));
+    } catch (_) {}
+  }
+  return const {};
+}
+
 /// Konfigurasi dari server: penyedia login aktif, nomor WhatsApp, rekening.
 class KonfigurasiApp {
   final bool bayarOtomatis;

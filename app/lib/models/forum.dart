@@ -2,6 +2,7 @@
 // models.dart tetap barrel export; import lama tidak berubah.
 
 import 'stiker.dart';
+import '../core/waktu.dart';
 
 /// Satu diskusi di forum komunitas.
 class ForumPost {

@@ -379,7 +379,7 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
         const SizedBox(width: 10),
         Expanded(child: Text(teks)),
       ]),
-      backgroundColor: galat ? XyTheme.danger : const XyTheme.green800,
+      backgroundColor: galat ? XyTheme.danger : XyTheme.green800,
     ));
   }
 
@@ -413,7 +413,7 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: const XyTheme.navyDeep,
+        backgroundColor: XyTheme.navyDeep,
         appBar: AppBar(
           leading: IconButton(
               tooltip: 'Kembali', onPressed: _keluar, icon: const Icon(Icons.arrow_back_rounded)),
@@ -502,7 +502,7 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
                     ),
                   )),
                   Positioned.fill(child: CustomPaint(painter: _HudGridPainter())),
-                  const Center(
+                  Center(
                     child: IgnorePointer(
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
                         Icon(Icons.desktop_windows_outlined,
@@ -546,18 +546,18 @@ class _HudEditorScreenState extends State<HudEditorScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _terpilihId == b.id
-                                ? const XyTheme.lilac.withOpacity(0.2)
+                                ? XyTheme.lilac.withOpacity(0.2)
                                 : Colors.white.withOpacity(0.06 * b.opacity),
                             border: Border.all(
                               color: _terpilihId == b.id
-                                  ? const XyTheme.lilac
+                                  ? XyTheme.lilac
                                   : Colors.white.withOpacity(0.80 * b.opacity),
                               width: _terpilihId == b.id ? 2.6 : 1.6,
                             ),
                             boxShadow: _terpilihId == b.id
                                 ? [
                                     BoxShadow(
-                                      color: const XyTheme.primary.withOpacity(.55),
+                                      color: XyTheme.primary.withOpacity(.55),
                                       blurRadius: 14,
                                     )
                                   ]
@@ -722,7 +722,7 @@ class _HudGridPainter extends CustomPainter {
       ..color = Colors.white.withOpacity(.055)
       ..strokeWidth = 1;
     final besar = Paint()
-      ..color = const XyTheme.primary.withOpacity(.14)
+      ..color = XyTheme.primary.withOpacity(.14)
       ..strokeWidth = 1;
     const jarak = 24.0;
     for (double x = 0; x <= size.width; x += jarak) {

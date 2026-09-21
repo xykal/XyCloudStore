@@ -237,8 +237,8 @@ class _AvatarBingkaiState extends State<AvatarBingkai>
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: id == 'api'
-                    ? [const XyTheme.pink400, XyTheme.violet, const Color(0xFF7C2D12)]
-                    : [const XyTheme.cyan400, XyTheme.violet, const Color(0xFF312E81)],
+                    ? [XyTheme.pink400, XyTheme.violet, const Color(0xFF7C2D12)]
+                    : [XyTheme.cyan400, XyTheme.violet, const Color(0xFF312E81)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

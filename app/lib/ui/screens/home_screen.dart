@@ -720,7 +720,7 @@ class _LiveHomeCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                     decoration: BoxDecoration(
-                      color: live != null ? const XyTheme.red500 : Colors.white.withOpacity(.14),
+                      color: live != null ? XyTheme.red500 : Colors.white.withOpacity(.14),
                       borderRadius: BorderRadius.circular(99),
                     ),
                     child: Text(live != null ? '● LIVE' : 'SEGERA HADIR',

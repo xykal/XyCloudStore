@@ -1,6 +1,21 @@
 // Model toko — dipecah dari models.dart (P2 rapih/semua).
 // models.dart tetap barrel export; import lama tidak berubah.
 
+import 'dart:convert';
+import '../core/waktu.dart';
+
+/// Baca peta JSON aman (hilang/teks/nilai aneh -> peta kosong).
+Map<String, dynamic> _petaAman(dynamic v) {
+  if (v == null) return const {};
+  if (v is Map) return Map<String, dynamic>.from(v);
+  if (v is String && v.trim().startsWith('{')) {
+    try {
+      return Map<String, dynamic>.from(jsonDecode(v));
+    } catch (_) {}
+  }
+  return const {};
+}
+
 class AkunProduk {
   final String id;
   final String nama;

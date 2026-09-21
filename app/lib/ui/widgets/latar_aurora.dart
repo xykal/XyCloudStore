@@ -46,7 +46,7 @@ class XyLatar extends StatelessWidget {
         // Dasar: GitHub Dark Canvas (gelap) / lavender halus (terang).
         DecoratedBox(
           decoration: BoxDecoration(
-            color: gelap ? const XyTheme.panelDark : null,
+            color: gelap ? XyTheme.panelDark : null,
             gradient: gelap
                 ? null
                 : const LinearGradient(
@@ -76,7 +76,7 @@ class XyLatar extends StatelessWidget {
           Positioned(
             left: -120,
             bottom: -80,
-            child: blob(const XyTheme.purple200, 420, opasitas: .75 * o),
+            child: blob(XyTheme.purple200, 420, opasitas: .75 * o),
           ),
         ],
         // Kilau tipis di tepi atas supaya tidak datar.
