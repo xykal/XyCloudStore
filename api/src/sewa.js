@@ -236,19 +236,21 @@ export async function konfirmasiAgen(env,agent,command,b){
       const mulai=o.mulai||waktu,sampai=o.berakhir||new Date(Date.now()+s.durasi_menit*60000).toISOString();
       const hostStream=normalisasiHostStream(b.host, agent.host);
       const tunnelHost = b.tunnel_host ? String(b.tunnel_host).trim().slice(0,200) : null;
-      const relayHost = b.relay_host ? String(b.relay_host).trim().slice(0,200) : null;
+      // XY-RELAY v1: wss://host/xy/sesi (izinkan '/'); selain itu pola host biasa.
+      const relayMentah = b.relay_host ? String(b.relay_host).trim().slice(0,200) : null;
+      const relayHost = relayMentah && (/^wss:\/\/[A-Za-z0-9.-]{1,200}(\/[A-Za-z0-9._~/-]{0,100})?$/.test(relayMentah) || /^[A-Za-z0-9.:-]{1,200}$/.test(relayMentah)) ? relayMentah : null;
       const hostLan = b.host_lan ? String(b.host_lan).trim().slice(0,100) : null;
       if(hostStream){
         await env.DB.batch([
-          env.DB.prepare("UPDATE sesi SET status='siap',mulai=?,berakhir=?,host=?,host_lan=COALESCE(?,host_lan),tunnel_host=COALESCE(?,tunnel_host),relay_host=COALESCE(?,relay_host),catatan='Host siap untuk koneksi streaming (tunnel/relay supported)' WHERE id=?").bind(mulai,sampai,hostStream,hostLan,tunnelHost,relayHost,s.id),
+          env.DB.prepare("UPDATE sesi SET status='siap',mulai=?,berakhir=?,host=?,host_lan=COALESCE(?,host_lan),tunnel_host=COALESCE(?,tunnel_host),relay_host=?,catatan='Host siap untuk koneksi streaming (tunnel/relay supported)' WHERE id=?").bind(mulai,sampai,hostStream,hostLan,tunnelHost,relayHost,s.id),
           env.DB.prepare("UPDATE orders SET status='aktif',progress=100,mulai=?,berakhir=?,host=? WHERE id=? AND status IN ('dibayar','provisioning','aktif')").bind(mulai,sampai,hostStream,s.order_id),
-          env.DB.prepare('UPDATE agen SET host=?, host_lan=COALESCE(?,host_lan), tunnel_host=COALESCE(?,tunnel_host), relay_host=COALESCE(?,relay_host) WHERE id=?').bind(hostStream, hostLan, tunnelHost, relayHost, agent.id),
+          env.DB.prepare('UPDATE agen SET host=?, host_lan=COALESCE(?,host_lan), tunnel_host=COALESCE(?,tunnel_host), relay_host=? WHERE id=?').bind(hostStream, hostLan, tunnelHost, relayHost, agent.id),
         ]);
       } else {
         await env.DB.batch([
-          env.DB.prepare("UPDATE sesi SET status='siap',mulai=?,berakhir=?,host=COALESCE(host, ?),host_lan=COALESCE(?,host_lan),tunnel_host=COALESCE(?,tunnel_host),relay_host=COALESCE(?,relay_host),catatan=? WHERE id=?").bind(mulai,sampai,agent.host||null,hostLan,tunnelHost,relayHost,'Host siap. Set IP/host publik di Unit (bukan nama PC Windows). Tunnel/Relay tanpa Tailscale didukung.',s.id),
+          env.DB.prepare("UPDATE sesi SET status='siap',mulai=?,berakhir=?,host=COALESCE(host, ?),host_lan=COALESCE(?,host_lan),tunnel_host=COALESCE(?,tunnel_host),relay_host=?,catatan=? WHERE id=?").bind(mulai,sampai,agent.host||null,hostLan,tunnelHost,relayHost,'Host siap. Set IP/host publik di Unit (bukan nama PC Windows). Tunnel/Relay tanpa Tailscale didukung.',s.id),
           env.DB.prepare("UPDATE orders SET status='aktif',progress=100,mulai=?,berakhir=?,host=COALESCE(host, ?) WHERE id=? AND status IN ('dibayar','provisioning','aktif')").bind(mulai,sampai,agent.host||null,s.order_id),
-          env.DB.prepare('UPDATE agen SET host_lan=COALESCE(?,host_lan), tunnel_host=COALESCE(?,tunnel_host), relay_host=COALESCE(?,relay_host) WHERE id=?').bind(hostLan, tunnelHost, relayHost, agent.id),
+          env.DB.prepare('UPDATE agen SET host_lan=COALESCE(?,host_lan), tunnel_host=COALESCE(?,tunnel_host), relay_host=? WHERE id=?').bind(hostLan, tunnelHost, relayHost, agent.id),
         ]);
       }
     

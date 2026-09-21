@@ -6,6 +6,7 @@ import '../../core/motion.dart';
 import '../../core/pengaturan.dart';
 import '../../core/theme.dart';
 import '../../data/native_stream.dart';
+import '../../game/relay_proxy.dart';
 import '../../models/models.dart';
 import '../../providers/app_state.dart';
 import '../widgets/common.dart';
@@ -47,6 +48,13 @@ class _SesiScreenState extends State<SesiScreen> {
   List<Map<String, dynamic>> _apps = [];
   int? _appId;
   final List<String> _log = [];
+  RelayProxy? _proxyRelay;
+
+  Future<void> _hentikanRelay() async {
+    final p = _proxyRelay;
+    _proxyRelay = null;
+    if (p != null) await p.berhenti();
+  }
   @override
   void initState() {
     super.initState();
@@ -106,6 +114,7 @@ class _SesiScreenState extends State<SesiScreen> {
     _stableTimer?.cancel();
     NativeStream.onEvent = null;
     unawaited(NativeStream.batal());
+    unawaited(_hentikanRelay());
     super.dispose();
   }
 
@@ -342,7 +351,10 @@ class _SesiScreenState extends State<SesiScreen> {
         m.contains('econnrefused') ||
         m.contains('unable to resolve') ||
         m.contains('no address associated') ||
-        m.contains('network is unreachable');
+        m.contains('network is unreachable') ||
+        m.contains('websocket') ||
+        m.contains('handshake') ||
+        m.contains('relay');
   }
 
   Future<void> _hubungkan({bool bukaSesudahSiap = false}) async {
@@ -377,17 +389,44 @@ class _SesiScreenState extends State<SesiScreen> {
       if (host.isEmpty) {
         throw StateError('Alamat host $label belum tersedia.');
       }
+      // XY-RELAY v1: host wss:// = Quick Tunnel Cloudflare gratis; sambungkan
+      // proxy lokal dulu lalu arahkan Moonlight ke 127.0.0.1.
+      var hostEfektif = host;
+      var labelEfektif = label;
+      final viaRelayOtomatis = host.startsWith('wss://');
+      if (viaRelayOtomatis) {
+        labelEfektif = 'Relay otomatis';
+        if (mounted) {
+          setState(() {
+            _route = '$labelEfektif · $host';
+            _stage = 'Menyalakan relay otomatis…';
+            _progress = 8;
+          });
+        }
+        await _hentikanRelay();
+        try {
+          _proxyRelay = await RelayProxy.hubungkan(host)
+              .timeout(const Duration(seconds: 30));
+        } on TimeoutException {
+          await _hentikanRelay();
+          throw TimeoutException(
+              'Relay otomatis tidak menjawab dalam 30 detik; mencoba jalur lain…');
+        }
+        hostEfektif = '127.0.0.1';
+      } else {
+        await _hentikanRelay();
+      }
       if (mounted) {
         setState(() {
-          _route = '$label · $host';
-          _stage = 'Menguji jalur $label ke $host…';
+          _route = '$labelEfektif · $host';
+          _stage = 'Menguji jalur $labelEfektif ke $host…';
           _progress = 10;
         });
       }
       try {
         // Batch Q+: timeout 60s + support Tunnel/Relay tanpa Tailscale
         return await NativeStream.hubungkan(
-          host: host,
+          host: hostEfektif,
           session: sesi!.id,
           hostKey: sesi!.agenId ?? sesi!.host ?? '',
         ).timeout(const Duration(seconds: 60));
@@ -480,6 +519,8 @@ class _SesiScreenState extends State<SesiScreen> {
             'untuk VM cloud periksa NSG/Security Group, lalu jalankan Cek port dari internet pada Agen. '
             'Detail: $clean';
       }
+      // Semua jalur gagal: bebaskan port lokal yang dipakai relay otomatis.
+      await _hentikanRelay();
       if (mounted) {
         setState(() {
           _error = clean;

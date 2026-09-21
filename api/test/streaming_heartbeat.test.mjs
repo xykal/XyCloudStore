@@ -64,3 +64,61 @@ test('Heartbeat: jalur LAN/tunnel/relay tersimpan & IP baru tersync ke sesi akti
     await mf.dispose();
   }
 });
+
+test('Heartbeat+konfirmasi: relay XY-RELAY (wss://) tersimpan; sesi tak warisi relay basi',
+     {timeout: 120000}, async () => {
+  const {mf, db, token, call} = await harness();
+  try {
+    const auth = await token('u');
+    const user = (path, method, body) => call(path, method, body, {Authorization: 'Bearer ' + auth});
+    const detak = (body) => call('/agen/heartbeat', 'POST',
+      {status: 'online', versi: '1.6.0', ...body}, {'x-agen-kode': 'test-agent'});
+    const agen = (path, method, body) => call(path, method, body, {'x-agen-kode': 'test-agent'});
+    const ambil = async (sql, kolom, ...bind) => (await db.prepare(sql).bind(...bind).first())?.[kolom];
+
+    await db.prepare("INSERT INTO users(id,nama,email,password,saldo) VALUES('u','U','u@example.invalid','test',100000)").run();
+    await db.prepare("INSERT INTO pc_plans(id,nama,gpu,cpu,ram_gb,storage_gb,harga_per_jam,harga_per_hari,region,total_unit,unit_tersedia) VALUES('p','PC test','G','C',16,100,10000,100000,'test',2,2)").run();
+    await db.prepare("INSERT INTO agen(id,nama,kode,plan_id,host,versi,spec,terakhir) VALUES('a','Unit test','test-agent','p','203.0.113.7','1.6.0',?,datetime('now'))")
+      .bind(JSON.stringify({sunshine: {siap: true}})).run();
+
+    // wss:// + path diterima (ditolak oleh validator host biasa yang lama).
+    const wss = 'wss://acak-123.trycloudflare.com/xy/sesi-1';
+    const d1 = await detak({host: '203.0.113.7', relay_host: wss});
+    assert.equal(d1.status, 200, JSON.stringify(d1.json));
+    assert.equal(await ambil('SELECT relay_host FROM agen WHERE id=?', 'relay_host', 'a'), wss);
+    // Skema aneh ditolak -> NULL (SET eksak, tidak mewarisi URL basi).
+    const d2 = await detak({relay_host: 'http://jahat.example/x'});
+    assert.equal(d2.status, 200, JSON.stringify(d2.json));
+    assert.equal(await ambil('SELECT relay_host FROM agen WHERE id=?', 'relay_host', 'a'), null,
+      'skema non-wss harus ditolak');
+    await detak({host: '203.0.113.7', relay_host: wss});
+
+    // Konfirmasi mulai_sesi: relay dari agen menetap di sesi…
+    const buat = await user('/orders', 'POST', {plan_id: 'p', durasi_jam: 1, metode: 'saldo', request_id: 'req-hb-000002'});
+    assert.equal(buat.status, 201, JSON.stringify(buat.json));
+    const mulai = await user('/sesi/mulai', 'POST', {order_id: buat.json.data.id});
+    assert.equal(mulai.status, 201, JSON.stringify(mulai.json));
+    const sesi = mulai.json.data;
+    const cmd = await db.prepare("SELECT * FROM perintah WHERE jenis='mulai_sesi'").first();
+    const konfirm = await agen('/agen/perintah/' + cmd.id, 'POST',
+      {ok: true, sesi_id: sesi.id, host: '192.0.2.44', relay_host: wss});
+    assert.equal(konfirm.status, 200, JSON.stringify(konfirm.json));
+    assert.equal(await ambil('SELECT relay_host FROM sesi WHERE id=?', 'relay_host', sesi.id), wss);
+
+    // …dan sesi berikutnya TANPA relay tidak mewarisi URL basi (SET eksak).
+    await db.prepare("UPDATE sesi SET status='selesai' WHERE id=?").bind(sesi.id).run();
+    const buat2 = await user('/orders', 'POST', {plan_id: 'p', durasi_jam: 1, metode: 'saldo', request_id: 'req-hb-000003'});
+    assert.equal(buat2.status, 201, JSON.stringify(buat2.json));
+    const mulai2 = await user('/sesi/mulai', 'POST', {order_id: buat2.json.data.id});
+    assert.equal(mulai2.status, 201, JSON.stringify(mulai2.json));
+    const sesi2 = mulai2.json.data;
+    const cmd2 = await db.prepare("SELECT * FROM perintah WHERE jenis='mulai_sesi' AND id!=?").bind(cmd.id).first();
+    const konfirm2 = await agen('/agen/perintah/' + cmd2.id, 'POST',
+      {ok: true, sesi_id: sesi2.id, host: '203.0.113.7'});
+    assert.equal(konfirm2.status, 200, JSON.stringify(konfirm2.json));
+    assert.equal(await ambil('SELECT relay_host FROM sesi WHERE id=?', 'relay_host', sesi2.id), null,
+      'sesi tanpa relay wajib NULL, bukan URL sesi lama');
+  } finally {
+    await mf.dispose();
+  }
+});

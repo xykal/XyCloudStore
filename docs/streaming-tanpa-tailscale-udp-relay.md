@@ -1,5 +1,9 @@
 # Streaming Tanpa Tailscale — Bisa Pakai Cloudflare Tunnel / UDP Relay?
 
+> **Catatan 2026-09-21:** solusi final sudah dibangun — XY-RELAY v1
+> (UDP/TCP-over-WebSocket + Quick Tunnel Cloudflare, gratis otomatis).
+> Lihat `docs/protokol-xy-relay.md` dan `docs/streaming-otomatis-relay-2026-09-21.md`.
+
 Tanggal: 2026-09-19
 Pertanyaan: "untuk streaming agar gaperlu tailscale bisa kah kita udp relay pakai cloudflare workers?"
 

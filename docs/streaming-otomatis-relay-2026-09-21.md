@@ -5,10 +5,8 @@ terhubung tanpa set manual? Perlu relay?_
 
 ## Jawaban singkat
 
-**Sebagian besar sudah otomatis (STREAM-A, diimplementasikan cabang ini).
-Relay UDP hanya wajib untuk PC di balik CGNAT/double-NAT yang port-nya tidak
-bisa dibuka — dan itu butuh VPS + biayanya relay; desainnya di bawah
-(STREAM-B, belum dibangun).**
+**Semua otomatis di cabang ini: STREAM-A (jalur langsung) + STREAM-B
+(XY-RELAY v1 — relay gratis otomatis, tanpa VPS/biaya/setup manual).**
 
 ## STREAM-A — otomatis, sudah jalan ✅
 
@@ -24,7 +22,7 @@ Urutan jalur aplikasi: **Tunnel → Publik → LAN → Relay UDP** (dengan fallb
 otomatis antar-jalur saat satu gagal).
 
 Uji: `api/test/streaming_heartbeat.test.mjs` (jalur tersimpan, input jahat
-ditolak, IP baru tersync ke sesi aktif). Total API **81/81 hijau**.
+ditolak, IP baru tersync ke sesi aktif). Total API **82/82 hijau**.
 
 ## Kapan relay dibutuhkan? (jujur)
 
@@ -36,36 +34,44 @@ ditolak, IP baru tersync ke sesi aktif). Total API **81/81 hijau**.
    **dan** HP penyewa dalam satu tailnet. Cocok untuk testing/armada kecil,
    bukan untuk penyewa umum.
 
-## STREAM-B — desain relay UDP (belum dibangun)
+## STREAM-B — XY-RELAY v1, sudah jalan ✅ (gratis, tanpa VPS)
 
-Syarat: VPS publik (1 vCPU, ~US$5/bln) + domain. GameStream/Moonlight memakai
-UDP (video/audio/input) + TCP (kontrol); relay harus meneruskan keduanya.
+Keputusan pemilik: **tanpa VPS/biaya/setup manual**. Jawabannya: agen
+membungkus 8 port GameStream (TCP kontrol + UDP video/audio/input) ke **satu
+WebSocket aman** yang diterbitkan lewat **Quick Tunnel Cloudflare** (gratis,
+tanpa akun, koneksi keluar → lolos CGNAT). Spesifikasi:
+`docs/protokol-xy-relay.md`.
 
 ```
-HP penyewa ──UDP/TCP──▶ VPS relay ──UDP/TCP──▶ agen PC (koneksi keluar,
-                                              lolos CGNAT/NAT)
+HP: Moonlight ─▶ 127.0.0.1:4798x (proxy Dart)
+                    │ WS biner (frame VER|KIND|IDX|CONN|FLAGS|LEN|PAYLOAD)
+                    ▼ wss://xxx.trycloudflare.com/xy/{sesi}
+PC: cloudflared ─▶ WS lokal ─▶ agen ─▶ Sunshine 127.0.0.1:4798x
 ```
 
-- Agen membuka **terowongan keluar** ke VPS saat sesi `menyiapkan`
-  (tidak perlu port inbound di PC).
-- VPS memetakan `sesi_id → terowongan agen`; HP diberi `relay_host`
-  (`vps:port/sesi`) lewat `sesi.relay_host` yang sudah ada.
-- Auth: token sesi sekali pakai; relay menolak paket tanpa token.
-- Kapasitas: ±5–10 sesi 1080p60 per VPS kecil (ukur ulang saat prototipe).
-- Alternatif tanpa kelola VPS: Cloudflare Tunnel `cloudflared` di agen untuk
-  TCP kontrol + **tetap butuh relay UDP** untuk video (Workers tidak bisa UDP;
-  lihat `docs/streaming-tanpa-tailscale-udp-relay.md`). Spectrum=UDP jadi
-  opsi enterprise (mahal).
+- Agen (`agent-gui/src-native/src/relay.rs`, std-only): server WS di
+  `127.0.0.1:port-acak`, unduh `cloudflared.exe` sekali (~30 MB, `%APPDATA%`),
+  lapor URL `wss://…/xy/{sesi_id}` sebagai `relay_host`. Nyalakan otomatis
+  hanya bila host privat/CGNAT (`Konfig.relay`: auto/on/off; override
+  `paksa_relay` dari API); mati saat `akhiri_sesi`.
+- API: heartbeat + konfirmasi `mulai_sesi` menerima `wss://…` dan menyimpan
+  SET eksak (anti URL basi antar-sesi) ke `agen.relay_host`/`sesi.relay_host`.
+- Aplikasi (`app/lib/game/relay_proxy.dart`): bila `relay_host` diawali
+  `wss://`, proxy lokal dibuka (TCP 47984/47989/48010 + UDP
+  47998/47999/48000/48002/48010) dan Moonlight diarahkan ke `127.0.0.1`.
+  Gagal → fallback jalur lain seperti biasa; proxy dimatikan saat gagal
+  total/keluar layar.
+- Prioritas jalur tetap: Publik/LAN dulu (latensi terbaik), relay terakhir.
 
-### Keputusan yang dibutuhkan pemilik
-
-1. Sediakan VPS relay? (ya → dibangun STREAM-B; tidak → PC CGNAT wajib
-   Tailscale/port-forward manual, dan dasbor menandainya lewat Uji port)
-2. Batas sesi/VPS dan siapa menanggung biaya (masuk harga sewa?)
+Batasan jujur: Quick Tunnel domain acak per sesi (tidak masalah — URL selalu
+diantar API); latensi relay ± lebih tinggi dari direct; UDP video (~10 Mbps)
+di dalam WS menambah overhead kecil. Bila suatu saat butuh SLA/kapasitas
+besar, barulah VPS relay dipertimbangkan lagi.
 
 ## Reproduksi
 
 ```bash
 cd api && node --test test/streaming_heartbeat.test.mjs
-grep -n "ip_lan\|host_lan" ../agent-gui/src-native/src/agent.rs | head
+cd ../app && flutter test test/relay_frame_test.dart
+grep -n "mod relay" ../agent-gui/src-native/src/agent.rs
 ```

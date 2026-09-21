@@ -2713,11 +2713,18 @@ ${halaman.map(([u, p2, f]) => `  <url>
           // tiap heartbeat oleh agen 1.5.9+; tunnel/relay bila agen memakainya.
           const bersihJalur = (v, maks) => (typeof v === 'string' && /^[A-Za-z0-9.:-]{1,253}$/.test(v.trim())
             ? v.trim().slice(0, maks) : null);
+          // Relay XY-RELAY v1 berupa URL wss://host/xy/sesi (ada '/' dan path).
+          const bersihRelay = (v) => {
+            if (typeof v !== 'string') return null;
+            const t = v.trim().slice(0, 200);
+            if (/^wss:\/\/[A-Za-z0-9.-]{1,200}(\/[A-Za-z0-9._~/-]{0,100})?$/.test(t)) return t;
+            return bersihJalur(t, 200);
+          };
           const lanHeartbeat = bersihJalur(b.host_lan, 64);
           const tunnelHeartbeat = bersihJalur(b.tunnel_host, 200);
-          const relayHeartbeat = bersihJalur(b.relay_host, 200);
+          const relayHeartbeat = bersihRelay(b.relay_host);
           await env.DB.prepare(
-            "UPDATE agen SET status = 'online', spec = COALESCE(?, spec), versi = COALESCE(?, versi), host = CASE WHEN ? IS NOT NULL THEN ? ELSE host END, host_lan = COALESCE(?, host_lan), tunnel_host = COALESCE(?, tunnel_host), relay_host = COALESCE(?, relay_host), terakhir = ? WHERE id = ?"
+            "UPDATE agen SET status = 'online', spec = COALESCE(?, spec), versi = COALESCE(?, versi), host = CASE WHEN ? IS NOT NULL THEN ? ELSE host END, host_lan = COALESCE(?, host_lan), tunnel_host = COALESCE(?, tunnel_host), relay_host = ?, terakhir = ? WHERE id = ?"
           ).bind(
             specObj ? JSON.stringify(specObj) : (b.spec ? JSON.stringify(b.spec) : null),
             b.versi || null,

@@ -13,6 +13,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 mod obs_live;
+mod relay;
 
 pub const VERSI: &str = "1.5.8-rust";
 
@@ -46,6 +47,9 @@ pub struct Konfig {
     pub server: String,
     #[serde(default)]
     pub stream_host: Option<String>,
+    /// Relay otomatis XY-RELAY: "auto" (bawaan), "on" (selalu), "off".
+    #[serde(default)]
+    pub relay: Option<String>,
 }
 
 pub type Logger = Arc<dyn Fn(&str) + Send + Sync>;
@@ -718,9 +722,32 @@ fn kerjakan(k: &Konfig, perintah: &Value, log: &Logger) {
                 let _ = minta(&format!("{sunshine}/api/apps/close"), Some(json!({})), "POST", Some(header_basic(k)));
                 let stream = alamat_stream(k);
                 log(&format!("Host streaming untuk penyewa: {stream}"));
+                // Relay otomatis (XY-RELAY v1): PC CGNAT/privat tetap bisa
+                // disewa tanpa set manual. Mode: relay:on/off/auto.
+                let mode = k.relay.as_deref().unwrap_or("auto");
+                let paksa = muatan
+                    .get("paksa_relay")
+                    .and_then(|x| x.as_bool())
+                    .unwrap_or(false);
+                let perlu = paksa
+                    || mode == "on"
+                    || (mode != "off" && relay::perlu_relay_otomatis(&stream));
+                let relay_host = if perlu {
+                    match relay::mulai(sesi_id, log) {
+                        Ok(u) => Some(u),
+                        Err(e) => {
+                            log(&format!("Relay gagal dinyalakan: {e}"));
+                            None
+                        }
+                    }
+                } else {
+                    relay::berhenti();
+                    None
+                };
                 balas(json!({
                     "ok": true, "sesi_id": sesi_id, "status": "siap",
                     "host": stream,
+                    "relay_host": relay_host,
                     "catatan": "Sunshine siap menerima sambungan",
                 }));
             } else {
@@ -755,6 +782,7 @@ fn kerjakan(k: &Konfig, perintah: &Value, log: &Logger) {
         "akhiri_sesi" => {
             // Lease PC berakhir berarti siaran publik juga wajib berhenti,
             // bahkan bila command akhiri_siaran datang sesudah command ini.
+            relay::berhenti();
             let live_bersih = obs_live::akhiri_aktif(k, log).is_ok();
             let tutup = minta(&format!("{sunshine}/api/apps/close"), Some(json!({})), "POST", Some(header_basic(k)));
             let lepas = minta(&format!("{sunshine}/api/clients/unpair-all"), Some(json!({})), "POST", Some(header_basic(k)));
@@ -835,6 +863,7 @@ fn detak(k: &Konfig, log: &Logger) {
         "spec": spec,
         "host": stream,
         "host_lan": lan,
+        "relay_host": relay::url_aktif(),
         "hostname": std::env::var("COMPUTERNAME").unwrap_or_default(),
         "live_health": live_health,
     });
