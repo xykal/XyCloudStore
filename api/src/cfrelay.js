@@ -130,8 +130,13 @@ export async function pastikanTunnel(env, agen) {
       await cf(env, `/accounts/${akun}/cfd_tunnel/${tunnelId}`);
     } catch (e) {
       if (e.status !== 404) throw e;
-      tunnelId = ''; // tunnel dihapus manual di dashboard -> buat ulang
+      tunnelId = ''; // tunnel dihapus -> buat ulang
     }
+    // CATATAN: API CF mengembalikan HTTP 200 basi untuk tunnel yang sudah
+    // dihapus (terbukti 2026-09-21: GET + GET token tetap 200, hanya LIST yang
+    // benar). Deteksi penghapusan manual di dashboard TIDAK bisa dari sini;
+    // agen yang mendeteksinya (cloudflared "Unauthorized: Tunnel not found")
+    // lalu memanggil DELETE endpoint ini untuk reset + coba lagi sekali.
   }
   if (!tunnelId) {
     const nama = 'xyr-' + slugAgen(agen.id);
@@ -173,22 +178,33 @@ export async function pastikanTunnel(env, agen) {
   return {tunnel_id: tunnelId, hostname, tunnel_token: token};
 }
 
-/** Hapus DNS + tunnel unit (dipakai saat unit dihapus/direset). */
+/**
+ * Hapus DNS + tunnel unit (dipakai saat unit dihapus/direset, dan oleh agen
+ * untuk self-healing saat token ditolak). 404 = sudah hilang = sukses.
+ * Kegagalan non-404 dilaporkan (kolom DB dipertahankan agar bisa di-retry,
+ * menghindari tunnel yatim).
+ */
 export async function hapusTunnel(env, agen) {
   const akun = await akunId(env);
   const hostname = agen.cf_hostname || hostnameUntuk(agen);
+  const gagal = [];
   try {
     const zid = await zonaId(env);
     const ada = await cf(env, `/zones/${zid}/dns_records?type=CNAME&name=${hostname}`);
     for (const r of (ada || [])) {
       await cf(env, `/zones/${zid}/dns_records/${r.id}`, 'DELETE');
     }
-  } catch (e) { /* DNS boleh sudah hilang */ }
+  } catch (e) {
+    if (e.status !== 404) gagal.push('dns: ' + e.message);
+  }
   if (agen.cf_tunnel_id) {
     try {
       await cf(env, `/accounts/${akun}/cfd_tunnel/${agen.cf_tunnel_id}?cascade=true`, 'DELETE');
-    } catch (e) { /* tunnel boleh sudah hilang */ }
+    } catch (e) {
+      if (e.status !== 404) gagal.push('tunnel: ' + e.message);
+    }
   }
+  if (gagal.length) fail('Gagal hapus sebagian: ' + gagal.join('; ').slice(0, 200), 502);
   await env.DB.prepare('UPDATE agen SET cf_tunnel_id=NULL, cf_hostname=NULL WHERE id=?')
     .bind(agen.id).run();
   return {ok: true};

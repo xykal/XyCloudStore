@@ -236,10 +236,8 @@ fn hostname_valid(h: &str) -> bool {
     })
 }
 
-/// Nyalakan relay NAMED (hostname tetap relay-<unit>.xycloud.my.id).
-/// Meminta setup idempotent ke Worker, lalu `cloudflared run --token`.
-/// Token TIDAK PERNAH ditulis ke log. Gagal => pemanggil fallback quick.
-pub fn mulai_named(
+/// Satu percobaan relay NAMED. Token ditolak => Err diawali "TOKEN_DITOLAK".
+fn mulai_named_sekali(
     server: &str,
     kode: &str,
     sesi_id: &str,
@@ -329,7 +327,7 @@ pub fn mulai_named(
         let _ = anak.kill();
         jalan.store(false, Ordering::SeqCst);
         if salah_token {
-            return Err("tunnel token ditolak Cloudflare".into());
+            return Err("TOKEN_DITOLAK: tunnel token ditolak Cloudflare".into());
         }
         return Err("named tunnel tidak terhubung dalam 90 dtk".into());
     }
@@ -369,6 +367,39 @@ fn pastikan_cloudflared(log: &Logger) -> Result<std::path::PathBuf, String> {
 }
 
 // ---------- server WebSocket minimal (std-only) ----------
+
+/// Nyalakan relay NAMED (hostname tetap relay-<unit>.xycloud.my.id).
+/// Meminta setup idempotent ke Worker, lalu `cloudflared run --token`.
+/// Token TIDAK PERNAH ditulis ke log. Gagal => pemanggil fallback quick.
+///
+/// Self-healing: API Cloudflare tidak bisa mendeteksi tunnel yang dihapus
+/// manual (GET basi tetap 200). Bila cloudflared menolak token, agen me-reset
+/// setup via DELETE lalu mencoba sekali lagi (membuat tunnel baru).
+pub fn mulai_named(
+    server: &str,
+    kode: &str,
+    sesi_id: &str,
+    log: &Logger,
+) -> Result<String, String> {
+    match mulai_named_sekali(server, kode, sesi_id, log) {
+        Ok(u) => Ok(u),
+        Err(e) if e.starts_with("TOKEN_DITOLAK") => {
+            log("Relay: token ditolak (tunnel mungkin dihapus manual); reset lalu coba lagi…");
+            let url_api = format!("{}/api/agen/relay/named", server.trim_end_matches('/'));
+            let _ = minta(
+                &url_api,
+                None,
+                "DELETE",
+                Some(vec![("x-agen-kode".to_string(), kode.to_string())]),
+            );
+            berhenti();
+            mulai_named_sekali(server, kode, sesi_id, log).map_err(|e2| {
+                e2.replacen("TOKEN_DITOLAK: ", "", 1)
+            })
+        }
+        Err(e) => Err(e),
+    }
+}
 
 fn layani_ws(alir: TcpStream, jalan: Arc<AtomicBool>, sesi: &str, log: &Logger) {
     let _ = alir.set_read_timeout(Some(Duration::from_secs(1)));
