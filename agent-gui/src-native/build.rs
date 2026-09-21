@@ -3,7 +3,7 @@ fn main() {
     #[cfg(windows)]
     {
         let mut res = winresource::WindowsResource::new();
-        res.set_icon("../src-tauri/icons/icon.ico");
+        res.set_icon("icons/icon.ico");
         res.set("ProductName", "XyCloudStore Agent");
         res.set("FileDescription", "Agen PC Host XyCloudStore (native egui)");
         res.set("ProductVersion", env!("CARGO_PKG_VERSION"));
@@ -12,5 +12,5 @@ fn main() {
         }
     }
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=../src-tauri/src/agent.rs");
+    println!("cargo:rerun-if-changed=src/agent.rs");
 }

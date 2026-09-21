@@ -5075,13 +5075,6 @@ async function statistikPublik(env) {
         }
 
         // ---- ulasan paket PC ----
-        if (a === 'ulasan-pc' && req.method === 'GET') {
-          const { results } = await env.DB.prepare(
-            `SELECT r.*, p.nama AS paket FROM ulasan_pc r
-             LEFT JOIN pc_plans p ON p.id = r.plan_id ORDER BY r.waktu DESC LIMIT 200`
-          ).all();
-          return json(results, 200, env);
-        }
         if (a.startsWith('ulasan-pc/') && req.method === 'PATCH') {
           const idR = a.split('/')[1];
           const b = await req.json().catch(() => ({}));

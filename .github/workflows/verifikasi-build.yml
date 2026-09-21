@@ -519,31 +519,6 @@ jobs:
             Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
   # ------------------------------------------------------------------
-  # Crate Tauri lama (v1.4) — sudah digantikan build native egui, tetapi
-  # `agent.rs` dipakai ulang keduanya lewat #[path]. Diperiksa sebagai info.
-  # ------------------------------------------------------------------
-  agen-tauri-legacy:
-    name: Agen Tauri legacy (info)
-    runs-on: windows-latest
-    timeout-minutes: 45
-    continue-on-error: true
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - name: Pasang toolchain Rust (stable-msvc)
-        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        with:
-          targets: x86_64-pc-windows-msvc
-
-      - name: cargo check crate Tauri legacy
-        shell: pwsh
-        working-directory: agent-gui/src-tauri
-        run: cargo check --locked
-
-  # ------------------------------------------------------------------
   # Rangkuman satu tempat: gagal bila ada job wajib yang merah.
   # ------------------------------------------------------------------
   ringkasan:

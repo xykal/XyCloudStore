@@ -3,18 +3,13 @@
 - **Permanent:** https://github.com/xykalnotkel/XyCloudStore-build/releases/download/agent-windows/XyCloudStore-Agent-Windows.zip
 - Actions artifact: workflow **Build Agen Windows**
 
-> EXE lama yang error `localhost refused to connect` = build Tauri tanpa UI embed.
-> Mulai **v1.5** agen dibangun **native (egui/eframe)** — masalah WebView tidak mungkin terjadi lagi.
-
-# Agen PC Host XyCloudStore (Rust + egui native, v1.5)
+# Agen PC Host XyCloudStore (Rust + egui native)
 
 Program kecil di setiap PC/VM sewa. Menyambungkan mesin ke server XyCloudStore supaya
 sesi **dinyalakan, dipasangkan, dan ditutup otomatis** dari aplikasi HP.
 
-**v1.5** — GUI **native egui/eframe**: satu exe mandiri, **tanpa Tauri, tanpa WebView2,
-tanpa jendela terminal**. Logika inti (`agent.rs`) tetap sama persis dengan build lama
-(dipakai ulang lewat `#[path]`), jadi perilaku heartbeat/perintah/auto-setup tidak berubah.
-Konfigurasi juga tetap dibaca dari lokasi lama — upgrade cukup timpa exe.
+Satu exe mandiri: **tanpa WebView2, tanpa jendela terminal**.
+Konfigurasi dibaca dari lokasi lama — upgrade cukup timpa exe.
 
 ```
 Aplikasi (HP)          Server Cloudflare            Agen (Rust) di PC        Sunshine
@@ -37,9 +32,14 @@ Agen hanya keluar ke server + API lokal Sunshine. Port streaming Sunshine
 
 | Path | Isi |
 |---|---|
-| `agent-gui/src-native/src/main.rs` | **GUI native egui** (pengaturan, uji koneksi, setup engine, mulai/stop, log, autostart) |
-| `agent-gui/src-tauri/src/agent.rs` | Inti agen: heartbeat, perintah, `sunshine --creds`, winget, autostart — **dipakai ulang build native** |
-| `agent-gui/src-tauri/` + `agent-gui/ui/` | Build Tauri lama (legacy, tidak lagi dipakai CI) |
+| `agent-gui/src-native/src/main.rs` | GUI native egui (pengaturan, uji koneksi, setup engine, mulai/stop, log, autostart) |
+| `agent-gui/src-native/src/agent.rs` | Inti agen: heartbeat, perintah, `sunshine --creds`, winget, autostart |
+| `agent-gui/src-native/src/obs_live.rs` | Kontrol OBS untuk live (start/stop/cek status) |
+| `agent-gui/src-native/icons/` | Ikon exe (ico/png) |
+| `agent-gui/src-native/vendor/` | Patch `egui-wgpu` (fallback adapter WARP) — lihat `vendor/README.md` |
+
+> Riwayat: build Tauri lama (`src-tauri/` + `ui/`) sudah dihapus dari repo
+> (cabang `rapih/fondasi`). Riwayat git tetap menyimpan berkas lamanya bila perlu.
 
 ## Setup di PC (3 klik)
 
@@ -76,18 +76,11 @@ Opsi lanjutan (username/password Sunshine) hanya jika mau pakai akun yang sudah 
 
 ## Build
 
-CI: `.github/workflows/agent-windows.yml` → artifact `XyCloudStore-Agent-Windows.zip`
-(runs-on `windows-latest`, cukup `cargo build --release` — tanpa tauri-cli).
+CI: `.github/workflows/build-agent.yml` → artifact `XyCloudStore-Agent-Windows.zip`
+(runs-on `windows-latest`, cukup `cargo build --release`).
 
 ```powershell
 cd agent-gui/src-native
 cargo build --release --locked
 # hasil: target/release/xycloud-agent.exe  → didistribusikan sebagai XyCloudStore-Agent.exe
-```
-
-Build legacy Tauri (masih ada di repo untuk referensi):
-
-```powershell
-cd agent-gui/src-tauri
-cargo tauri build --no-bundle --ci
 ```

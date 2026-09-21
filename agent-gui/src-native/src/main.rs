@@ -1,9 +1,9 @@
 // ============================================================
 //  XyCloudStore — Agen PC Host (Rust + egui/eframe NATIVE)
 // ============================================================
-//  Pengganti build Tauri: tanpa WebView2, tanpa terminal, satu
-//  exe mandiri. Logika inti (agent.rs) dipakai ulang apa adanya
-//  lewat #[path] supaya kedua build tidak pernah berbeda perilaku.
+//  Satu exe mandiri: tanpa WebView2, tanpa terminal.
+//  Logika inti di agent.rs (+ obs_live.rs); #[path] dipakai supaya
+//  `mod obs_live;` di dalam agent.rs tetap ketemu di folder src/.
 //
 //  Mode:
 //   --veri / -V      → cetak versi lalu keluar 0 (smoke-test CI)
@@ -11,7 +11,7 @@
 //   (tanpa argumen)  → buka jendela GUI
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-#[path = "../../src-tauri/src/agent.rs"]
+#[path = "agent.rs"]
 mod agent;
 
 use agent::{Konfig, Logger, VERSI};
@@ -112,7 +112,7 @@ impl Aplikasi {
         let cfg = st.cfg();
         let autostart = agent::autostart_aktif();
         let mode_relay = agent::mode_relay_aktif();
-        let logo_tex = image::load_from_memory(include_bytes!("../../src-tauri/icons/icon.png"))
+        let logo_tex = image::load_from_memory(include_bytes!("../icons/icon.png"))
             .ok()
             .map(|img| {
                 let img = img.to_rgba8();
@@ -972,7 +972,7 @@ fn jam_wib() -> String {
 }
 
 fn ikon_aplikasi() -> Option<egui::IconData> {
-    let png = include_bytes!("../../src-tauri/icons/icon.png");
+    let png = include_bytes!("../icons/icon.png");
     let img = image::load_from_memory(png).ok()?.to_rgba8();
     let (w, h) = (img.width(), img.height());
     Some(egui::IconData {
