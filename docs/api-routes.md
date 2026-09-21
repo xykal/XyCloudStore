@@ -14,13 +14,17 @@
   `bayar/webhook/`) + mode pemeliharaan bertingkat.
 - Di luar `/api/`: `/health`, `/api/rilis`, `/unduh/*`, `/bayar/webhook/*`,
   `/ws/*` (Durable Object realtime), `/img/*`, `/media/*`, `/brand/*`,
-  `/legal/*`, `/admin`, `/admin-legacy`, halaman web publik.
+  `/legal/*`, `/admin` (gateway login), halaman web publik.
 
 ## Temuan saat pemetaan
 
 - `GET /api/admin/ulasan-pc` dobel (LIMIT 100 menang, LIMIT 200 mati) —
   blok mati sudah dihapus di cabang ini.
 - Webhook bayar di `/bayar/webhook/*` (bukan `/api/`), sesuai guard.
+- `GET /api/admin/log` = duplikat persis `/audit` (log_admin LIMIT 120), bahkan
+  dobel 2 blok — dihapus di cabang `rapih/satu-admin` (tidak dipakai siapa pun).
+- `POST /api/admin/cs/reply` kini terima `gambar` (URL https / dataURI);
+  teks boleh kosong bila ada gambar (`rapih/satu-admin`).
 
 ## Route publik `/api/*` (136 pola)
 
@@ -531,12 +535,6 @@
 | GET | `/api/admin/livestream` |
 | POST | `/api/admin/livestream/config` |
 | POST | `/api/admin/livestream/reconcile` |
-
-### `/api/admin/log`
-
-| Method | Path |
-|---|---|
-| GET | `/api/admin/log` |
 
 ### `/api/admin/log-sistem`
 

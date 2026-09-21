@@ -113,7 +113,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="xy-card rounded-[18px] p-4 flex items-center justify-between">
-        <div className="text-[12px] text-[#1E1B2E]/50 font-medium">Migrasi Next.js tuntas — legacy hanya darurat di <a href="https://api.xycloud.my.id/admin?legacy=1" className="text-[#8B5CF6] underline">/admin?legacy=1</a> • Lucide, Inter</div>
+        <div className="text-[12px] text-[#1E1B2E]/50 font-medium">Satu-satunya console admin • Lucide, Inter</div>
         <button
           onClick={() => {
             clearAdminKey();

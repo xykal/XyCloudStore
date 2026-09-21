@@ -2,6 +2,10 @@
 
 > Last update: 2026-09-09 (UTC) — v3.3j logo 2 versi (full saat open, icon only saat collapsed), endpoint alias 100% migrasi (audit→log_admin, cs→cs/rooms, unit→agen, sistem plain, rilis, keuangan, live, favorit, alat), solid UI 0 bg-white/5 0 bg-[#7C3AED]/20, build 38 pages — oleh Agent Arena.
 > Repo: `XyCloudOrder`, branch `main`
+>
+> **Catatan 2026-09-21:** console legacy (`admin-legacy.html`, route `/admin-legacy`,
+> `?legacy=1`) yang disebut di dokumen ini **sudah dihapus permanen**
+> (cabang `rapih/satu-admin`). Isi bawah adalah log historis — jangan dianggap kondisi kini.
 
 ## 0. UPDATE v3.3j — Logo 2 Versi + 100% Migrasi Endpoint + Solid Fix (2026-09-09)
 

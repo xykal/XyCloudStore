@@ -97,6 +97,21 @@ export default function SistemPage() {
     finally { setSaving(false); }
   }
 
+  const [tugasHasil, setTugasHasil] = useState<any>(null);
+
+  // Tugas berkala yang sama dengan cron per jam: bersih OTP/batas kedaluwarsa,
+  // retensi chat CS 7 hari, dan unit mati. Dijalankan manual bila perlu.
+  async function jalankanTugas() {
+    setSaving(true); setMsg(""); setErr(""); setTugasHasil(null);
+    try {
+      const r = await adminFetch("/api/admin/sistem/bersihkan", { method: "POST" });
+      setTugasHasil(r);
+      setMsg("Tugas berkala selesai dijalankan.");
+      await muat();
+    } catch (e: any) { setErr(e.message); }
+    finally { setSaving(false); }
+  }
+
   function toggleHalaman(path: string) {
     setHalaman((h) => h.includes(path) ? h.filter((x) => x !== path) : [...h, path]);
   }
@@ -306,6 +321,23 @@ export default function SistemPage() {
                 Otomatis mati bila lewat durasi (pengaman). Admin selalu bisa masuk untuk mematikan. Endpoint: <code className="font-mono">POST /api/admin/sistem/pemeliharaan</code>.
               </p>
             </div>
+          </div>
+
+          <div className="xy-card rounded-[20px] p-5">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h3 className="font-semibold text-[#1E1B2E] tracking-tight flex items-center gap-2"><RefreshCw size={15} className="text-[#7C3AED]" /> Tugas Berkala</h3>
+              <button onClick={jalankanTugas} disabled={saving}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] text-white text-[12px] font-semibold disabled:opacity-60 shadow-[0_8px_18px_rgba(124,58,237,.3)]">
+                <RefreshCw size={12} className={saving ? "animate-spin" : ""} /> {saving ? "Menjalankan…" : "Jalankan sekarang"}
+              </button>
+            </div>
+            <p className="mt-2 text-[11.5px] text-[#7C738F] font-medium leading-relaxed">
+              Membersihkan OTP &amp; pembatas laju kedaluwarsa, chat CS &gt; 7 hari, dan menandai unit mati.
+              Otomatis berjalan tiap jam — tombol ini hanya untuk menjalankan manual.
+            </p>
+            {tugasHasil && (
+              <pre className="mt-3 p-3 rounded-xl bg-[#F5F3FF] border border-[#E9E3F5] text-[11px] font-mono text-[#4B445F] whitespace-pre-wrap">{JSON.stringify(tugasHasil, null, 2)}</pre>
+            )}
           </div>
 
           <div className="xy-card rounded-[20px] p-5">

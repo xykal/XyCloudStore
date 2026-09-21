@@ -45,6 +45,21 @@ export default function LaporanPage() {
     finally { setBusy(null); }
   }
 
+  async function tandaiSensitif(l: any) {
+    const jenis = String(l.jenis || l.tipe || "");
+    const ref = l.ref_id || l.target_id;
+    if (!ref) { toast("Laporan ini tidak punya referensi konten.", "err"); return; }
+    const tabel = jenis.includes("ulasan") ? "ulasan" : "forum";
+    setBusy(l.id);
+    try {
+      await adminFetch(`/api/admin/konten/${tabel}/${ref}`, { method: "PATCH", body: { sensitif: true } });
+      await adminFetch(`/api/admin/laporan/${l.id}`, { method: "PATCH", body: { status: "selesai" } });
+      toast("Konten ditandai sensitif & laporan selesai.");
+      reload();
+    } catch (e: any) { toast(e.message || "Gagal.", "err"); }
+    finally { setBusy(null); }
+  }
+
   const q = cari.trim().toLowerCase();
   const daftar = rows.filter((l: any) =>
     (status === "semua" || (l.status || "baru") === status) &&
@@ -85,6 +100,9 @@ export default function LaporanPage() {
               {(l.status || "baru") !== "selesai" && (
                 <div className="flex gap-2 pt-1">
                   <Btn tone="ok" className="!h-8" disabled={busy === l.id} onClick={() => selesai(l.id)}>Tandai selesai</Btn>
+                  {(l.jenis === "forum" || l.jenis === "posting" || l.jenis === "ulasan") && (l.ref_id || l.target_id) && (
+                    <Btn tone="ghost" className="!h-8" disabled={busy === l.id} onClick={() => tandaiSensitif(l)} title="Blur konten di aplikasi, tanpa menghapus">Sensitif</Btn>
+                  )}
                   {l.jenis !== "pengguna" && (
                     <Btn tone="bahaya" className="!h-8" disabled={busy === l.id} onClick={() => hapusKonten(l)}>Hapus konten</Btn>
                   )}

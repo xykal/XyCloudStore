@@ -3,7 +3,29 @@
 ## Ringkasan
 Console admin monolit `api/src/admin-legacy.html` (1826 baris) sudah diganti **Next.js 14** di `dashboard/` dengan parity aksi operasional utama.
 
-Legacy **tidak dihapus**: tetap bisa dibuka darurat di `https://api.xycloud.my.id/admin?legacy=1`. Entry `/admin` mengarah ke dashboard baru.
+Legacy **sudah dihapus permanen** pada 2026-09-21 (cabang `rapih/satu-admin`) —
+lihat [Penuntasan](#penuntasan-2026-09-21) di bawah. Entry `/admin` mengarah ke dashboard baru.
+
+## Penuntasan (2026-09-21, cabang `rapih/satu-admin`)
+
+Audit parity ulang menemukan 4 gap di dashboard baru — semuanya diperbaiki,
+lalu console legacy **dihapus permanen**. Admin dashboard kini tinggal 1 (Next.js).
+
+| Temuan | Perbaikan |
+|---|---|
+| Voucher: form kirim field salah (`persen` diabaikan API → potongan Rp0) + list selalu kosong + tanpa ubah/hapus | Rewrite `dashboard/app/voucher/page.tsx`: form lengkap sesuai API + ubah + hapus + salin + badge status |
+| CS: admin tidak bisa kirim gambar (di legacy pun rusak: API menolak teks kosong 400) | API `cs/reply` terima `gambar` (URL/dataURI) + tombol lampir di halaman CS |
+| Tombol "jalankan pemeliharaan" (legacy `vSistem`) tidak ada | Kartu Tugas Berkala di halaman Sistem (`POST /sistem/bersihkan`) |
+| Tandai sensitif konten (legacy moderasi) tidak ada | Tombol Sensitif di halaman Moderasi + Laporan (`PATCH /konten/...`) |
+
+Dihapus: `api/src/admin-legacy.html`, route `/admin-legacy`, `/admin/legacy`,
+`?legacy=1`, dan endpoint `GET /api/admin/log` (duplikat `/audit`, bahkan dobel 2 blok
+di `index.js`). `api/src/admin.html` tinggal gateway login → dashboard baru.
+
+Bug legacy yang ikut terkubur (tidak dimigrasikan): blokir massal via
+`POST /users/:id/block` (endpoint tidak ada → 404), kirim gambar CS (400),
+menu Sampah mengandalkan `vUsers`, dan `GET /voucher` legacy yang benar tapi
+sempat dirusak ulang oleh dashboard baru.
 
 ## Yang dituntaskan di gelombang ini
 
@@ -52,7 +74,7 @@ CS realtime, Sistem/pemeliharaan, Push builder, Peran, Promosi, Plans/Produk/Vou
 6. **Stiker** → status GIPHY tampil.
 7. **Perangkat** → buka detail.
 8. **Forum** → pin + balas.
-9. Legacy darurat: `/admin?legacy=1` masih load.
+9. ~~Legacy darurat~~ — dihapus 2026-09-21; console tinggal dashboard Next.js.
 
 ## Deploy
 ```bash

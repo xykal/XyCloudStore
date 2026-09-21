@@ -28,7 +28,7 @@ import { statusCloudGime, bookingCloudGime, buatBookingCloudGime, CloudGimeError
  */
 
 import ADMIN_HTML from './admin.html';
-import ADMIN_LEGACY_HTML from './admin-legacy.html';
+
 import WEB_HTML from './web.html';
 import { infoRilis, unduhApk, tebakAbi, simpanRilis } from './rilis.js';
 import LOGO_PNG from './brand-logo.png';
@@ -2368,23 +2368,6 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,5,28,
     }
     // api.xycloud.my.id/admin dan / -> serve solid login langsung (tanpa redirect) — backend migrasi ke baru tapi tetap ada login di api host
     if (path === '/' || path === '/admin' || path === '/admin/') {
-      if (url.searchParams.get('legacy') === '1') {
-        const legacyHtml=ADMIN_LEGACY_HTML.replace('/*__XY_MEDIA__*/ {"cloud":"","base":""}',()=>JSON.stringify({cloud:env.CLOUDINARY_CLOUD,base:env.PUBLIC_URL||'https://api.xycloud.my.id'}).replace(/</g,'\u003c'));
-        return new Response(legacyHtml, {
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-store',
-            'X-Content-Type-Options': 'nosniff',
-            'X-Frame-Options': 'DENY',
-            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-            'Cross-Origin-Opener-Policy': 'same-origin',
-            'Cross-Origin-Resource-Policy': 'same-origin',
-            'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com data: blob:; connect-src 'self' https://api.xycloud.my.id wss://*.xycloud.my.id; frame-ancestors 'none'; form-action 'self'",
-            'Referrer-Policy': 'no-referrer',
-            'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
-          },
-        });
-      }
       // serve solid login (no redirect) — user bisa pilih buka dashboard Pages/Vercel dari sini
       return new Response(ADMIN_HTML, {
         headers: {
@@ -2401,25 +2384,6 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,5,28,
         },
       });
     }
-    // legacy direct path tetap ada untuk darurat, tapi akan dihapus nanti setelah migrasi full
-    if (path === '/admin-legacy' || path === '/admin/legacy') {
-      const legacyHtml=ADMIN_LEGACY_HTML.replace('/*__XY_MEDIA__*/ {"cloud":"","base":""}',()=>JSON.stringify({cloud:env.CLOUDINARY_CLOUD,base:env.PUBLIC_URL||'https://api.xycloud.my.id'}).replace(/</g,'\u003c'));
-      return new Response(legacyHtml, {
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'no-store',
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'DENY',
-          'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-          'Cross-Origin-Opener-Policy': 'same-origin',
-          'Cross-Origin-Resource-Policy': 'same-origin',
-          'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com data: blob:; connect-src 'self' https://api.xycloud.my.id wss://*.xycloud.my.id; frame-ancestors 'none'; form-action 'self'",
-          'Referrer-Policy': 'no-referrer',
-          'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
-        },
-      });
-    }
-
     if (path === '/legal/syarat' || path === '/legal/privasi' || path === '/legal/refund' || path === '/legal/live') {
       const jenis = path.endsWith('privasi') ? 'privasi' : path.endsWith('refund') ? 'refund' : path.endsWith('live') ? 'live' : 'syarat';
       return new Response(halamanLegal(jenis), {
@@ -4429,14 +4393,32 @@ async function statistikPublik(env) {
         if (a === 'cs/reply' && req.method === 'POST') {
           const b = await req.json().catch(() => ({}));
           const room = b.room, teks = String(b.teks ?? '');
-          if(!/^user:[A-Za-z0-9_-]+$/.test(String(room||''))||!teks.trim())return err('Room dan pesan diperlukan',400,env);
+          if(!/^user:[A-Za-z0-9_-]+$/.test(String(room||'')))return err('Room tidak valid',400,env);
+          // Lampiran gambar opsional: URL https hasil /upload, atau dataURI
+          // (diunggah dulu ke Cloudinary). Teks boleh kosong bila ada gambar.
+          let urlGambar = null;
+          const gambarIn = b.gambar;
+          if (typeof gambarIn === 'string' && gambarIn) {
+            if (gambarIn.startsWith('data:image/')) {
+              if (gambarIn.length > 7 * 1024 * 1024) return err('Gambar maksimal 5 MB', 400, env);
+              const hasil = await unggahGambar(env, { dataUri: gambarIn, folder: 'xycloudstore/chat' });
+              if (!hasil.ok) return err(hasil.alasan, 502, env);
+              urlGambar = hasil.url;
+            } else if (/^https:\/\/[^ ]{1,2000}$/.test(gambarIn)) {
+              urlGambar = gambarIn;
+            } else {
+              return err('Gambar tidak valid', 400, env);
+            }
+          }
+          if(!teks.trim()&&!urlGambar)return err('Room dan pesan diperlukan',400,env);
           if(teks.length>5000)return err('Pesan maksimal 5.000 karakter',400,env);
           const reply_to = String(b.reply_to ?? '').slice(0,64) || null;
           const reply_teks = String(b.reply_teks ?? '').slice(0,300) || null;
           const reply_tipe = ['teks','gambar','audio'].includes(b.reply_tipe) ? b.reply_tipe : 'teks';
-          const msg = { id: uid('m_'), room, dari: 'cs', tipe:'teks', teks, reply_to, reply_teks, reply_tipe, waktu: new Date().toISOString() };
-          await env.DB.prepare('INSERT INTO cs_messages (id,room,user_id,dari,tipe,teks,reply_to,reply_teks,reply_tipe,waktu) VALUES (?,?,?,?,?,?,?,?,?,?)')
-            .bind(msg.id, room, room.split(':')[1] || '', 'cs', 'teks', teks, reply_to, reply_teks, reply_tipe, msg.waktu).run();
+          const tipeBalas = urlGambar && !teks.trim() ? 'gambar' : 'teks';
+          const msg = { id: uid('m_'), room, dari: 'cs', tipe: tipeBalas, teks, gambar: urlGambar, reply_to, reply_teks, reply_tipe, waktu: new Date().toISOString() };
+          await env.DB.prepare('INSERT INTO cs_messages (id,room,user_id,dari,tipe,teks,gambar,reply_to,reply_teks,reply_tipe,waktu) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+            .bind(msg.id, room, room.split(':')[1] || '', 'cs', tipeBalas, teks, urlGambar, reply_to, reply_teks, reply_tipe, msg.waktu).run();
           ctx.waitUntil(Promise.all([
             push(env, room, 'chat.message', msg),
             push(env, 'cs:inbox', 'chat.message', { ...msg, user_id: room.split(':')[1] || '' }),
@@ -4444,7 +4426,7 @@ async function statistikPublik(env) {
           ctx.waitUntil(kirimPush(env, {
             userId: room.split(':')[1],
             judul: 'Kirana membalas pesanmu',
-            pesan: teks.length > 90 ? teks.slice(0, 90) + '...' : teks,
+            pesan: teks.trim() ? (teks.length > 90 ? teks.slice(0, 90) + '...' : teks) : 'Mengirim gambar',
             data: { tipe: 'cs' },
             tombol: [{ id: 'balas', text: 'Balas' }, { id: 'buka', text: 'Buka Chat' }],
           }));
@@ -4996,12 +4978,6 @@ async function statistikPublik(env) {
           await env.DB.prepare('DELETE FROM admin_kunci WHERE id = ?').bind(idA).run();
           ctx.waitUntil(catatAdmin(env, admin, 'hapus admin', idA));
           return json({ ok: true }, 200, env);
-        }
-
-        if (a === 'log' && req.method === 'GET') {
-          const { results } = await env.DB
-            .prepare('SELECT * FROM log_admin ORDER BY waktu DESC LIMIT 120').all();
-          return json(results, 200, env);
         }
 
         // ---- cadangan basis data ----

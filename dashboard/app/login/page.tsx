@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Eye, EyeOff, LogIn, ExternalLink } from "lucide-react";
+import { Eye, EyeOff, LogIn, ExternalLink } from "lucide-react";
 import { loginAdmin, setAdminKey } from "@/lib/api";
 
 export default function LoginPage() {
@@ -77,10 +77,6 @@ export default function LoginPage() {
               <a href="https://www.xycloud.my.id" className="flex items-center gap-3 p-3 rounded-[16px] border border-[#E9E3F5] bg-[#F5F3FF] hover:border-[#7C3AED] hover:bg-[#F3F0FF] transition-colors">
                 <div className="w-9 h-9 rounded-xl bg-white border border-[#E9E3F5] grid place-items-center"><ExternalLink size={16} className="text-[#7C3AED]" /></div>
                 <div className="flex-1"><div className="text-[13px] font-semibold text-[#1E1B2E]">www.xycloud.my.id</div><div className="text-[11px] text-[#7C738F]">Situs utama</div></div>
-              </a>
-              <a href="https://api.xycloud.my.id/admin?legacy=1" className="flex items-center gap-3 p-3 rounded-[16px] border border-[#E9E3F5] bg-[#F5F3FF] hover:border-[#7C3AED] hover:bg-[#F3F0FF] transition-colors">
-                <div className="w-9 h-9 rounded-xl bg-white border border-[#E9E3F5] grid place-items-center"><ShieldCheck size={16} className="text-[#7C3AED]" /></div>
-                <div className="flex-1"><div className="text-[13px] font-semibold text-[#1E1B2E]">Console Lama (Legacy)</div><div className="text-[11px] text-[#7C738F]">Fallback darurat</div></div>
               </a>
             </div>
 

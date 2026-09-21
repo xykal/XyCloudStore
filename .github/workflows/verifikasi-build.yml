@@ -181,8 +181,8 @@ jobs:
           set -euo pipefail
           # Loader harus mencerminkan [[rules]] di wrangler.toml: Text untuk
           # **/*.html dan Data untuk **/*.png. Worker mengimpor admin.html,
-          # admin-legacy.html, web.html, brand-logo.png, brand-logo-full.png,
-          # dan brand-og.png sebagai modul. Bila nanti ada tipe baru yang
+          # web.html, brand-logo.png, brand-logo-full.png, dan brand-og.png
+          # sebagai modul. Bila nanti ada tipe baru yang
           # diimpor, langkah ini gagal lebih dulu — itu tanda wrangler.toml
           # juga perlu rule baru, bukan sekadar menambah loader di sini.
           npx esbuild src/index.js --bundle --format=esm --platform=neutral \

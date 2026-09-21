@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { adminFetch, API_BASE } from "@/lib/api";
-import { CheckCheck, Loader2, MessageCircle, Search, Send } from "lucide-react";
+import { CheckCheck, ImagePlus, Loader2, MessageCircle, Search, Send } from "lucide-react";
 import { ErrBox, jam, Load } from "@/components/ui/kit";
 import VoiceNote from "@/components/ui/voice-note";
 
@@ -151,6 +151,31 @@ export default function CsPage() {
       const m = await adminFetch("/api/admin/cs/reply", { method: "POST", body: { room: aktif, teks: txt } });
       setTeks("");
       void kirimTyping(false);
+      setPesan((p) => p.some((x) => x.id === m.id) ? p : [...p, m]);
+      setSekarang(Date.now());
+    } catch (e: any) { setErr(e.message); }
+    finally { setKirimBusy(false); }
+  }
+
+  async function kirimGambar(f: File | undefined) {
+    if (!f || !aktif || kirimBusy) return;
+    if (!f.type.startsWith("image/")) { setErr("Hanya berkas gambar (PNG/JPG/WebP/GIF)."); return; }
+    if (f.size > 5 * 1024 * 1024) { setErr("Ukuran gambar maksimal 5 MB."); return; }
+    setKirimBusy(true); setErr("");
+    try {
+      const dataUri = await new Promise<string>((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result));
+        r.onerror = () => rej(new Error("Gagal membaca gambar"));
+        r.readAsDataURL(f);
+      });
+      const up = await adminFetch("/api/admin/upload", {
+        method: "POST", body: { file: dataUri, folder: "xycloudstore/chat" },
+      });
+      if (!up?.url) throw new Error("Unggah gambar gagal");
+      const m = await adminFetch("/api/admin/cs/reply", {
+        method: "POST", body: { room: aktif, teks: "", gambar: up.url },
+      });
       setPesan((p) => p.some((x) => x.id === m.id) ? p : [...p, m]);
       setSekarang(Date.now());
     } catch (e: any) { setErr(e.message); }
@@ -311,6 +336,11 @@ export default function CsPage() {
                   ))}
                 </div>
                 <div className="flex items-center gap-2 pb-3">
+                  <label title="Kirim gambar" className={`shrink-0 w-10 h-10 rounded-full grid place-items-center border transition ${kirimBusy || !aktif ? "opacity-40 pointer-events-none" : "cursor-pointer hover:border-[#C4B5FD]"} bg-[#F5F3FF] border-[#E9E3F5] text-[#6B5A8A]`}>
+                    <ImagePlus size={16} />
+                    <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden"
+                      onChange={(e) => { void kirimGambar(e.target.files?.[0]); e.target.value = ""; }} />
+                  </label>
                   <textarea value={teks}
                     onChange={(e) => { setTeks(e.target.value); void kirimTyping(e.target.value.trim().length > 0); }}
                     onBlur={() => { if (teks.trim()) void kirimTyping(false); }} rows={1} maxLength={5000}

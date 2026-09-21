@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { adminFetch } from "@/lib/api";
 import {
-  BrainCircuit, CheckCheck, Database, Flag, Gavel, Inbox, RefreshCw, ShieldCheck,
+  BrainCircuit, CheckCheck, Database, Eye, Flag, Gavel, Inbox, RefreshCw, ShieldCheck,
   Trash2, Wifi, XCircle,
 } from "lucide-react";
 import {
@@ -77,6 +77,22 @@ function TabLaporan() {
     finally { setBusy(false); }
   }
 
+  // Tandai konten sensitif (tetap tampil tapi diburamkan di aplikasi) lalu tutup laporan.
+  async function tandaiSensitif(l: any) {
+    const jenis = String(l.jenis || l.tipe || "");
+    const ref = l.ref_id || l.target_id;
+    if (!ref) { setErr("Laporan ini tidak punya referensi konten."); return; }
+    const tabel = jenis.includes("ulasan") ? "ulasan" : "forum";
+    setBusy(true); setErr(""); setOk("");
+    try {
+      await adminFetch(`/api/admin/konten/${tabel}/${ref}`, { method: "PATCH", body: { sensitif: true } });
+      await adminFetch(`/api/admin/laporan/${l.id}`, { method: "PATCH", body: { status: "selesai" } });
+      setOk("Konten ditandai sensitif & laporan ditutup");
+      await reload();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusy(false); }
+  }
+
   const open = rows.filter((r) => !["selesai", "ditutup", "closed"].includes(String(r.status || "").toLowerCase()));
 
   return (
@@ -105,6 +121,13 @@ function TabLaporan() {
                   <Btn tone="ok" className="!h-8" disabled={busy} onClick={() => selesai(l.id)}>
                     <CheckCheck size={12} /> Tutup
                   </Btn>
+                  {(String(l.jenis || l.tipe || "").includes("forum")
+                    || String(l.jenis || l.tipe || "").includes("post")
+                    || String(l.jenis || l.tipe || "").includes("ulasan")) && (l.ref_id || l.target_id) && (
+                    <Btn tone="ghost" className="!h-8" disabled={busy} onClick={() => tandaiSensitif(l)} title="Blur konten di aplikasi, tanpa menghapus">
+                      <Eye size={12} /> Sensitif
+                    </Btn>
+                  )}
                   {(String(l.jenis || l.tipe || "").includes("balasan")
                     || String(l.jenis || l.tipe || "").includes("forum")
                     || String(l.jenis || l.tipe || "").includes("post")
