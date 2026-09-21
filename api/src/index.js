@@ -15,6 +15,7 @@ import {
 } from './livestream.js';
 import { kataTerlarangDalam, KATA_TERLARANG } from './kata.js';
 import { statusCloudGime, bookingCloudGime, buatBookingCloudGime, CloudGimeError } from './cloudgime.js';
+import { pastikanTunnel, hapusTunnel } from './cfrelay.js';
 /**
  * ============================================================
  *  XyCloud API — Cloudflare Worker
@@ -2902,6 +2903,27 @@ ${halaman.map(([u, p2, f]) => `  <url>
             mic_consent: live.mic_consent === 1,
             scene: 'XyCloudLive',
           }, 200, env);
+        }
+
+        // XY-RELAY named: agen meminta setup tunnel+DNS sekali per sesi.
+        // Idempotent; token tunnel HANYA untuk agen pemilik (jangan log!).
+        if (p === 'agen/relay/named' && req.method === 'POST') {
+          try {
+            const hasil = await pastikanTunnel(env, agen);
+            return json(hasil, 200, env);
+          } catch (e) {
+            return err(String(e && e.message || e).slice(0, 300),
+              (e && e.status) || 502, env);
+          }
+        }
+        if (p === 'agen/relay/named' && req.method === 'DELETE') {
+          try {
+            const hasil = await hapusTunnel(env, agen);
+            return json(hasil, 200, env);
+          } catch (e) {
+            return err(String(e && e.message || e).slice(0, 300),
+              (e && e.status) || 502, env);
+          }
         }
 
         // Only the owning agent can acknowledge a persisted command/session.

@@ -22,7 +22,7 @@ Urutan jalur aplikasi: **Tunnel → Publik → LAN → Relay UDP** (dengan fallb
 otomatis antar-jalur saat satu gagal).
 
 Uji: `api/test/streaming_heartbeat.test.mjs` (jalur tersimpan, input jahat
-ditolak, IP baru tersync ke sesi aktif). Total API **82/82 hijau**.
+ditolak, IP baru tersync ke sesi aktif). Total API **84/84 hijau**.
 
 ## Kapan relay dibutuhkan? (jujur)
 
@@ -38,9 +38,10 @@ ditolak, IP baru tersync ke sesi aktif). Total API **82/82 hijau**.
 
 Keputusan pemilik: **tanpa VPS/biaya/setup manual**. Jawabannya: agen
 membungkus 8 port GameStream (TCP kontrol + UDP video/audio/input) ke **satu
-WebSocket aman** yang diterbitkan lewat **Quick Tunnel Cloudflare** (gratis,
-tanpa akun, koneksi keluar → lolos CGNAT). Spesifikasi:
-`docs/protokol-xy-relay.md`.
+WebSocket aman** yang diterbitkan lewat cloudflared (gratis, koneksi keluar
+→ lolos CGNAT): **named tunnel** `relay-<unit>.xycloud.my.id` (utama,
+dibuatkan otomatis oleh Worker) dengan fallback **Quick Tunnel**.
+Spesifikasi: `docs/protokol-xy-relay.md`.
 
 ```
 HP: Moonlight ─▶ 127.0.0.1:4798x (proxy Dart)

@@ -47,7 +47,8 @@ pub struct Konfig {
     pub server: String,
     #[serde(default)]
     pub stream_host: Option<String>,
-    /// Relay otomatis XY-RELAY: "auto" (bawaan), "on" (selalu), "off".
+    /// Relay otomatis XY-RELAY: "auto" (bawaan: named->quick), "named",
+    /// "quick", "on" (paksa named->quick), "off".
     #[serde(default)]
     pub relay: Option<String>,
 }
@@ -723,7 +724,9 @@ fn kerjakan(k: &Konfig, perintah: &Value, log: &Logger) {
                 let stream = alamat_stream(k);
                 log(&format!("Host streaming untuk penyewa: {stream}"));
                 // Relay otomatis (XY-RELAY v1): PC CGNAT/privat tetap bisa
-                // disewa tanpa set manual. Mode: relay:on/off/auto.
+                // disewa tanpa set manual. Mode relay: auto (named->quick),
+                // named (hanya domain tetap), quick (hanya quick tunnel),
+                // on (paksa, named->quick), off (mati).
                 let mode = k.relay.as_deref().unwrap_or("auto");
                 let paksa = muatan
                     .get("paksa_relay")
@@ -731,13 +734,39 @@ fn kerjakan(k: &Konfig, perintah: &Value, log: &Logger) {
                     .unwrap_or(false);
                 let perlu = paksa
                     || mode == "on"
+                    || mode == "named"
+                    || mode == "quick"
                     || (mode != "off" && relay::perlu_relay_otomatis(&stream));
                 let relay_host = if perlu {
-                    match relay::mulai(sesi_id, log) {
+                    let coba_named =
+                        mode == "auto" || mode == "on" || mode == "named";
+                    let hasil_named = if coba_named {
+                        relay::mulai_named(&k.server, &k.kode, sesi_id, log)
+                    } else {
+                        Err("mode quick".to_string())
+                    };
+                    match hasil_named {
                         Ok(u) => Some(u),
                         Err(e) => {
-                            log(&format!("Relay gagal dinyalakan: {e}"));
-                            None
+                            if mode == "named" {
+                                log(&format!("Relay named gagal: {e}"));
+                                None
+                            } else {
+                                if coba_named {
+                                    log(&format!(
+                                        "Relay named gagal ({e}); fallback Quick Tunnel…"
+                                    ));
+                                }
+                                match relay::mulai(sesi_id, log) {
+                                    Ok(u) => Some(u),
+                                    Err(e2) => {
+                                        log(&format!(
+                                            "Relay gagal dinyalakan: {e2}"
+                                        ));
+                                        None
+                                    }
+                                }
+                            }
                         }
                     }
                 } else {

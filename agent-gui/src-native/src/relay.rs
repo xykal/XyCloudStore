@@ -4,7 +4,7 @@
 //! lokal, lalu mempublikasikannya via `cloudflared tunnel --url` (Quick
 //! Tunnel: gratis, tanpa akun). Std-only kecuali helper agen yang sudah ada.
 
-use super::{dir_data, perintah, unduh_berkas, Logger};
+use super::{dir_data, minta, perintah, unduh_berkas, Logger};
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream, UdpSocket};
@@ -84,25 +84,32 @@ pub fn berhenti() {
     }
 }
 
-/// Nyalakan relay untuk sesi. Mengembalikan URL WSS publik.
-pub fn mulai(sesi_id: &str, log: &Logger) -> Result<String, String> {
-    // Idempotent: sesi sama & masih jalan => pakai yang ada.
-    if let Ok(r) = RELAY.lock() {
-        if let Some(st) = r.as_ref() {
+/// Port lokal TETAP untuk mode named (harus sama dengan ingress di Worker).
+pub const PORT_NAMED: u16 = 48101;
+
+fn url_sesi_aktif(sesi_id: &str) -> Option<String> {
+    RELAY.lock().ok().and_then(|r| {
+        r.as_ref().and_then(|st| {
             if st.sesi == sesi_id && st.jalan.load(Ordering::SeqCst) {
-                return Ok(st.url_wss.clone());
+                Some(st.url_wss.clone())
+            } else {
+                None
             }
-        }
-    }
-    berhenti();
+        })
+    })
+}
 
-    let pendengar = TcpListener::bind("127.0.0.1:0").map_err(|e| e.to_string())?;
-    let port = pendengar.local_addr().map_err(|e| e.to_string())?.port();
-    pendengar
-        .set_nonblocking(true)
+/// Buka proxy WS lokal (`port_minta`: 0 = acak, atau port tetap mode named).
+fn siapkan_ws(
+    port_minta: u16,
+    sesi_id: &str,
+    log: &Logger,
+) -> Result<(u16, Arc<AtomicBool>), String> {
+    let pendengar = TcpListener::bind(format!("127.0.0.1:{port_minta}"))
         .map_err(|e| e.to_string())?;
+    let port = pendengar.local_addr().map_err(|e| e.to_string())?.port();
+    pendengar.set_nonblocking(true).map_err(|e| e.to_string())?;
     log(&format!("Relay: proxy WS lokal di 127.0.0.1:{port}"));
-
     let jalan = Arc::new(AtomicBool::new(true));
     let sesi = sesi_id.to_string();
     {
@@ -126,16 +133,20 @@ pub fn mulai(sesi_id: &str, log: &Logger) -> Result<String, String> {
             }
         });
     }
+    Ok((port, jalan))
+}
 
-    let bin = pastikan_cloudflared(log)?;
-    log("Relay: membuka Quick Tunnel (maks 90 dtk)…");
-    let url_lokal = format!("http://127.0.0.1:{port}");
+/// Jalankan cloudflared dengan argumen bebas; kembalikan proses + baris stderr.
+fn jalankan_cloudflared(
+    bin: &std::path::Path,
+    args: &[&str],
+) -> Result<(std::process::Child, mpsc::Receiver<String>), String> {
     let bin_s = bin.to_string_lossy().to_string();
-    let mut anak = perintah(&bin_s)
-        .arg("tunnel")
-        .arg("--url")
-        .arg(&url_lokal)
-        .arg("--no-autoupdate")
+    let mut cmd = perintah(&bin_s);
+    for a in args {
+        cmd.arg(*a);
+    }
+    let mut anak = cmd
         .stdout(Stdio::null())
         .stderr(Stdio::piped())
         .spawn()
@@ -151,6 +162,42 @@ pub fn mulai(sesi_id: &str, log: &Logger) -> Result<String, String> {
             }
         }
     });
+    Ok((anak, rx_log))
+}
+
+fn simpan_aktif(
+    anak: std::process::Child,
+    sesi_id: &str,
+    url_wss: &str,
+    jalan: Arc<AtomicBool>,
+    log: &Logger,
+) -> Result<String, String> {
+    if let Ok(mut c) = CF_CHILD.lock() {
+        *c = Some(anak);
+    }
+    log(&format!("Relay AKTIF: {url_wss}"));
+    if let Ok(mut r) = RELAY.lock() {
+        *r = Some(RelayAktif {
+            url_wss: url_wss.to_string(),
+            sesi: sesi_id.to_string(),
+            jalan,
+        });
+    }
+    Ok(url_wss.to_string())
+}
+
+/// Nyalakan relay QUICK untuk sesi (fallback tanpa domain). ID sesi sama => pakai yang ada.
+pub fn mulai(sesi_id: &str, log: &Logger) -> Result<String, String> {
+    if let Some(u) = url_sesi_aktif(sesi_id) {
+        return Ok(u);
+    }
+    berhenti();
+    let (port, jalan) = siapkan_ws(0, sesi_id, log)?;
+    let bin = pastikan_cloudflared(log)?;
+    log("Relay: membuka Quick Tunnel (maks 90 dtk)…");
+    let url_lokal = format!("http://127.0.0.1:{port}");
+    let args = vec!["tunnel", "--url", url_lokal.as_str(), "--no-autoupdate"];
+    let (mut anak, rx_log) = jalankan_cloudflared(&bin, &args)?;
     let batas = std::time::Instant::now() + Duration::from_secs(90);
     let mut host: Option<String> = None;
     while std::time::Instant::now() < batas {
@@ -173,19 +220,126 @@ pub fn mulai(sesi_id: &str, log: &Logger) -> Result<String, String> {
             return Err("Quick Tunnel tidak memberi URL dalam 90 dtk".into());
         }
     };
-    if let Ok(mut c) = CF_CHILD.lock() {
-        *c = Some(anak);
+    simpan_aktif(anak, sesi_id, &format!("wss://{host}/xy/{sesi_id}"), jalan, log)
+}
+
+fn hostname_valid(h: &str) -> bool {
+    if h.len() < 4 || h.len() > 253 || !h.contains('.') {
+        return false;
     }
-    let url_wss = format!("wss://{host}/xy/{sesi}");
-    log(&format!("Relay AKTIF: {url_wss}"));
-    if let Ok(mut r) = RELAY.lock() {
-        *r = Some(RelayAktif {
-            url_wss: url_wss.clone(),
-            sesi,
-            jalan,
-        });
+    h.split('.').all(|label| {
+        !label.is_empty()
+            && label.len() <= 63
+            && label.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+            && !label.starts_with('-')
+            && !label.ends_with('-')
+    })
+}
+
+/// Nyalakan relay NAMED (hostname tetap relay-<unit>.xycloud.my.id).
+/// Meminta setup idempotent ke Worker, lalu `cloudflared run --token`.
+/// Token TIDAK PERNAH ditulis ke log. Gagal => pemanggil fallback quick.
+pub fn mulai_named(
+    server: &str,
+    kode: &str,
+    sesi_id: &str,
+    log: &Logger,
+) -> Result<String, String> {
+    if let Some(u) = url_sesi_aktif(sesi_id) {
+        return Ok(u);
     }
-    Ok(url_wss)
+    berhenti();
+    // 1) minta setup ke Worker (idempotent; 503 bila token CF belum diset).
+    let url_api = format!("{}/api/agen/relay/named", server.trim_end_matches('/'));
+    let (status, body) = minta(
+        &url_api,
+        Some(serde_json::json!({})),
+        "POST",
+        Some(vec![("x-agen-kode".to_string(), kode.to_string())]),
+    )
+    .map_err(|e| format!("API relay named tak terjangkau: {e}"))?;
+    if !(200..300).contains(&status) {
+        let pesan = body
+            .get("error")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        return Err(format!("API relay named HTTP {status}: {pesan}"));
+    }
+    let data = body.get("data").unwrap_or(&body);
+    let hostname = data
+        .get("hostname")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .trim()
+        .to_string();
+    let token = data
+        .get("tunnel_token")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .trim()
+        .to_string();
+    if !hostname_valid(&hostname) {
+        return Err("API relay named memberi hostname cacat".into());
+    }
+    if token.len() < 20 || token.len() > 4096 || token.chars().any(|c| c.is_whitespace()) {
+        return Err("API relay named memberi token cacat".into());
+    }
+    // 2) WS lokal port tetap (sesuai ingress di Worker).
+    let (_port, jalan) = match siapkan_ws(PORT_NAMED, sesi_id, log) {
+        Ok(x) => x,
+        Err(e) => {
+            berhenti();
+            thread::sleep(Duration::from_millis(500));
+            siapkan_ws(PORT_NAMED, sesi_id, log)
+                .map_err(|_| format!("port relay {PORT_NAMED} dipakai: {e}"))?
+        }
+    };
+    // 3) cloudflared run --token …; siap saat "Registered tunnel connection".
+    let bin = pastikan_cloudflared(log)?;
+    log("Relay: membuka named tunnel (maks 90 dtk)…");
+    let args = vec!["tunnel", "--no-autoupdate", "run", "--token", token.as_str()];
+    let (mut anak, rx_log) = jalankan_cloudflared(&bin, &args)?;
+    let batas = std::time::Instant::now() + Duration::from_secs(90);
+    let mut siap = false;
+    let mut salah_token = false;
+    while std::time::Instant::now() < batas {
+        match rx_log.recv_timeout(Duration::from_secs(2)) {
+            Ok(baris) => {
+                if baris.contains("Registered tunnel connection") {
+                    siap = true;
+                    break;
+                }
+                let rendah = baris.to_lowercase();
+                if rendah.contains("unauthorized")
+                    || (rendah.contains("token")
+                        && (rendah.contains("invalid")
+                            || rendah.contains("expired")
+                            || rendah.contains("malform")))
+                {
+                    salah_token = true;
+                    break;
+                }
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => continue,
+            Err(mpsc::RecvTimeoutError::Disconnected) => break,
+        }
+    }
+    if !siap {
+        let _ = anak.kill();
+        jalan.store(false, Ordering::SeqCst);
+        if salah_token {
+            return Err("tunnel token ditolak Cloudflare".into());
+        }
+        return Err("named tunnel tidak terhubung dalam 90 dtk".into());
+    }
+    simpan_aktif(
+        anak,
+        sesi_id,
+        &format!("wss://{hostname}/xy/{sesi_id}"),
+        jalan,
+        log,
+    )
 }
 
 fn petik_trycloudflare(baris: &str) -> Option<String> {
