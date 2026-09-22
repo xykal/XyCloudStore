@@ -3,9 +3,9 @@ name: Verifikasi Build Menyeluruh
 # Gerbang kompilasi/analisis untuk SELURUH komponen monorepo.
 #
 # Latar belakang: audit 2026-09-17 menutup seluruh batch coding, tetapi
-# `flutter analyze/test/build` dan `cargo build` sengaja belum dijalankan.
+# `flutter analyze/test/build` dan build agen sengaja belum dijalankan.
 # Sembilan commit terakhir (207 berkas) masuk dengan `[skip ci]`, sehingga
-# kode Dart, Java native, dan Rust agen belum pernah dikompilasi satu kali pun.
+# kode Dart, Java native, dan agen PC belum pernah dikompilasi satu kali pun.
 # Workflow ini menutup celah itu TANPA mempublikasikan apa pun:
 #   - tidak memakai keystore/signing (build rilis memakai penandatanganan debug)
 #   - tidak mengunggah APK/AAR/exe sebagai artifact maupun release
@@ -466,10 +466,10 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ------------------------------------------------------------------
-  # Agen PC Host Windows (Rust/egui native) — crate yang benar-benar dikirim.
+  # Agen PC Host Windows (C++/ImGui native) — exe yang benar-benar dikirim.
   # ------------------------------------------------------------------
   agen-windows:
-    name: Agen Windows (cargo build)
+    name: Agen Windows (cmake build)
     runs-on: windows-latest
     timeout-minutes: 60
     permissions:
@@ -478,38 +478,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Pasang toolchain Rust (stable-msvc)
-        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        with:
-          targets: x86_64-pc-windows-msvc
-
-      - name: Bangun rilis native (cargo build --release)
+      - name: Konfigurasi CMake (MSVC x64)
         shell: pwsh
-        working-directory: agent-gui/src-native
+        run: cmake -S agent-cpp -B build-agent -DCMAKE_BUILD_TYPE=Release
+
+      - name: Bangun rilis native (C++ Win32+DX11+ImGui)
+        shell: pwsh
         run: |
-          cargo build --release
-          $exe = Get-Item "target/release/xycloud-agent.exe" -ErrorAction SilentlyContinue
-          if (-not $exe) { throw "xycloud-agent.exe tidak ditemukan setelah cargo build" }
+          cmake --build build-agent --config Release
+          $exe = Get-Item "build-agent/Release/xycloud-agent.exe" -ErrorAction SilentlyContinue
+          if (-not $exe) { throw "xycloud-agent.exe tidak ditemukan setelah cmake build" }
           Write-Host "EXE:" $exe.FullName $exe.Length
 
       - name: Smoke-test versi
         shell: pwsh
-        working-directory: agent-gui/src-native
         run: |
-          $p = Start-Process -FilePath .\target\release\xycloud-agent.exe -ArgumentList '--veri' `
-            -Wait -PassThru -NoNewWindow -RedirectStandardOutput ..\..\veri.txt
-          Get-Content ..\..\veri.txt
+          $p = Start-Process -FilePath .\build-agent\Release\xycloud-agent.exe -ArgumentList '--veri' `
+            -Wait -PassThru -NoNewWindow -RedirectStandardOutput veri.txt
+          Get-Content veri.txt
           if ($p.ExitCode -ne 0) { throw "Smoke-test --veri gagal (exit $($p.ExitCode))" }
-          if (-not (Select-String -Path ..\..\veri.txt -Pattern 'XyCloudStore-Agent 1\.5\.' -Quiet)) {
+          if (-not (Select-String -Path veri.txt -Pattern 'XyCloudStore Agen 1\.6\.0-cpp' -Quiet)) {
             throw "Output --veri tidak memuat versi yang diharapkan"
           }
-          Remove-Item ..\..\veri.txt -Force -ErrorAction SilentlyContinue
+          Remove-Item veri.txt -Force -ErrorAction SilentlyContinue
 
       - name: Unggah artifact xycloud-agent.exe
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
           name: xycloud-agent-windows
-          path: agent-gui/src-native/target/release/xycloud-agent.exe
+          path: build-agent/Release/xycloud-agent.exe
           if-no-files-found: error
 
       - name: Ringkasan
