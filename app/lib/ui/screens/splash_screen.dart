@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: XyWordmark(tinggi: 44, putih: true),
                 ),
                 const Spacer(flex: 3),
-                // Kredit studio di bagian bawah: "From" + Wordmark resmi XyVerse jelas.
+                // Kredit studio di bagian bawah: "From" + Wordmark resmi XyVerse jelas + Built-in tag.
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -75,6 +75,16 @@ class _SplashScreenState extends State<SplashScreen> {
                       'assets/brand/xyverse_wordmark_putih.png',
                       height: 36,
                       filterQuality: FilterQuality.high,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Built-in XyVerse • Made in XyVerse By Kall',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(.42),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                      ),
                     ),
                   ],
                 ),
