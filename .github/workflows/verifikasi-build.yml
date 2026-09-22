@@ -512,6 +512,7 @@ jobs:
       - name: Ringkasan
         shell: pwsh
         run: |
+<<<<<<< HEAD
           $exePath = 'build-agent/Release/xycloud-agent.exe'
           $exe = Get-Item $exePath -ErrorAction SilentlyContinue
           if (-not $exe) { $exe = Get-Item 'build-agent/Release/xycloud-agent' -ErrorAction SilentlyContinue }
@@ -525,6 +526,15 @@ jobs:
           - Built-in XyVerse — agent mandiri Win32+DX11+ImGui tanpa runtime
           \"@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
+=======
+          $exePath = \"build-agent/Release/xycloud-agent.exe\"
+          $exe = Get-Item $exePath -ErrorAction SilentlyContinue
+          if (-not $exe) { $exe = Get-Item \"build-agent/Release/xycloud-agent\" -ErrorAction SilentlyContinue }
+          $ukuranMB = if ($exe) { [math]::Round($exe.Length/1MB,2) } else { \"?\" }
+          "## Agen Windows (C++ 1.6.0-cpp)`n`n- ``cmake --build build-agent --config Release``: lulus`n- Smoke-test ``--veri``: lulus`n- Ukuran exe: $ukuranMB MB (artifact diunggah)`n- Built-in XyVerse — agent mandiri Win32+DX11+ImGui tanpa runtime" |
+            Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+>>>>>>> a5fd9ac (fix(ci): verifikasi-build agen-windows pakai C++ cmake di main juga [Built-in XyVerse])
   # ------------------------------------------------------------------
   # Rangkuman satu tempat: gagal bila ada job wajib yang merah.
   # ------------------------------------------------------------------
