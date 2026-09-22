@@ -109,10 +109,55 @@ class _TentangScreenState extends State<TentangScreen> {
               const SizedBox(height: 14),
                Text(
                 'XyCloudStore dikembangkan oleh XyVerse, studio kecil asal Indonesia yang membangun '
-                'produk digital untuk pemain dan kreator.',
+                'produk digital untuk pemain dan kreator. Built-in XyVerse — Powered by XyVerse.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: XyTheme.of(context).muted, fontSize: 12.8, height: 1.65),
               ),
+              SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: XyTheme.of(context).primarySoft,
+                  borderRadius: BorderRadius.circular(99),
+                  border: Border.all(color: XyTheme.of(context).line),
+                ),
+                child: Text('Built-in XyVerse • Made in XyVerse By Kall',
+                    style: TextStyle(color: XyTheme.primary, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: .6)),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 18),
+          const SectionHeader('JUGA DARI XYVERSE'),
+          XyCard(
+            padding: EdgeInsets.all(14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Ekosistem XyVerse — dari XyVerse, untuk kreator Indonesia',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5)),
+              SizedBox(height: 12),
+              _EcosystemItem(
+                icon: Icons.cloud_rounded,
+                nama: 'XyCloudStore',
+                deskripsi: 'Sewa PC Cloud, Akun Digital, CS Realtime',
+                badge: 'Kamu di sini',
+              ),
+              _EcosystemItem(
+                icon: Icons.support_agent_rounded,
+                nama: 'XyDesk',
+                deskripsi: 'Helpdesk & ticketing untuk tim CS',
+              ),
+              _EcosystemItem(
+                icon: Icons.web_rounded,
+                nama: 'XyVerse Web',
+                deskripsi: 'Portal utama xycloud.my.id & landing',
+              ),
+              _EcosystemItem(
+                icon: Icons.auto_awesome_rounded,
+                nama: 'XyStudio AI',
+                deskripsi: 'Generator bingkai, stiker, moderasi Groq',
+              ),
+              SizedBox(height: 8),
+              Text('Semua aplikasi XyVerse saling terhubung via Cloudflare Workers + D1. Logo resmi: filebin.net/xyverse-logo-pack-9f3k2',
+                  style: TextStyle(color: XyTheme.of(context).muted, fontSize: 10.5, height: 1.5)),
             ]),
           ),
           const SizedBox(height: 22),
@@ -121,11 +166,52 @@ class _TentangScreenState extends State<TentangScreen> {
               Text('Dibuat dengan sepenuh hati di Indonesia',
                   style: TextStyle(color: XyTheme.of(context).muted, fontSize: 11)),
               SizedBox(height: 4),
-              Text('© 2026 XyCloudStore by XyVerse', style: TextStyle(color: XyTheme.of(context).muted, fontSize: 11)),
+              Text('© 2026 XyCloudStore by XyVerse — Built-in XyVerse', style: TextStyle(color: XyTheme.of(context).muted, fontSize: 11)),
             ]),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _EcosystemItem extends StatelessWidget {
+  const _EcosystemItem({required this.icon, required this.nama, required this.deskripsi, this.badge});
+  final IconData icon;
+  final String nama;
+  final String deskripsi;
+  final String? badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(color: XyTheme.of(context).primarySoft, borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, size: 18, color: XyTheme.primary),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(nama, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5)),
+              if (badge != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: XyTheme.primary, borderRadius: BorderRadius.circular(99)),
+                  child: Text(badge!, style: const TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.w800)),
+                ),
+              ],
+            ]),
+            const SizedBox(height: 1),
+            Text(deskripsi, style: TextStyle(color: XyTheme.of(context).muted, fontSize: 11)),
+          ]),
+        ),
+      ]),
     );
   }
 }
