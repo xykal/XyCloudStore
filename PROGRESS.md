@@ -148,3 +148,25 @@ Template progress log wajib diupdate tiap kerja biar next agent gak buta. Lihat 
 - Test login admin: buka https://admin.xycloud.my.id/login, verifikasi Turnstile muncul, input admin key, login sukses ke console, key disimpan sessionStorage
 - Test api.xycloud.my.id/ -> redirect 302 ke https://admin.xycloud.my.id/login (HTML) atau JSON info (API)
 - Final: tag v3.9.0-nextjs-turnstile, update docs
+
+---
+
+### 2026-09-22 - CI Remediation: Dashboard Webpack + Agen Windows + Turnstile + CSP [Built-in XyVerse]
+**Status:** Done
+**Dikerjain oleh:** Arena Agent 10X + xykalnotkel
+**Branch:** rapih/semua ba85737 + main 7976eb6 -> 1631681 -> 7976eb6+ (final)
+**CI Run:** 35791465718 Verifikasi Build Menyeluruh rapih/semua ba85737 -> SUCCESS 6/6 (kualitas, api, dashboard, flutter, native-aar, agen-windows) + ringkasan SUCCESS
+
+**Yang dikerjain:**
+- Dashboard Turbopack bug Next 16.3.5: next/font/google error Module not found @vercel/turbopack-next/internal/font/google/font. Fix: build next build --webpack (Next 16 opt-out flag).
+- Agen Windows Ringkasan failure: PowerShell escaped quotes + here-string $@ salah. Fix: single quotes + Add-Content.
+- API Worker CSP block Turnstile: update CSP di admin proxy allow challenges.cloudflare.com + hcaptcha.com.
+- API turnstile verify path bug: path === 'turnstile/verify' tanpa /api prefix -> fix + p check.
+- Restore admin/index.js + cfrelay.js hilang di main.
+- Turnstile secret set via wrangler secret put + Vercel env NEXT_PUBLIC_TURNSTILE_SITE_KEY.
+- CI final PASS 6/6: https://github.com/xykalnotkel/XyCloudStore/actions/runs/35791465718
+
+**File yang diubah:** dashboard/package.json, verifikasi-build.yml, api/src/index.js, admin/index.js, cfrelay.js, PROGRESS.md
+
+**Next:** Test login real admin.xycloud.my.id/login, rotate token bocor, deploy Vercel prod setelah limit reset.
+
