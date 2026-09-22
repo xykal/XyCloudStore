@@ -152,27 +152,52 @@ export default function Sidebar() {
   const foot = (compact: boolean) => (
     <div className="p-3 border-t border-[#E9E3F5] space-y-2 bg-[#F5F3FF]/70">
       {!compact && (
-        <div className="bg-white border border-[#E9E3F5] rounded-[12px] p-3">
-          <div className="text-[11px] text-[#7C738F] font-semibold tracking-wide uppercase">Admin</div>
-          <div className="text-[12px] text-[#1E1B2E] font-medium mt-1">{sesiAktif ? "Sesi aktif di tab ini" : "—"}</div>
+        <>
+          <div className="bg-white border border-[#E9E3F5] rounded-[12px] p-3">
+            <div className="text-[11px] text-[#7C738F] font-semibold tracking-wide uppercase">Admin</div>
+            <div className="text-[12px] text-[#1E1B2E] font-medium mt-1">{sesiAktif ? "Sesi aktif di tab ini" : "--"}</div>
+            <button
+              type="button"
+              onClick={keluar}
+              className="mt-2 w-full h-9 rounded-[10px] bg-white hover:bg-[#F3F0FF] text-[#6B5A8A] hover:text-[#7C3AED] text-[12px] font-semibold flex items-center justify-center gap-1.5 border border-[#E9E3F5]"
+            >
+              <LogOut size={13} /> Keluar
+            </button>
+          </div>
+          <div className="bg-[#100030] border border-[#2D0A5E] rounded-[12px] p-3 text-white">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-[8px] bg-[#7C3AED] grid place-items-center font-bold text-[11px]">Xy</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] font-bold tracking-wide">Built-in XyVerse</div>
+                <div className="text-[10px] text-white/60 leading-tight">Made in XyVerse By Kall</div>
+              </div>
+            </div>
+            <div className="mt-3">
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40">JUGA DARI XYVERSE</div>
+              <div className="mt-2 space-y-1.5">
+                <div className="flex items-center gap-2 text-[11px]"><span className="w-1.5 h-1.5 rounded-full bg-[#A855F7]" />XyCloudStore - Sewa PC Cloud</div>
+                <div className="flex items-center gap-2 text-[11px] text-white/70"><span className="w-1.5 h-1.5 rounded-full bg-white/30" />XyDesk - Helpdesk CS</div>
+                <div className="flex items-center gap-2 text-[11px] text-white/70"><span className="w-1.5 h-1.5 rounded-full bg-white/30" />XyStudio AI - Groq Moderation</div>
+              </div>
+              <a href="https://filebin.net/xyverse-logo-pack-9f3k2" target="_blank" rel="noopener" className="mt-2 inline-block text-[10px] text-[#A78BFA] hover:text-white underline">Logo pack resmi</a>
+            </div>
+          </div>
+        </>
+      )}
+      {compact && (
+        <div className="space-y-2">
           <button
             type="button"
             onClick={keluar}
-            className="mt-2 w-full h-9 rounded-[10px] bg-white hover:bg-[#F3F0FF] text-[#6B5A8A] hover:text-[#7C3AED] text-[12px] font-semibold flex items-center justify-center gap-1.5 border border-[#E9E3F5]"
+            title="Keluar"
+            className="mx-auto w-9 h-9 rounded-[10px] bg-white hover:bg-[#F3F0FF] text-[#6B5A8A] hover:text-[#DC2626] grid place-items-center border border-[#E9E3F5]"
           >
-            <LogOut size={13} /> Keluar
+            <LogOut size={15} />
           </button>
+          <div className="mx-auto w-9 h-9 rounded-[10px] bg-[#100030] border border-[#2D0A5E] grid place-items-center" title="Built-in XyVerse">
+            <span className="text-[10px] font-bold text-white">Xy</span>
+          </div>
         </div>
-      )}
-      {compact && (
-        <button
-          type="button"
-          onClick={keluar}
-          title="Keluar"
-          className="mx-auto w-9 h-9 rounded-[10px] bg-white hover:bg-[#F3F0FF] text-[#6B5A8A] hover:text-[#DC2626] grid place-items-center border border-[#E9E3F5]"
-        >
-          <LogOut size={15} />
-        </button>
       )}
     </div>
   );
@@ -210,7 +235,7 @@ export default function Sidebar() {
               </button>
             </div>
             <div className="px-4 py-2 border-b border-[#E9E3F5] bg-[#F5F3FF] text-[11px] text-[#7C738F] font-medium">
-              v3.3 · {MENU.length} menu
+              v3.3 · {MENU.length} menu · Built-in XyVerse
             </div>
             <NavBody collapsed={false} pathname={pathname} onNavigate={() => setMobileOpen(false)} />
             {foot(false)}
@@ -235,7 +260,7 @@ export default function Sidebar() {
         )}
         {!collapsed && (
           <div className="px-4 py-2 border-b border-[#E9E3F5]/60 bg-[#F5F3FF]">
-            <div className="text-[11px] text-[#7C738F] font-medium">v3.3 · {MENU.length} menu</div>
+            <div className="text-[11px] text-[#7C738F] font-medium">v3.3 · {MENU.length} menu · Built-in XyVerse</div>
           </div>
         )}
         <NavBody collapsed={collapsed} pathname={pathname} />
