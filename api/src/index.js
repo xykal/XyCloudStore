@@ -2402,7 +2402,7 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,5,28,
     }
 
     // Turnstile + hCaptcha verification endpoint — dipakai login dashboard Next.js
-    if (path === 'turnstile/verify' && req.method === 'POST') {
+    if ((path === '/api/turnstile/verify' || path === '/turnstile/verify') && req.method === 'POST') {
       return await handleTurnstileVerify(req, env);
     }
     if (path === '/legal/syarat' || path === '/legal/privasi' || path === '/legal/refund' || path === '/legal/live') {
@@ -2669,6 +2669,10 @@ ${halaman.map(([u, p2, f]) => `  <url>
     if (!path.startsWith('/api/')) return err('Not found', 404, env);
     const p = path.slice(5);
     const ip = req.headers.get('CF-Connecting-IP') || 'tanpa-ip';
+    // Turnstile verify via p (setelah /api/ dipotong) — Built-in XyVerse
+    if (p === 'turnstile/verify' && req.method === 'POST') {
+      return await handleTurnstileVerify(req, env);
+    }
     // v3.3 global IP rate-limit: 180 req / 60s. Penghitung pindah ke binding
     // Rate Limiting Cloudflare: dihitung di lokasi edge tempat Worker jalan,
     // tanpa MENULIS D1 untuk setiap request (dulu 1 INSERT..ON CONFLICT ke D1
