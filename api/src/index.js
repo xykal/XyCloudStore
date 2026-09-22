@@ -2357,7 +2357,7 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,5,28,
               'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
               'Cross-Origin-Opener-Policy': 'same-origin',
               'Cross-Origin-Resource-Policy': 'same-origin',
-              'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://*.hcaptcha.com https://hcaptcha.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com https://media.giphy.com https://challenges.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.xycloud.my.id wss://api.xycloud.my.id https://challenges.cloudflare.com https://*.hcaptcha.com https://hcaptcha.com; frame-src 'self' https://challenges.cloudflare.com https://*.hcaptcha.com https://hcaptcha.com https://newassets.hcaptcha.com; manifest-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests",
+              'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com https://media.giphy.com; font-src 'self' data:; connect-src 'self' https://api.xycloud.my.id wss://api.xycloud.my.id; manifest-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests",
             },
           });
         } catch (e) {
@@ -2370,7 +2370,7 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,5,28,
               'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
               'Referrer-Policy': 'no-referrer',
               'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
-              'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://*.hcaptcha.com https://hcaptcha.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com https://media.giphy.com https://challenges.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.xycloud.my.id wss://api.xycloud.my.id https://challenges.cloudflare.com https://*.hcaptcha.com https://hcaptcha.com; frame-src 'self' https://challenges.cloudflare.com https://*.hcaptcha.com https://hcaptcha.com https://newassets.hcaptcha.com; manifest-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests",
+              'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://api.xycloud.my.id https://res.cloudinary.com data: blob:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.xycloud.my.id",
             },
           });
         }
