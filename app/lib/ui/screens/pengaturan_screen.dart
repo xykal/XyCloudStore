@@ -200,8 +200,38 @@ class PengaturanScreen extends StatelessWidget {
           XyBarisMenu(
             ikon: Icons.info_outline_rounded,
             judul: 'Tentang Aplikasi',
-            sub: 'Versi, legal, dan lisensi',
+            sub: 'Versi, legal, dan lisensi — Built-in XyVerse',
             tujuan: const TentangScreen(),
+          ),
+          const _Judul('XyVerse Ecosystem'),
+          XyCard(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(color: XyTheme.violet.withOpacity(.14), borderRadius: BorderRadius.circular(10)),
+                  child: Icon(Icons.hub_rounded, color: XyTheme.violet, size: 19),
+                ),
+                SizedBox(width: 11),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Built-in XyVerse', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5)),
+                    SizedBox(height: 2),
+                    Text('Made in XyVerse By Kall — studio Indonesia', style: TextStyle(color: XyTheme.of(context).muted, fontSize: 11.3, height: 1.4)),
+                  ]),
+                ),
+              ]),
+              SizedBox(height: 12),
+              Text('JUGA DARI XYVERSE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.1, color: XyTheme.of(context).muted)),
+              SizedBox(height: 8),
+              _XyVerseItem(ikon: Icons.cloud_rounded, nama: 'XyCloudStore', deskripsi: 'Sewa PC Cloud, Akun Digital — kamu di sini', badge: 'Aktif'),
+              _XyVerseItem(ikon: Icons.support_agent_rounded, nama: 'XyDesk', deskripsi: 'Helpdesk & ticketing CS'),
+              _XyVerseItem(ikon: Icons.web_rounded, nama: 'XyVerse Web', deskripsi: 'Portal xycloud.my.id & landing'),
+              _XyVerseItem(ikon: Icons.auto_awesome_rounded, nama: 'XyStudio AI', deskripsi: 'Generator bingkai, stiker, moderasi Groq'),
+              SizedBox(height: 8),
+              Text('Logo resmi: filebin.net/xyverse-logo-pack-9f3k2 — dipakai di credit, about, splash', style: TextStyle(color: XyTheme.of(context).muted, fontSize: 10, height: 1.4)),
+            ]),
           ),
         ],
       ),
@@ -2632,6 +2662,45 @@ class _SuaraGetaranScreenState extends State<SuaraGetaranScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _XyVerseItem extends StatelessWidget {
+  const _XyVerseItem({required this.ikon, required this.nama, required this.deskripsi, this.badge});
+  final IconData ikon;
+  final String nama;
+  final String deskripsi;
+  final String? badge;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(color: XyTheme.of(context).primarySoft, borderRadius: BorderRadius.circular(8)),
+          child: Icon(ikon, size: 16, color: XyTheme.primary),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(nama, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
+              if (badge != null) ...[
+                const SizedBox(width: 5),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(color: XyTheme.primary, borderRadius: BorderRadius.circular(99)),
+                  child: Text(badge!, style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w800)),
+                ),
+              ],
+            ]),
+            Text(deskripsi, style: TextStyle(color: XyTheme.of(context).muted, fontSize: 10.5)),
+          ]),
+        ),
+      ]),
     );
   }
 }
