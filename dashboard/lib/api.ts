@@ -67,7 +67,26 @@ export function clearAdminKey() {
   }
 }
 
-export async function loginAdmin(key: string) {
+export async function verifyTurnstile(token: string, type: 'turnstile' | 'hcaptcha' = 'turnstile') {
+  // Verifikasi via Worker API /api/turnstile/verify — Built-in XyVerse
+  const res = await fetch(`${BASE}/api/turnstile/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, type }),
+    cache: 'no-store',
+  });
+  const text = await res.text();
+  let data: any;
+  try { data = JSON.parse(text); } catch { data = { raw: text }; }
+  if (!res.ok) throw new Error(data?.error || `Turnstile verify gagal HTTP ${res.status}`);
+  return data;
+}
+
+export async function loginAdmin(key: string, turnstileToken?: string) {
+  // Jika ada turnstile token, verifikasi dulu (bypass jika dev)
+  if (turnstileToken && turnstileToken !== 'dev-bypass-token') {
+    await verifyTurnstile(turnstileToken, 'turnstile');
+  }
   // use /api/admin/stats which always exists and checks admin key
   return adminFetch("/api/admin/stats", { adminKey: key });
 }

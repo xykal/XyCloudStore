@@ -1,5 +1,6 @@
 import { tanganiAdmin } from './admin/index.js';
 import { adminSecurity, ownerProtected } from './admin_security.js';
+import { handleTurnstileVerify } from './turnstile.js';
 import { SecurityError, securityConfig, securityHash, securitySlot, auditSecurity, requireRate, deviceFromRequest, linkDevice, beforeRegistration, translateRegistrationError, assertAccountEnabled, otpAllowed, otpDigest, newOAuthState, consumeOAuthState, saveSecurityConfig } from './security.js';
 import { estimasiSewa, buatSewa, mulaiSewa, bacaSewa, antreAkhir, konfirmasiAgen, tutupSewa, rawatSewa, normalisasiHostStream, isPrivateIp, probePortTcp} from './sewa.js';
 import { infoHapusAkun, bersihkanAkun } from './akun.js';
@@ -28,8 +29,6 @@ import { pastikanTunnel, hapusTunnel } from './cfrelay.js';
  *    wrangler d1 execute xycloud --remote --file=./schema.sql
  *    wrangler deploy
  */
-
-import ADMIN_HTML from './admin.html';
 
 import WEB_HTML from './web.html';
 import { infoRilis, unduhApk, tebakAbi, simpanRilis } from './rilis.js';
@@ -2377,23 +2376,34 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,5,28,
         }
       }
     }
-    // api.xycloud.my.id/admin dan / -> serve solid login langsung (tanpa redirect) — backend migrasi ke baru tapi tetap ada login di api host
+    // Legacy admin.html dihapus — sekarang full Next.js di admin.xycloud.my.id
+    // / dan /admin di api host redirect ke dashboard Next.js terbaru
     if (path === '/' || path === '/admin' || path === '/admin/') {
-      // serve solid login (no redirect) — user bisa pilih buka dashboard Pages/Vercel dari sini
-      return new Response(ADMIN_HTML, {
+      const target = 'https://admin.xycloud.my.id/login';
+      if (req.method === 'GET' && req.headers.get('Accept')?.includes('text/html')) {
+        // HTML request -> redirect 302 ke Next.js dashboard
+        return Response.redirect(target, 302);
+      }
+      // API / non-HTML -> kasih info JSON
+      return new Response(JSON.stringify({
+        ok: true,
+        message: 'XyCloudStore API — Admin Dashboard sekarang di admin.xycloud.my.id (Next.js 16) — Built-in XyVerse',
+        admin_dashboard: target,
+        docs: 'https://www.xycloud.my.id',
+        version: '3.3+nextjs',
+        branding: 'Built-in XyVerse • Powered by XyVerse • Made in XyVerse By Kall'
+      }), {
         headers: {
-          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'no-store',
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'DENY',
-          'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-          'Cross-Origin-Opener-Policy': 'same-origin',
-          'Cross-Origin-Resource-Policy': 'same-origin',
-          'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com data: blob:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.xycloud.my.id wss://*.xycloud.my.id; frame-ancestors 'none'; form-action 'self'",
-          'Referrer-Policy': 'no-referrer',
-          'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
+          'Access-Control-Allow-Origin': '*',
         },
       });
+    }
+
+    // Turnstile + hCaptcha verification endpoint — dipakai login dashboard Next.js
+    if (path === 'turnstile/verify' && req.method === 'POST') {
+      return await handleTurnstileVerify(req, env);
     }
     if (path === '/legal/syarat' || path === '/legal/privasi' || path === '/legal/refund' || path === '/legal/live') {
       const jenis = path.endsWith('privasi') ? 'privasi' : path.endsWith('refund') ? 'refund' : path.endsWith('live') ? 'live' : 'syarat';
