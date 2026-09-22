@@ -25,8 +25,13 @@
 #include <windows.h>
 #include <shellapi.h>
 
-// Sambungkan stdout ke konsol induk (untuk mode CLI di bawah /SUBSYSTEM:WINDOWS).
+// Siapkan stdout untuk mode CLI di bawah /SUBSYSTEM:WINDOWS.
+// Bila stdout sudah diwariskan valid (pipe/berkas/konsol induk), PAKAI APA
+// ADANYA — jangan freopen ke CONOUT$ karena akan memutus redirect CI.
+// Hanya bila tak ada handle sama sekali, tempel ke konsol induk.
 static void sambung_konsol() {
+  HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (h != nullptr && h != INVALID_HANDLE_VALUE) return;  // sudah valid, pakai apa adanya
   if (AttachConsole(ATTACH_PARENT_PROCESS)) {
     freopen("CONOUT$", "w", stdout);
     freopen("CONOUT$", "w", stderr);
