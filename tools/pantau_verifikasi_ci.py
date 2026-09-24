@@ -42,7 +42,7 @@ import zipfile
 import io
 
 API = "https://api.github.com"
-REPO = os.environ.get("XY_REPO", "xykalnotkel/XyCloudStore")
+REPO = os.environ.get("XY_REPO", "xykal/XyCloudStore")
 NAMA_WORKFLOW = os.environ.get("XY_WORKFLOW", "verifikasi-build.yml")
 IKON = {
     "success": "LULUS ",
