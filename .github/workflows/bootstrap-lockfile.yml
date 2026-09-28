@@ -1,0 +1,53 @@
+name: Bootstrap pubspec.lock
+
+# Menghasilkan app/pubspec.lock di runner (bukan lokal) dan meng-commit-nya
+# atas nama xykal. Jalankan manual, atau otomatis saat pubspec.yaml berubah.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app/pubspec.yaml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bootstrap-lockfile-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: "3.24.5"
+
+jobs:
+  lockfile:
+    name: Generate dan commit app/pubspec.lock
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+
+      - name: Setup Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: app
+        run: flutter pub get
+
+      - name: Commit lockfile jika berubah
+        run: |
+          git config --local user.name "xykal"
+          git config --local user.email "297800307+xykal@users.noreply.github.com"
+          git add app/pubspec.lock
+          if git diff --cached --quiet; then
+            echo "pubspec.lock tidak berubah"
+            exit 0
+          fi
+          git commit -m "chore(app): bootstrap pubspec.lock dari CI (Flutter ${FLUTTER_VERSION})"
+          git push origin HEAD:main

@@ -6,7 +6,6 @@ app/android/
 app/ios/
 app/.flutter-plugins
 app/.flutter-plugins-dependencies
-app/pubspec.lock
 
 # Node
 api/node_modules/
