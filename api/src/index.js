@@ -1,5 +1,6 @@
 import { tanganiAdmin } from './admin/index.js';
 import { adminSecurity, ownerProtected } from './admin_security.js';
+import { gerbangAccessAdmin } from './access_admin.js';
 import { handleTurnstileVerify } from './turnstile.js';
 import { SecurityError, securityConfig, securityHash, securitySlot, auditSecurity, requireRate, deviceFromRequest, linkDevice, beforeRegistration, translateRegistrationError, assertAccountEnabled, otpAllowed, otpDigest, newOAuthState, consumeOAuthState, saveSecurityConfig } from './security.js';
 import { estimasiSewa, buatSewa, mulaiSewa, bacaSewa, antreAkhir, konfirmasiAgen, tutupSewa, rawatSewa, normalisasiHostStream, isPrivateIp, probePortTcp} from './sewa.js';
@@ -2321,6 +2322,9 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:2;background:rgba(10,5,28,
     // Vercel deployment support dynamic + solid UI no glassmorphism
     const isAdminHost = host.startsWith('admin.');
     if (isAdminHost) {
+      // Lapis kedua di belakang Cloudflare Access: tanpa JWT Access sah, host admin ditolak
+      const gerbang = await gerbangAccessAdmin(req, env);
+      if (gerbang.tolak) return gerbang.tolak;
       if (!(path.startsWith('/api/') || path.startsWith('/ws/') || path.startsWith('/img/') || path.startsWith('/media/') || path.startsWith('/brand/') || path.startsWith('/unduh/') || path.startsWith('/legal/') || path === '/robots.txt' || path === '/sitemap.xml' || path === '/manifest.webmanifest' || path === '/sw.js' || path === '/health')) {
         try {
           // coba Vercel dulu (dynamic), fallback ke Pages static
