@@ -2157,7 +2157,8 @@ export default {
 
     // ---------- dashboard admin ----------
     const host = (req.headers.get('host') || '').toLowerCase();
-    const domainWeb = !host.startsWith('api.') && !host.startsWith('admin.');
+    // api2.* adalah alamat cadangan resmi (custom domain, tetap di balik WAF zona) menggantikan *.workers.dev.
+    const domainWeb = !/^api\d*\./.test(host) && !host.startsWith('admin.');
 
     // ---------- situs publik ----------
     if (domainWeb && (path === '/' || !path.includes('.')) && !path.startsWith('/api/')

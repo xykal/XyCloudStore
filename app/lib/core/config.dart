@@ -2,7 +2,7 @@
 ///
 /// Ganti [baseUrl] dengan domain Cloudflare Worker milikmu, misalnya:
 ///   https://api.xycloud.my.id
-/// atau  https://xycloud-api.<akun>.workers.dev
+/// atau alamat cadangan resmi https://api2.xycloud.my.id (custom domain, bukan *.workers.dev)
 ///
 /// Bisa juga di-override saat build:
 ///   flutter build apk --dart-define=XY_BASE_URL=https://api.xycloud.id
@@ -52,7 +52,7 @@ class XyConfig {
   /// Kalau domain utama bermasalah, aplikasi otomatis pindah ke alamat cadangan.
   static const String baseUrlCadangan = String.fromEnvironment(
     'XY_BASE_URL_FALLBACK',
-    defaultValue: 'https://xycloud-api.akuntiktok76y.workers.dev',
+    defaultValue: 'https://api2.xycloud.my.id',
   );
   /// Nomor CS cadangan bila `konfigurasi.whatsapp` dari server kosong/gagal.
   /// Sebelumnya berisi placeholder '6281234567890' yang tidak aktif, sehingga
