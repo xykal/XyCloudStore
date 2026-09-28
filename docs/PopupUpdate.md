@@ -41,7 +41,7 @@
      - `favorit` → COUNT favorit
      - `brand/logo-full` & `brand/logo` → serve PNG
    - Import `LOGO_FULL_PNG` + route `/brand/logo-full.png`, `/brand/logo-icon.png`
-   - Deploy Worker `32b06631-78f9-442b-a255-5d62549152a5` → `https://api.xycloud.my.id` + `admin.xycloud.my.id` etc
+   - Deploy Worker `32b06631-78f9-442b-a255-5d62549152a5` → `<API_BASE>` + `<ADMIN_HOST>` etc
    - Verify: `/brand/logo.png` 200, `/brand/logo-full.png` 200, `/api/admin/audit` now returns Forbidden (not 404) when key invalid = alias hit
 
 3. **Solid UI fix — 0 bg-white/5, 0 bg-[#7C3AED]/20:**
@@ -65,8 +65,8 @@
 ### URLs v3.3j
 - Pages: https://xycloud-dashboard.pages.dev (69a4ac13) + https://xycloud-dashboard.pages.dev/login
 - Vercel: https://dashboard-iota-ten-70.vercel.app/login
-- API: https://api.xycloud.my.id/brand/logo.png (icon) & /brand/logo-full.png (full) & /brand/logo-icon.png
-- Admin: https://admin.xycloud.my.id/ → solid login
+- API: <API_BASE>/brand/logo.png (icon) & /brand/logo-full.png (full) & /brand/logo-icon.png
+- Admin: <ADMIN_URL> → solid login
 
 ### Next
 - User test dashboard login dengan admin key, cek semua menu tanpa 404, cek logo collapse/expand
@@ -75,13 +75,13 @@
 
 ---
 
-## 0. UPDATE v3.3d — Fix: admin.xycloud.my.id login terpisah, www.xycloud.my.id, no glassmorphism, 33 menu (2026-09-09)
+## 0. UPDATE v3.3d — Fix: <ADMIN_HOST> login terpisah, www.xycloud.my.id, no glassmorphism, 33 menu (2026-09-09)
 
-**Request user:** "btw url nya bukannya admin.xycloud.my.id? and untuk web pakai www.xycloud.my.id dan dan pastikan ui ux semua jangan glasmorph atau glas dll dan harus dipisah per halaman dan menu dan login admin agar punya halaman sendiri dan knp yini : NetworkError when attempting to fetch resource. dan knp kode warna dan stack disebut di ui sih aneh" + "sabar koreksi untuk pisah halaman maksudku di menu punya halaman masing masing dan Ada halaman buat login dash admin kan harus masukin key admin gitu dan logo dll kenapa dihapus sih semua jadi hilang dan kenu di dash perasaan banyak banget Kok jadi dikit"
+**Request user:** "btw url nya bukannya <ADMIN_HOST>? and untuk web pakai www.xycloud.my.id dan dan pastikan ui ux semua jangan glasmorph atau glas dll dan harus dipisah per halaman dan menu dan login admin agar punya halaman sendiri dan knp yini : NetworkError when attempting to fetch resource. dan knp kode warna dan stack disebut di ui sih aneh" + "sabar koreksi untuk pisah halaman maksudku di menu punya halaman masing masing dan Ada halaman buat login dash admin kan harus masukin key admin gitu dan logo dll kenapa dihapus sih semua jadi hilang dan kenu di dash perasaan banyak banget Kok jadi dikit"
 
 ### Masalah di v3.3c
 - `admin.html` masih redirect launcher dengan glassmorphism (`backdrop-filter: blur(12px)`, `rgba(26,10,58,0.96)`), info card menampilkan kode warna `#100030` dll + stack — user bilang aneh.
-- `admin.xycloud.my.id` dan `api.xycloud.my.id/admin` sama-sama serve redirect, bukan login terpisah.
+- `<ADMIN_HOST>` dan `api.xycloud.my.id/admin` sama-sama serve redirect, bukan login terpisah.
 - `www.xycloud.my.id` masih maintenance (mode_pemeliharaan=1).
 - Dashboard Next.js `globals.css` masih `xy-card` dengan `backdrop-filter: blur(12px)` — glassmorphism.
 - Dashboard tidak punya halaman `/login` terpisah — langsung pakai localStorage, jadi logo hilang, NetworkError karena `loginAdmin` fetch `/api/admin/dashboard` yang tidak ada (harus `/api/admin/stats`).
@@ -96,7 +96,7 @@
    - view-ok setelah login: 2 link card solid ke Pages & legacy
    - **No color codes, no stack** — hapus info palette #100030 etc
    - Links: Pages `/login`, Vercel `/login`, legacy `?legacy=1`
-   - Deploy Worker `c99f73e4-6f0e-4107-9dd5-a0f4f4141e93` — curl `admin.xycloud.my.id/` now shows solid login.
+   - Deploy Worker `c99f73e4-6f0e-4107-9dd5-a0f4f4141e93` — curl `<ADMIN_HOST>/` now shows solid login.
 3. **Dashboard globals.css solid:**
    - Before: `background: linear-gradient(135deg, rgba(26,10,58,0.96), rgba(45,10,94,0.92)); border: 1px solid rgba(124,58,237,0.22); backdrop-filter: blur(12px);`
    - After: `background: var(--xy-card) #1E123F; border: 1px solid var(--xy-line) #2D1B5E; border-radius: 16px;` — no blur
@@ -118,13 +118,13 @@
 6. **Deploy:**
    - Pages: `d3a0f857.xycloud-dashboard.pages.dev` (109 files)
    - Vercel: `dashboard-ikqgcg1mk-...` aliased `dashboard-iota-ten-70.vercel.app`
-   - Worker: `c99f73e4-6f0e-4107-9dd5-a0f4f4141e93` — admin.xycloud.my.id solid login, www.xycloud.my.id web normal
+   - Worker: `c99f73e4-6f0e-4107-9dd5-a0f4f4141e93` — <ADMIN_HOST> solid login, www.xycloud.my.id web normal
 7. **URLs final:**
-   - **Admin primary:** https://admin.xycloud.my.id/ → solid login → https://xycloud-dashboard.pages.dev/login
-   - **Admin legacy:** https://admin.xycloud.my.id/admin?legacy=1 & /admin-legacy
+   - **Admin primary:** <ADMIN_URL> → solid login → https://xycloud-dashboard.pages.dev/login
+   - **Admin legacy:** <ADMIN_URL> & /admin-legacy
    - **Dashboard new:** https://xycloud-dashboard.pages.dev/login (Pages) & https://dashboard-iota-ten-70.vercel.app/login (Vercel) — both have login terpisah, 33 menu per halaman
    - **Web:** https://www.xycloud.my.id/ & https://xycloud.my.id/ → web.html (Sewa PC)
-   - **API:** https://api.xycloud.my.id
+   - **API:** <API_BASE>
 
 ### No Glassmorphism Checklist
 - ✅ `api/src/admin.html`: solid #100030, #1A0A3A, #21114A, no backdrop-filter
@@ -142,7 +142,7 @@
 ### Analisa Hosting Lama
 - Old dash: single-file `api/src/admin.html` 166KB 1826 lines, dibundle via `wrangler.toml` `[[rules]] type="Text" globs=["**/*.html"]` → Worker `xycloud-api`
 - Serve di `api/src/index.js` line ~500: `if (path === '/' || '/admin' || '/admin/') return ADMIN_HTML` dengan CSP ketat.
-- Custom domains: `api.xycloud.my.id`, `admin.xycloud.my.id`, `xycloud.my.id`, `www.xycloud.my.id` → semua point ke Worker yang sama.
+- Custom domains: `api.xycloud.my.id`, `<ADMIN_HOST>`, `xycloud.my.id`, `www.xycloud.my.id` → semua point ke Worker yang sama.
 - Jadi "hosting" admin = Cloudflare Worker, bukan static host terpisah — bisa langsung replace `admin.html`.
 
 ### Yang dikerjakan v3.3c
@@ -161,17 +161,17 @@
    - Route `/admin-legacy` & `/admin/legacy` → legacy direct
    - Route `/admin` → serve new redirect page with updated CSP allowing `fonts.googleapis.com`, `fonts.gstatic.com`, `unpkg.com`
    - Fix global `setInterval` disallowed in Workers: removed `setInterval?.` cleanup map (moved to comment, cleanup will be in scheduled handler)
-4. **Deploy Worker:** `wrangler deploy` → `xycloud-api` v `3f56546b-cfab-4e78-855b-c0c38c690b0c` — https://api.xycloud.my.id/admin now returns new page (verified curl 200 + contains `xycloud-dashboard.pages.dev`)
+4. **Deploy Worker:** `wrangler deploy` → `xycloud-api` v `3f56546b-cfab-4e78-855b-c0c38c690b0c` — <API_BASE>/admin now returns new page (verified curl 200 + contains `xycloud-dashboard.pages.dev`)
 5. **Build policy respected:** boleh push build, jangan tag `v*` release.
 
 ### URLs Sekarang
-- **Primary admin:** https://api.xycloud.my.id/admin → redirect launcher → https://xycloud-dashboard.pages.dev
-- **Legacy fallback:** https://api.xycloud.my.id/admin?legacy=1 atau https://api.xycloud.my.id/admin-legacy
+- **Primary admin:** <API_BASE>/admin → redirect launcher → https://xycloud-dashboard.pages.dev
+- **Legacy fallback:** <API_BASE>/admin?legacy=1 atau <API_BASE>/admin-legacy
 - **Next.js Dashboard (baru):** https://xycloud-dashboard.pages.dev (Pages) + https://dashboard-iota-ten-70.vercel.app (Vercel)
-- **API:** https://api.xycloud.my.id tetap
+- **API:** <API_BASE> tetap
 
 ### CSP Update
-Old: `default-src 'self' https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com data: blob:`
+Old: `default-src 'self' <API_BASE> https://res.cloudinary.com https://*.giphy.com data: blob:`
 New: tambah `https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com` di `default-src`, `script-src` allow `unpkg.com`, `style-src` allow `fonts.googleapis.com`, `font-src` allow `fonts.gstatic.com`
 
 ### Next Steps v3.3c+
@@ -222,14 +222,14 @@ New: tambah `https://fonts.googleapis.com https://fonts.gstatic.com https://unpk
   - URLs:
     - Production: `https://dashboard-9lfkngjtn-xykalnotkels-projects.vercel.app`
     - Aliased: `https://dashboard-iota-ten-70.vercel.app` (ini yang aktif)
-  - Config: rewrites `/api/*` → `https://api.xycloud.my.id/api/*` via `next.config.js` (masih ada, tapi di Vercel rewrites jalan).
+  - Config: rewrites `/api/*` → `<API_BASE>/api/*` via `next.config.js` (masih ada, tapi di Vercel rewrites jalan).
 - **Cloudflare Pages:**
   - Token: `cfut_...`
   - Project: `xycloud-dashboard` — created via `wrangler pages project create xycloud-dashboard --production-branch main`
   - Build static export: buat `next.config.export.js` dengan `output: 'export', distDir: 'out', trailingSlash: true, images: { unoptimized: true }`, copy ke `next.config.js`, `npm run build`, hasil `out/` 99 files.
   - Deploy: `wrangler pages deploy out --project-name xycloud-dashboard --branch main --commit-dirty=true`
   - Result: `https://635db5e8.xycloud-dashboard.pages.dev` dan `https://xycloud-dashboard.pages.dev`
-  - Note: export mode tidak pakai rewrites, tapi `adminFetch` di `lib/api.ts` langsung fetch ke `https://api.xycloud.my.id` jadi tetap jalan.
+  - Note: export mode tidak pakai rewrites, tapi `adminFetch` di `lib/api.ts` langsung fetch ke `<API_BASE>` jadi tetap jalan.
 - **GitHub Actions:**
   - `.github/workflows/deploy-dashboard.yml` sudah ada dari commit ecb4960, tapi deploy Pages step masih commented? Perlu uncomment dan set `CLOUDFLARE_API_TOKEN` secret di repo. Untuk sekarang deploy manual via wrangler sudah sukses.
 
@@ -254,8 +254,8 @@ New: tambah `https://fonts.googleapis.com https://fonts.gstatic.com https://unpk
 ### URLs Deploy
 - Vercel: https://dashboard-iota-ten-70.vercel.app
 - Cloudflare Pages: https://xycloud-dashboard.pages.dev (alias 635db5e8)
-- API Worker: https://api.xycloud.my.id (tetap)
-- Old admin.html: https://api.xycloud.my.id/admin (masih ada, perlu banner link ke new dashboard)
+- API Worker: <API_BASE> (tetap)
+- Old admin.html: <API_BASE>/admin (masih ada, perlu banner link ke new dashboard)
 
 ### Next Steps (TODO)
 1. Update `api/src/admin.html` banner: "Dashboard baru di xycloud-dashboard.pages.dev & Vercel — coba versi Next.js" + link.
@@ -352,6 +352,6 @@ Generate nanti pas waktunya — user bilang "generate gambar tema nanti saja pas
 **Deploy URLs v3.3b:**
 - Dashboard Vercel: https://dashboard-iota-ten-70.vercel.app
 - Dashboard Pages: https://xycloud-dashboard.pages.dev
-- API: https://api.xycloud.my.id
+- API: <API_BASE>
 
 **Build Policy:** Boleh push build/commit tapi JANGAN tag release `v*` — user harus test dulu.

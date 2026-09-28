@@ -8,7 +8,7 @@ Tanggal penyelesaian: 16 September 2026
 - D1 migration: `0018_pakasir_payment_operations.sql` diterapkan
 - Provider efektif: `pakasir`
 - Worker Secrets: `PAKASIR_PROJECT` dan `PAKASIR_API_KEY` tersedia; nilainya tidak dicetak, tidak dikirim oleh API, dan tidak disimpan di repo/D1
-- Webhook yang harus dipasang di proyek Pakasir: `https://api.xycloud.my.id/bayar/webhook/pakasir`
+- Webhook yang harus dipasang di proyek Pakasir: `<API_BASE>/bayar/webhook/pakasir`
 - Tidak ada transaksi, Payment Simulation, kredit saldo, atau pembatalan nyata yang dibuat selama rollout
 
 ## Hasil utama

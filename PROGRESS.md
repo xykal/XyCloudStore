@@ -67,7 +67,7 @@ Start: 2026-09-06 (first commit)
 **Build & Release:**
 - Workflow: Verifikasi Build Menyeluruh (ci/**, verifikasi/**, rapih/**, PR main) — harus ijo setelah fix ini
 - Build Agen Windows: cmake -S agent-cpp -B build-agent -DCMAKE_BUILD_TYPE=Release + smoke-test --veri
-- Build Flutter lokal (butuh device): flutter create . --platforms=android --org id.xycloud, siapkan_streaming.py, siapkan_pembaruan.py, patch_manifest.py, flutter pub get, flutter analyze --no-fatal-infos, flutter build apk --release --dart-define=XY_BASE_URL=https://api.xycloud.my.id
+- Build Flutter lokal (butuh device): flutter create . --platforms=android --org id.xycloud, siapkan_streaming.py, siapkan_pembaruan.py, patch_manifest.py, flutter pub get, flutter analyze --no-fatal-infos, flutter build apk --release --dart-define=XY_BASE_URL=<API_BASE>
 - Link artifact: via Actions tab — APK Uji Internal + Agen Windows — retensi 7 hari, bukan Release publik (rilis publik tetap via XyCloudStore-build repo source-free)
 
 **Next Step:**
@@ -128,7 +128,7 @@ Template progress log wajib diupdate tiap kerja biar next agent gak buta. Lihat 
 
 **Yang dikerjain:**
 - Hapus dashboard admin HTML legacy api/src/admin.html — sekarang pakai Next.js saja (dashboard/ Next.js 16.3.5 terbaru)
-- Migrasi api/src/index.js: hapus import ADMIN_HTML, ganti handler '/' '/admin' jadi redirect 302 ke https://admin.xycloud.my.id/login buat request HTML, JSON info buat API/non-HTML. Branding Built-in XyVerse tetap.
+- Migrasi api/src/index.js: hapus import ADMIN_HTML, ganti handler '/' '/admin' jadi redirect 302 ke <ADMIN_URL> buat request HTML, JSON info buat API/non-HTML. Branding Built-in XyVerse tetap.
 - Buat api/src/turnstile.js — verifikasi Turnstile + hCaptcha via Cloudflare API siteverify, secret via env TURNSTILE_SECRET / HCAPTCHA_SECRET (Worker Secrets), endpoint POST /api/turnstile/verify — dipakai login dashboard Next.js
 - Update dashboard/app/login/page.tsx: full rewrite pakai TurnstileWidget, wajib verifikasi sebelum login, tambah branding Built-in XyVerse • Powered by XyVerse + JUGA DARI XYVERSE ecosystem (XyCloudStore, XyDesk, XyVerse, Admin Console) + link logo pack, versi Next.js 16.3.5 • React 18 • Tailwind • Lucide • Turnstile
 - Buat dashboard/components/TurnstileWidget.tsx — widget explicit render Turnstile dari challenges.cloudflare.com/turnstile/v0/api.js, sitekey via NEXT_PUBLIC_TURNSTILE_SITE_KEY (fallback 0x4AAAAAAE6jQZaig7vJKhQs dari kuncikerjasama.txt XYDESK ADMIN WEB), handle error/expire, dev bypass token kalau script gagal
@@ -154,7 +154,7 @@ Template progress log wajib diupdate tiap kerja biar next agent gak buta. Lihat 
 - Push Protection sebelumnya block karena PROGRESS.md ada ghp_ token log — sudah di-redact jadi ghp_***REDACTED*** via amend 6155b6d/ bb1dc4d
 - Enforcer false-positive karena pipe head bug — sudah fix di 6155b6d via FOUND var + pipefail + REDACTED filter, sekarang SUCCESS
 - node_modules tidak ada di workspace (excluded snapshot) jadi npm run build lokal gagal next not found — solusi: biar CI GitHub Actions yang build, AI cukup coding + push
-- Turnstile sitekey untuk admin.xycloud.my.id belum ada di kuncikerjasama.txt (hanya ada untuk admin.xydesk.my.id) — solusi reuse sitekey 0x4AAAAAAE6jQZaig7vJKhQs sementara, nanti buat sitekey baru khusus admin.xycloud.my.id di Cloudflare dashboard dan set via NEXT_PUBLIC_TURNSTILE_SITE_KEY + TURNSTILE_SECRET Worker secret via wrangler
+- Turnstile sitekey untuk <ADMIN_HOST> belum ada di kuncikerjasama.txt (hanya ada untuk admin.xydesk.my.id) — solusi reuse sitekey 0x4AAAAAAE6jQZaig7vJKhQs sementara, nanti buat sitekey baru khusus <ADMIN_HOST> di Cloudflare dashboard dan set via NEXT_PUBLIC_TURNSTILE_SITE_KEY + TURNSTILE_SECRET Worker secret via wrangler
 
 **Build & Release:**
 - Build Dashboard Next.js 45 pages via verifikasi-build.yml job dashboard (next build)
@@ -164,9 +164,9 @@ Template progress log wajib diupdate tiap kerja biar next agent gak buta. Lihat 
 
 **Next Step:**
 - Push ke main + rapih/semua, tunggu verifikasi-build 6 job PASS, enforcer PASS
-- Deploy dashboard ke admin.xycloud.my.id (Vercel) + api.xycloud.my.id (Worker) dengan Turnstile secret
-- Test login admin: buka https://admin.xycloud.my.id/login, verifikasi Turnstile muncul, input admin key, login sukses ke console, key disimpan sessionStorage
-- Test api.xycloud.my.id/ -> redirect 302 ke https://admin.xycloud.my.id/login (HTML) atau JSON info (API)
+- Deploy dashboard ke <ADMIN_HOST> (Vercel) + api.xycloud.my.id (Worker) dengan Turnstile secret
+- Test login admin: buka <ADMIN_URL> verifikasi Turnstile muncul, input admin key, login sukses ke console, key disimpan sessionStorage
+- Test api.xycloud.my.id/ -> redirect 302 ke <ADMIN_URL> (HTML) atau JSON info (API)
 - Final: tag v3.9.0-nextjs-turnstile, update docs
 
 ---
@@ -188,5 +188,5 @@ Template progress log wajib diupdate tiap kerja biar next agent gak buta. Lihat 
 
 **File yang diubah:** dashboard/package.json, verifikasi-build.yml, api/src/index.js, admin/index.js, cfrelay.js, PROGRESS.md
 
-**Next:** Test login real admin.xycloud.my.id/login, rotate token bocor, deploy Vercel prod setelah limit reset.
+**Next:** Test login real <ADMIN_HOST>/login, rotate token bocor, deploy Vercel prod setelah limit reset.
 

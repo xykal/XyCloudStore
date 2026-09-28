@@ -18,12 +18,12 @@ Implementasi memakai OAuth Authorization Code di browser, pertukaran kode hanya 
 | Pengaturan | Nilai produksi |
 |---|---|
 | App domain | `xycloud.my.id` |
-| Valid OAuth Redirect URI | `https://api.xycloud.my.id/api/auth/facebook/callback` |
+| Valid OAuth Redirect URI | `<API_BASE>/api/auth/facebook/callback` |
 | Privacy Policy URL | `https://xycloud.my.id/legal/privasi` |
 | Terms URL | `https://xycloud.my.id/legal/syarat` |
-| User data deletion callback | `https://api.xycloud.my.id/api/auth/facebook/data-deletion` |
-| Deauthorize callback | `https://api.xycloud.my.id/api/auth/facebook/deauthorize` |
-| User data deletion instructions (GET) | `https://api.xycloud.my.id/api/auth/facebook/data-deletion` |
+| User data deletion callback | `<API_BASE>/api/auth/facebook/data-deletion` |
+| Deauthorize callback | `<API_BASE>/api/auth/facebook/deauthorize` |
+| User data deletion instructions (GET) | `<API_BASE>/api/auth/facebook/data-deletion` |
 | Aplikasi Android kembali ke | `xycloudstore://auth` (bukan URL yang didaftarkan sebagai redirect Meta) |
 
 Huruf, skema HTTPS, host, path, dan trailing slash harus sama persis. Jangan mendaftarkan `xycloudstore://auth` sebagai OAuth redirect Meta: Meta kembali ke Worker dahulu, lalu Worker membuka aplikasi.

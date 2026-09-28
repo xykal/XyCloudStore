@@ -3,7 +3,7 @@
 ## Ringkasan
 Console admin monolit `api/src/admin-legacy.html` (1826 baris) sudah diganti **Next.js 14** di `dashboard/` dengan parity aksi operasional utama.
 
-Legacy **tidak dihapus**: tetap bisa dibuka darurat di `https://api.xycloud.my.id/admin?legacy=1`. Entry `/admin` mengarah ke dashboard baru.
+Legacy **tidak dihapus**: tetap bisa dibuka darurat di `<API_BASE>/admin?legacy=1`. Entry `/admin` mengarah ke dashboard baru.
 
 ## Yang dituntaskan di gelombang ini
 
@@ -44,7 +44,7 @@ CS realtime, Sistem/pemeliharaan, Push builder, Peran, Promosi, Plans/Produk/Vou
 5. Skema `favorit` bervariasi — Worker punya fallback bila kolom beda.
 
 ## Cara uji cepat
-1. Login `admin.xycloud.my.id` dengan admin key.
+1. Login `<ADMIN_HOST>` dengan admin key.
 2. **Pengguna** → Kelola → sesuaikan saldo Rp1 (lalu balikkan).
 3. **TopUp** pending → setujui 1 (staging).
 4. **Pesanan** → filter → aksi massal (staging).

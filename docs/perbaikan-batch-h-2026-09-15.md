@@ -67,7 +67,7 @@ sudah di-push ke `main` dan worker sudah di-deploy.
 
 ## Verifikasi produksi (pasca-deploy `316417d1`)
 
-- `GET https://api.xycloud.my.id/api/config` → `negara` ada (dari IP US:
+- `GET <API_BASE>/api/config` → `negara` ada (dari IP US:
   `{"kode":"US","nama":"Amerika Serikat"}`).
 - `GET /api/legal/syarat` & `/api/legal/privasi` → 200 dengan dokumen penuh
   (tanpa token, saat maintenance aktif).

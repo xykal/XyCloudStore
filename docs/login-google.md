@@ -25,7 +25,7 @@ Keduanya harus berada di project Google Cloud yang sama, nomor project `49533614
 - Web client ID tetap dipakai sebagai `XY_GOOGLE_SERVER_CLIENT_ID` pada `.github/workflows/build-apk.yml` dan default `LoginSosial.serverClientId` di `app/lib/data/login_sosial.dart`.
 - Backend memakai secret `GOOGLE_CLIENT_ID` dengan Web client ID yang sama, serta `GOOGLE_CLIENT_SECRET` pasangan **Web client tersebut** untuk pertukaran kode pada jalur browser. Jangan menggantinya dengan secret milik Web client lain.
 - `verifikasiIdTokenGoogle()` memeriksa token ke Google, lalu membatasi audiens ke client Web/Android yang dikonfigurasi. Token dari aplikasi lain tidak diterima.
-- Authorized redirect URI pada Web client: `https://api.xycloud.my.id/api/auth/google/callback`.
+- Authorized redirect URI pada Web client: `<API_BASE>/api/auth/google/callback`.
 - Client ID adalah identitas publik; client secret, private key service account, dan keystore tidak boleh dimasukkan ke APK atau repository. Alur ini tidak membutuhkan JSON service account Firebase.
 
 ## Setelah menambahkan Android client

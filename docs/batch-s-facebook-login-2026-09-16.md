@@ -12,7 +12,7 @@ Mengaudit serta menyiapkan Facebook Login agar setara dengan Google tanpa menyim
 
 - Graph API dipin ke `v26.0` melalui `FACEBOOK_GRAPH_VERSION`.
 - Authorization Code tetap ditukar hanya di Cloudflare Worker.
-- Exact callback produksi: `https://api.xycloud.my.id/api/auth/facebook/callback`.
+- Exact callback produksi: `<API_BASE>/api/auth/facebook/callback`.
 - Profil dipanggil memakai `Authorization: Bearer`, bukan access token di query URL.
 - `appsecret_proof` HMAC-SHA256 diwajibkan pada pembacaan profil.
 - Token type/expiry dan respons profile/id/email divalidasi.

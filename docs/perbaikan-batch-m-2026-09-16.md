@@ -173,7 +173,7 @@ bukan karena upload-nya gagal. Bukti forensik:
    didukung) — diferensiasi vs marketplace akun.
 7. **Cron backup D1 → R2** (dump sqlite harian) + tombol "uji restore" di
    admin — saat ini `cadangan` baru seadanya.
-8. **Health-check publik** `https://api.xycloud.my.id/api/health` (status
+8. **Health-check publik** `<API_BASE>/api/health` (status
    worker + D1 + OneSignal + Cloudinary) — bisa dipasang di status page
    sederhana, juga berguna untuk tes regression deploy.
 9. **Referral tingkat (tier bonus)**: invite 5 teman → 1 jam sewa gratis

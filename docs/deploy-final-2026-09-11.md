@@ -8,7 +8,7 @@ Commit head: **`7ccf721`** (`fix(ci): pulihkan Pill(this.teks) + YAML deploy-das
 |---|---|---|
 | **Cloudflare Worker `xycloud-api`** | ✅ | Version `d56ffeab-282c-46d6-be19-0c66e18dfca9` · `api.xycloud.my.id` + custom domains |
 | **Cloudflare Pages `xycloud-dashboard`** | ✅ | `https://b063f3ef.xycloud-dashboard.pages.dev` · prod `xycloud-dashboard.pages.dev` |
-| **Vercel `dashboard` (alias admin)** | ✅ | Prod `https://dashboard-iota-ten-70.vercel.app` · proxy `admin.xycloud.my.id` |
+| **Vercel `dashboard` (alias admin)** | ✅ | Prod `https://dashboard-iota-ten-70.vercel.app` · proxy `<ADMIN_HOST>` |
 | **Mode pemeliharaan D1** | ✅ OFF | `mode_pemeliharaan=0` (sebelumnya `1` + pesan pengembangan) |
 | **APK (CI artifact `7ccf721`)** | ✅ unduh | run `34593655334` → `rilis/XyCloudStore-arm64-v8a.apk` + universal |
 | **Tag `v*`** | ⏸ ditahan | setelah kamu tes APK |
@@ -28,7 +28,7 @@ Commit head: **`7ccf721`** (`fix(ci): pulihkan Pill(this.teks) + YAML deploy-das
 | `GET /api/forum` | 200 data |
 | `GET /api/banners` | 200 data |
 | `GET /api/produk` (tanpa token) | 401 (normal) |
-| `https://admin.xycloud.my.id/` | 200 Next console |
+| `<ADMIN_URL>` | 200 Next console |
 | `…/peran` chunk | memuat **Putar** + `/api/admin/peran` + rotate |
 
 ## APK untuk uji

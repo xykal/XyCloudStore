@@ -2,7 +2,7 @@
 
 Tanggal: 16 September 2026  
 Provider utama: Pakasir  
-Webhook produksi: `https://api.xycloud.my.id/bayar/webhook/pakasir`  
+Webhook produksi: `<API_BASE>/bayar/webhook/pakasir`  
 Worker rollout: `92238883-09bb-40ab-bae6-8228e32cc90b`  
 D1 migration: `0018_pakasir_payment_operations.sql` diterapkan
 
@@ -22,7 +22,7 @@ npx wrangler secret put PAKASIR_API_KEY
 
 Di halaman Edit Proyek Pakasir:
 
-1. Isi Webhook URL dengan `https://api.xycloud.my.id/bayar/webhook/pakasir`.
+1. Isi Webhook URL dengan `<API_BASE>/bayar/webhook/pakasir`.
 2. Gunakan HTTPS dan pastikan tidak ada spasi/trailing path yang berbeda.
 3. Untuk uji sandbox, buat transaksi dari aplikasi lalu gunakan Payment Simulation resmi hanya pada order sandbox tersebut.
 4. Jangan mengirim API key melalui aplikasi atau parameter buatan sendiri.

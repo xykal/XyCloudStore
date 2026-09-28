@@ -142,7 +142,7 @@ function rateLimit(key, max, windowMs) {
 
 | Item | Status | Fix |
 |------|--------|-----|
-| CSP header | ⏳ | Tambah di Worker: `Content-Security-Policy: default-src 'self' https://api.xycloud.my.id https://res.cloudinary.com https://*.giphy.com` |
+| CSP header | ⏳ | Tambah di Worker: `Content-Security-Policy: default-src 'self' <API_BASE> https://res.cloudinary.com https://*.giphy.com` |
 | esc() di innerHTML | ✅ | Sudah, tapi audit ulang sebelum v3.3 |
 | Admin key expose | ✅ | Tidak di-expose, hanya header |
 | Next.js httpOnly cookie | ⏳ | Implementasi di `dashboard/app/api/auth/route.ts` (proxy) |
@@ -184,7 +184,7 @@ if (path === '/api/auth/login' && !checkRate(ip, 'login', 10, 60)) return Respon
 ### 3.2 CSP Header (api/src/index.js)
 
 ```js
-headers.set('Content-Security-Policy', "default-src 'self'; img-src 'self' https://res.cloudinary.com https://media.giphy.com data:; script-src 'self' 'unsafe-inline' https://*.onesignal.com; connect-src 'self' https://api.xycloud.my.id wss://*.xycloud.my.id");
+headers.set('Content-Security-Policy', "default-src 'self'; img-src 'self' https://res.cloudinary.com https://media.giphy.com data:; script-src 'self' 'unsafe-inline' https://*.onesignal.com; connect-src 'self' <API_BASE> wss://*.xycloud.my.id");
 headers.set('X-Frame-Options', 'SAMEORIGIN');
 headers.set('X-Content-Type-Options', 'nosniff');
 ```

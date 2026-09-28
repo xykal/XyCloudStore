@@ -146,7 +146,7 @@ Input opsional saat run manual:
 | Input | Default | Fungsi |
 |---|---|---|
 | `mock` | `false` | `true` = jalan dengan data demo tanpa server |
-| `base_url` | `https://api.xycloud.my.id` | Base URL API XyCloud |
+| `base_url` | `<API_BASE>` | Base URL API XyCloud |
 | `source_ref` | `main` | Branch/tag/commit source privat yang harus dibangun |
 
 Jalankan workflow pada tag versi di repo build untuk sekaligus membuat GitHub Release publik. Input `source_ref` mengunci branch/tag/commit source yang dibangun. Urutan operasi lengkap ada di [arsitektur dua repositori](docs/repository-build-architecture-2026-09-17.md).
@@ -168,7 +168,7 @@ Sambungkan ke server sungguhan:
 ```bash
 flutter build apk --release \
   --dart-define=XY_MOCK=false \
-  --dart-define=XY_BASE_URL=https://api.xycloud.my.id
+  --dart-define=XY_BASE_URL=<API_BASE>
 ```
 
 ---
@@ -189,24 +189,7 @@ npm run dev
 
 ### Endpoint
 
-| Method | Path | Fungsi |
-|---|---|---|
-| POST | `/api/auth/login`, `/api/auth/register` | autentikasi (token HMAC) |
-| GET | `/api/pc/plans` | daftar paket PC |
-| GET | `/api/akun/produk` | katalog akun |
-| GET | `/api/banners` | banner slider beranda |
-| GET, POST | `/api/orders` | list dan buat order sewa |
-| GET | `/api/orders/:id` | detail order |
-| POST | `/api/akun/beli` | beli akun, kredensial otomatis |
-| GET | `/api/wallet/transaksi` | riwayat dompet |
-| POST | `/api/wallet/topup` | top up saldo |
-| GET, POST | `/api/cs/messages` | riwayat dan kirim chat |
-| POST | `/api/cs/reply` | balasan dari dashboard admin |
-| POST / WS | `/api/ws/ticket` → `/ws/user:<id>?ticket=…` | capability room-bound dan channel realtime user |
-| WS | `/ws/katalog` | channel stok unit dan banner |
-| WS | `/ws/cs:inbox` | channel dashboard CS |
-| GET | `/admin` | dashboard admin dan CS (butuh admin key) |
-| GET, POST, PATCH, DELETE | `/api/admin/*` | API dashboard, header `x-admin-key` |
+Daftar rute API, rute admin, dan nama header autentikasi tidak dipublikasikan di README. Rujukan bagi pengembang internal ada di kode `api/src/` dan pengujian `api/test/`.
 
 ---
 
@@ -222,7 +205,7 @@ disimpan di secure storage, bukan di custom-scheme URL. Flow browser tidak membu
 Tombol yang tampil di aplikasi mengikuti `GET /api/config`, jadi penyedia yang belum dikonfigurasi
 otomatis disembunyikan.
 
-Syarat Google: tambahkan `https://api.xycloud.my.id/api/auth/google/callback` pada Authorized redirect
+Syarat Google: tambahkan `<API_BASE>/api/auth/google/callback` pada Authorized redirect
 URIs di Google Cloud Console. Facebook membutuhkan `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, exact
 redirect URI, mode Live, serta callback penghapusan data. Lihat [panduan setup Meta dan checklist keamanan](docs/facebook-login-meta-setup-2026-09-16.md).
 
@@ -242,7 +225,7 @@ provider/status transaksi, dan biaya. Tagihan gateway tidak boleh disetujui manu
 pemilik dengan frasa konfirmasi serta alasan audit.
 
 Aktifkan Pakasir memakai Worker Secret `PAKASIR_PROJECT` dan `PAKASIR_API_KEY`, lalu pasang webhook
-`https://api.xycloud.my.id/bayar/webhook/pakasir` pada proyek Pakasir. Jangan simpan API key di tabel
+`<API_BASE>/bayar/webhook/pakasir` pada proyek Pakasir. Jangan simpan API key di tabel
 `setelan`. Klien Payment UI v2 menerima seluruh metode Pakasir; APK lama otomatis dibatasi ke
 hosted QRIS agar tetap kompatibel. Jika tidak ada provider valid, sistem memakai jalur manual: kode
 unik 3 digit, rekening, unggah bukti, dan persetujuan admin. Variabel non-rahasia: `PAYMENT_PROVIDER`, `BANK_NAMA`,
@@ -337,13 +320,7 @@ untuk launcher, splash, serta ikon notifikasi push.
 ## Situs Web Publik
 
 Worker yang sama juga melayani situs `xycloud.my.id` dan `www.xycloud.my.id`.
-Rutenya dipilih berdasarkan host:
-
-| Host | Isi |
-|---|---|
-| `xycloud.my.id`, `www.xycloud.my.id` | situs publik (`api/src/web.html`) |
-| `admin.xycloud.my.id` | dashboard admin dan CS |
-| `api.xycloud.my.id` | API, gambar, unduhan, halaman legal |
+Rutenya dipilih berdasarkan host; pemetaan host ke fungsi tidak dipublikasikan di sini.
 
 Seluruh isi situs ditarik langsung dari D1 lewat API yang sama dengan aplikasi:
 paket PC, produk akun beserta ulasan, diskusi komunitas beserta balasan dan lencana member,
@@ -406,7 +383,6 @@ dan `POST /api/sesi/:id/akhiri`. Diagnostik menguji sampel port TCP dari jaringa
 UDP tetap harus diperiksa pada router/firewall host. Telemetri hanya menyimpan state/jalur/
 latensi/kualitas—tidak pernah input kontrol, audio, gambar, atau isi gameplay.
 Endpoint agen (pakai header `x-agen-kode`): `POST /api/agen/heartbeat`, `POST /api/agen/perintah/:id`.
-Admin: `GET/POST /api/admin/agen`, `DELETE /api/admin/agen/:id`, `GET /api/admin/sesi`.
 
 Klien Android memiliki watchdog penyambungan 35 detik, fallback publik↔LAN, progres tahap +
 waktu, adaptive anti-lag berdasarkan respons awal, dan reconnect bertingkat 2/4/8 detik
@@ -475,13 +451,7 @@ bawaan Flutter lewat `showLicensePage`.
 
 ## Domain
 
-| Alamat | Fungsi |
-|---|---|
-| `https://api.xycloud.my.id` | API dan WebSocket aplikasi |
-| `https://admin.xycloud.my.id` | dashboard admin dan CS |
-| `https://xycloud-api.akuntiktok76y.workers.dev` | alamat cadangan otomatis |
-
-Aplikasi memakai domain utama; kalau tidak bisa dihubungi, `ApiClient` otomatis pindah ke alamat cadangan.
+Alamat produksi dan alamat cadangan tidak dicantumkan di sini. Keduanya disuntikkan saat build lewat `--dart-define=XY_BASE_URL` dan `--dart-define=XY_BASE_URL_FALLBACK` (lihat `app/lib/core/config.dart`). Kalau domain utama tidak bisa dihubungi, `ApiClient` otomatis pindah ke alamat cadangan.
 
 ---
 
@@ -489,7 +459,6 @@ Aplikasi memakai domain utama; kalau tidak bisa dihubungi, `ApiClient` otomatis 
 
 Dashboard web ikut dibundel di dalam Worker, jadi tidak perlu hosting terpisah.
 
-- URL: `https://admin.xycloud.my.id` atau `https://api.xycloud.my.id/admin`
 - Masuk dengan **admin key** (`wrangler secret put ADMIN_KEY`), tersimpan di browser.
 
 Yang bisa dikerjakan dari dashboard:
@@ -598,7 +567,7 @@ Menu **Email & Push** di dashboard admin bisa dipakai untuk menguji keduanya.
 Push pesan realtime dari sisi admin:
 
 ```bash
-curl -X POST https://api.xycloud.my.id/api/cs/reply \
+curl -X POST <API_BASE>/api/cs/reply \
   -H "Authorization: Bearer <token-admin>" \
   -H "Content-Type: application/json" \
   -d '{"room":"user:u_001","teks":"Order kakak sudah kami proses ya"}'
