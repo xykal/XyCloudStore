@@ -23,6 +23,9 @@ Start: 2026-09-06 (first commit)
 - Repo metadata: deskripsi, homepage https://xycloud.my.id, 14 topic. SECURITY.md root, template issue (bug, fitur, config) dan PR.
 - [MED-14] Diturunkan ke LOW: WA_ADMIN dan BANK_NOMOR memang data kontak publik (tampil ke semua pengguna via /api/config, juga hardcoded fallback di index.js:3230). Bukan secret; tidak layak deploy produksi tersendiri.
 - Cloudflare Access untuk admin.: token CF saat ini tidak punya scope Access (Authentication error di /access/organizations). Butuh token baru dengan scope Access atau onboarding Zero Trust di dashboard.
+- Cloudflare Access untuk admin.: SELESAI 23:24 UTC. Kall menambah scope Access ke token dan onboarding Zero Trust (IdP One-time PIN). App `XyCloudStore Admin` self-hosted untuk satu hostname admin, sesi 24 jam, policy allow satu email pemilik akun CF, HttpOnly + binding cookie, auto-redirect ke OTP. Uji: admin → 302 ke login Access, api/api2/root/www → 200.
+- INSIDEN 23:05-23:24 UTC (±19 menit): onboarding Zero Trust membuat app bawaan `All Workers` (destination all_workers) yang memaksa login Access di SEMUA Worker akun, termasuk api., api2., root, www. Semua klien API dapat 302 ke cloudflareaccess selama jendela itu. Deteksi lewat uji curl pasca-pemasangan app admin; app `All Workers` dihapus via API, produksi pulih. Pelajaran: jangan aktifkan opsi Access untuk semua Worker di wizard Zero Trust atau di Workers Settings; gate hanya per-hostname.
+- Tindak lanjut Access: (a) Worker validasi JWT `Cf-Access-Jwt-Assertion` (aud app) di host admin supaya gate tidak bergantung pada konfigurasi edge semata; (b) service token Access bila ada klien mesin ke host admin; (c) tambah email admin lain lewat policy, bukan app baru.
 
 **Blocked:** -
 
