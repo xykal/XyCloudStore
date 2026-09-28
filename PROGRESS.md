@@ -1,6 +1,22 @@
 # PROGRESS LOG - XyCloudStore
+Start: 2026-09-06 (first commit)
 > Owner: Kall - XyVerse - github.com/xykalnotkel
 > Format wajib XyVerse 10X Engineer - jangan hapus history
+
+---
+
+## 2026-09-28 — hari kerja ke-16 (15 hari commit sebelumnya per git log; PROGRESS.md sebelumnya cuma mencatat 2026-09-22)
+**Status:** Audit done, UNVERIFIED (belum push, belum ada token)
+**Dikerjain oleh:** XyDeveloper (Arena Agent) untuk kall
+
+**Yang dikerjain:**
+- Repo dipindah ke xykal/XyCloudStore (dibuat 2026-09-24). Audit statis penuh HEAD 8d6f619: docs/AUDIT-2026-09-28.md (1 CRIT, 6 HIGH, 7 MED, 6 LOW)
+- Fix kecil aman tanpa build: deploy-dashboard.yml tambah permissions contents: read
+- Tidak ada build/instal lokal (kebijakan CI-only)
+
+**Blocked:** token push (fine-grained PAT repo ini), keputusan lisensi, konfirmasi rotasi token 2026-09-22, keputusan visibilitas repo
+
+**Next:** push + CI run URL, LICENSE set, pubspec.lock via CI, Tauri CSP tanpa unsafe-inline
 
 ---
 

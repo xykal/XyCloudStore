@@ -9,6 +9,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-dash-${{ github.ref }}
   cancel-in-progress: true
