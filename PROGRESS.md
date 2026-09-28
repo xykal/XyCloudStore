@@ -19,6 +19,9 @@ Start: 2026-09-06 (first commit)
 - Keputusan: repo tetap PUBLIC (catatan kall), TIDAK ada rewrite history (risiko flag aktivitas; atribusi diperbaiki ke depan).
 - [HIGH] Alamat cadangan *.workers.dev (bocorin subdomain akun CF, lolos WAF zona) diganti custom domain api2.xycloud.my.id: wrangler.toml workers_dev=false + route api2, index.js host routing /^api\d*\./, config.dart fallback default api2. Repo secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, GROQ_API_KEY dipasang (sebelumnya kosong pasca migrasi repo).
 - README/PROGRESS/docs: peta endpoint, rute admin, host admin, alamat cadangan dihapus (commit 4f3d37a).
+- [HIGH-6] Keputusan kall: agen Windows cuma agent-cpp. Hapus agent-gui/src-tauri, agent-gui/ui, agent-gui/src-native (23 file, ~740 KB); build-agent.yml sekarang cmake agent-cpp; README, notices, tools/buat_sumber_streaming.py disesuaikan. CSP Tauri tidak relevan lagi.
+- Repo metadata: deskripsi, homepage https://xycloud.my.id, 14 topic. SECURITY.md root, template issue (bug, fitur, config) dan PR.
+- [MED-14] Diturunkan ke LOW: WA_ADMIN dan BANK_NOMOR memang data kontak publik (tampil ke semua pengguna via /api/config, juga hardcoded fallback di index.js:3230). Bukan secret; tidak layak deploy produksi tersendiri.
 - Cloudflare Access untuk admin.: token CF saat ini tidak punya scope Access (Authentication error di /access/organizations). Butuh token baru dengan scope Access atau onboarding Zero Trust di dashboard.
 
 **Blocked:** -

@@ -1,0 +1,25 @@
+name: Laporan bug / Bug report
+description: Perilaku yang salah di aplikasi, API, dashboard, atau agen. Untuk celah keamanan pakai tab Security.
+labels: [bug]
+body:
+  - type: dropdown
+    id: komponen
+    attributes:
+      label: Komponen / Component
+      options: [app (Flutter), api (Worker), dashboard (Next.js), agent-cpp (Windows), native (streaming), docs]
+    validations: { required: true }
+  - type: input
+    id: versi
+    attributes: { label: Versi / Version, placeholder: "3.8.0+26, commit, atau tanggal" }
+    validations: { required: true }
+  - type: textarea
+    id: langkah
+    attributes: { label: Langkah reproduksi / Steps to reproduce }
+    validations: { required: true }
+  - type: textarea
+    id: harapan
+    attributes: { label: Yang diharapkan vs yang terjadi / Expected vs actual }
+    validations: { required: true }
+  - type: textarea
+    id: log
+    attributes: { label: Log atau tangkapan layar (hapus data pribadi) / Logs or screenshots (redact personal data) }

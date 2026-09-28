@@ -50,7 +50,7 @@ with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as z:
  z.writestr('BUILD-SOURCE.txt','XyCloudStore application is GPL-3.0. See app/LICENSE and native/README.md.\nPinned engine and submodule sources, integration patches, required build tools, dependencies, and lockfile are included.\nUse Flutter 3.24.5, Java 17 and Android NDK 23.2.8568313. Private release signing keys are deliberately excluded; sign your rebuilt APK with your own key.\nTo build offline from the included engine source, copy third_party/moonlight to .cache/moonlight, then follow native/README.md (fetch step can be skipped with --offline).\n')
 with zipfile.ZipFile(out) as z:
  names=z.namelist()
- forbidden=('api/','dashboard/','agent-gui/','docs/','.github/')
+ forbidden=('api/','dashboard/','agent-cpp/','docs/','.github/')
  bocor=sorted(n for n in names if n.startswith(forbidden))
  wajib={'app/LICENSE','app/pubspec.yaml','app/pubspec.lock','native/README.md','BUILD-SOURCE.txt'}
  kurang=sorted(wajib-set(names))

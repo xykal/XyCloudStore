@@ -390,9 +390,8 @@ waktu, adaptive anti-lag berdasarkan respons awal, dan reconnect bertingkat 2/4/
 Dashboard → Sesi PC. Audio host dan gamepad/touch diproses native. Uplink mikrofon HP bukan
 bagian protokol GameStream; gunakan Discord di HP atau mikrofon yang terhubung ke PC host.
 
-Program agen untuk PC/VM host ada di folder `agent-gui/` (GUI native
-**Rust + egui/eframe**, tanpa Tauri/WebView dan tanpa runtime Python), dengan README berisi panduan pemasangan Sunshine,
-daftar port, layanan otomatis, dan alur pembersihan antar penyewa.
+Program agen untuk PC/VM host ada di folder `agent-cpp/` (satu `xycloud-agent.exe` **C++ Win32 + DirectX 11 + Dear ImGui**, tanpa WebView, tanpa runtime tambahan), dengan README berisi panduan pemasangan Sunshine,
+daftar port, layanan otomatis, dan alur pembersihan antar penyewa. Implementasi Tauri dan egui yang lama dihapus 2026-09-28; agen dibangun lewat workflow **Build XyCloud Agent (Windows)** dan job *Agen Windows* di verifikasi build.
 
 Teknologi streaming yang dipakai: **Sunshine** (host) dan **Moonlight/Artemis** (klien),
 protokol GameStream dengan encoder NVENC/AMF/QuickSync. RDP tidak dipakai karena tidak
