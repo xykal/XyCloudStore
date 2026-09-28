@@ -13,8 +13,12 @@ Start: 2026-09-06 (first commit)
 - Repo dipindah ke xykal/XyCloudStore (dibuat 2026-09-24). Audit statis penuh HEAD 8d6f619: docs/AUDIT-2026-09-28.md (1 CRIT, 6 HIGH, 7 MED, 6 LOW)
 - Fix kecil aman tanpa build: deploy-dashboard.yml tambah permissions contents: read
 - Tidak ada build/instal lokal (kebijakan CI-only)
+- [CRIT-1] Rotasi token 2026-09-22 DIKONFIRMASI kall (2026-09-28): token lama tidak berlaku. CRIT ditutup.
+- [HIGH-4] app/pubspec.lock kini di-commit dari CI: workflow bootstrap-lockfile.yml, run https://github.com/xykal/XyCloudStore/actions/runs/36488258675 SUCCESS, commit e544bce oleh xykal.
+- [HIGH-3] Keputusan kall: source-available all rights reserved untuk repo, KECUALI app/ + native/ tetap GPLv3 (Moonlight). LICENSE root, THIRD_PARTY_NOTICES.md, seksi Lisensi di README. Status DRAFT sampai review konsultan hukum.
+- Keputusan: repo tetap PUBLIC (catatan kall), TIDAK ada rewrite history (risiko flag aktivitas; atribusi diperbaiki ke depan).
 
-**Blocked:** token push (fine-grained PAT repo ini), keputusan lisensi, konfirmasi rotasi token 2026-09-22, keputusan visibilitas repo
+**Blocked:** -
 
 **Next:** push + CI run URL, LICENSE set, pubspec.lock via CI, Tauri CSP tanpa unsafe-inline
 

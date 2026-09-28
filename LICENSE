@@ -1,0 +1,108 @@
+XyCloudStore Source-Available License (Lisensi Sumber-Terbuka-Lihat XyCloudStore)
+Version 1.0 — 2026-09-28
+Copyright (c) 2026 xykal — XyVerse Technology Global. All rights reserved. Hak cipta dilindungi.
+
+DRAFT — review by licensed counsel before relying on this document.
+DRAFT — tinjau bersama konsultan hukum berlisensi sebelum dijadikan acuan.
+
+====================================================================
+BAHASA INDONESIA (versi yang mengikat / controlling version)
+====================================================================
+
+1. Cakupan
+   Lisensi ini berlaku untuk seluruh isi repositori ini KECUALI direktori berikut,
+   yang tunduk pada GNU General Public License v3.0 (GPLv3) karena memuat dan
+   menautkan Moonlight Android (GPLv3):
+     - app/      (aplikasi Android terintegrasi; lihat app/LICENSE)
+     - native/   (modul streaming xy_stream dan pustaka Moonlight yang dipin)
+   Untuk kedua direktori tersebut, GPLv3 berlaku penuh dan tidak dibatasi oleh
+   dokumen ini. Sumber lengkap yang bersesuaian disertakan pada setiap rilis.
+
+2. Hak yang diberikan
+   Anda boleh melihat, membaca, dan mengkloning kode sumber untuk tujuan
+   evaluasi, pembelajaran, audit keamanan, dan pelaporan masalah.
+
+3. Hak yang TIDAK diberikan
+   Tanpa izin tertulis dari pemegang hak cipta, Anda tidak boleh:
+   a. menggunakan kode ini, sebagian atau seluruhnya, dalam produk atau layanan
+      lain, komersial maupun non-komersial;
+   b. menyalin, memodifikasi, menerjemahkan, atau membuat karya turunan untuk
+      didistribusikan;
+   c. mendistribusikan ulang, menyublisensikan, menjual, atau menyewakan;
+   d. menjalankan kode ini sebagai layanan (hosted/SaaS) untuk pihak lain;
+   e. menghapus atau mengubah pemberitahuan hak cipta, merek, dan atribusi
+      "XyVerse Technology Global".
+
+4. Kontribusi
+   Dengan mengirimkan kontribusi (pull request, patch, saran kode), Anda memberikan
+   kepada pemegang hak cipta lisensi non-eksklusif, bebas royalti, tidak dapat
+   dicabut, dan dapat disublisensikan untuk menggunakan kontribusi tersebut, dan
+   Anda menyatakan berhak memberikannya. Kontribusi pada app/ dan native/ tunduk
+   pada GPLv3.
+
+5. Merek
+   "XyCloudStore", "XyVerse", "XyVerse Technology Global", dan logo terkait adalah
+   merek milik pemegang hak cipta. Lisensi ini tidak memberikan hak atas merek.
+
+6. Tanpa jaminan dan batasan tanggung jawab
+   Kode disediakan "SEBAGAIMANA ADANYA" tanpa jaminan apa pun, tersurat maupun
+   tersirat. Pemegang hak cipta tidak bertanggung jawab atas kerugian apa pun
+   yang timbul dari penggunaan atau ketidakmampuan menggunakan kode ini.
+
+7. Pengakhiran
+   Hak pada Pasal 2 berakhir otomatis jika Anda melanggar lisensi ini.
+
+8. Hukum yang berlaku
+   Lisensi ini tunduk pada hukum Republik Indonesia. Jika terdapat perbedaan
+   antara versi Bahasa Indonesia dan Bahasa Inggris, versi Bahasa Indonesia
+   yang berlaku.
+
+====================================================================
+ENGLISH (translation for convenience)
+====================================================================
+
+1. Scope
+   This license covers the entire repository EXCEPT the following directories,
+   which are governed by the GNU General Public License v3.0 (GPLv3) because
+   they include and link Moonlight Android (GPLv3):
+     - app/      (the integrated Android application; see app/LICENSE)
+     - native/   (the xy_stream streaming module and pinned Moonlight library)
+   For those directories GPLv3 applies in full and is not limited by this
+   document. Complete corresponding source accompanies every release.
+
+2. Rights granted
+   You may view, read, and clone the source code for evaluation, learning,
+   security auditing, and issue reporting.
+
+3. Rights NOT granted
+   Without written permission from the copyright holder you may not:
+   a. use this code, in whole or in part, in another product or service,
+      commercial or non-commercial;
+   b. copy, modify, translate, or create derivative works for distribution;
+   c. redistribute, sublicense, sell, or rent;
+   d. run this code as a hosted service (SaaS) for third parties;
+   e. remove or alter copyright, trademark, or "XyVerse Technology Global"
+      attribution notices.
+
+4. Contributions
+   By submitting a contribution (pull request, patch, code suggestion) you grant
+   the copyright holder a non-exclusive, royalty-free, irrevocable, sublicensable
+   license to use it, and you represent that you have the right to do so.
+   Contributions to app/ and native/ are governed by GPLv3.
+
+5. Trademarks
+   "XyCloudStore", "XyVerse", "XyVerse Technology Global", and related logos are
+   trademarks of the copyright holder. No trademark rights are granted.
+
+6. No warranty; limitation of liability
+   The code is provided "AS IS" without warranty of any kind, express or implied.
+   The copyright holder is not liable for any damages arising from the use of or
+   inability to use this code.
+
+7. Termination
+   The rights in Section 2 terminate automatically upon breach of this license.
+
+8. Governing law
+   This license is governed by the laws of the Republic of Indonesia. In case of
+   conflict between the Indonesian and English versions, the Indonesian version
+   prevails.

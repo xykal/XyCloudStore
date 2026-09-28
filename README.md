@@ -32,6 +32,14 @@ Tema gelap menyeluruh, perbaikan keluar/hapus akun, banner lebih tinggi, komenta
 
 Panduan penggunaan, batas stiker, dan aktivasi GIPHY: **[docs/rilis-2.4.0.md](docs/rilis-2.4.0.md)**. Pencarian GIPHY membutuhkan API key di menu **Stiker & GIPHY**; galeri/koleksi tetap berjalan tanpanya.
 
+## Lisensi / License
+
+Repositori ini **source-available**: boleh dilihat, dikloning, dan diaudit; tidak boleh dipakai ulang, dimodifikasi untuk distribusi, atau dijalankan sebagai layanan tanpa izin tertulis. Detail di [`LICENSE`](LICENSE) (Bahasa Indonesia mengikat, terjemahan Inggris disertakan).
+
+Pengecualian: `app/` dan `native/` tetap **GPLv3** karena membundel Moonlight Android; lihat [`app/LICENSE`](app/LICENSE) dan [`native/README.md`](native/README.md). Komponen pihak ketiga: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+This repository is **source-available**: view, clone, and audit are allowed; reuse, redistribution of modifications, or running it as a service require written permission. `app/` and `native/` remain **GPLv3** (Moonlight Android). Both license texts are marked DRAFT pending counsel review.
+
 ## Isi Repository
 
 ```
